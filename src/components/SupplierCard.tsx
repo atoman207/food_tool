@@ -12,11 +12,14 @@ interface SupplierCardProps {
     name_ja?: string;
     nameJa?: string;
     logo: string;
+    category?: string;
     category_ja?: string;
     categoryJa?: string;
     tags: string[];
+    area?: string;
     area_ja?: string;
     areaJa?: string;
+    description?: string;
     description_ja?: string;
     descriptionJa?: string;
     whatsapp: string;
@@ -46,11 +49,11 @@ export function SupplierCard({ supplier }: SupplierCardProps) {
   const categoryLabel =
     lang === "ja"
       ? (supplier.category_ja || supplier.categoryJa || "")
-      : ((t.suppliers as { categories?: Record<string, string> }).categories?.[supplier.category] ?? supplier.category);
+      : ((t.suppliers as { categories?: Record<string, string> }).categories?.[supplier.category ?? ""] ?? supplier.category ?? "");
   const areaLabel =
     lang === "ja"
       ? (supplier.area_ja || supplier.areaJa || "")
-      : ((t.suppliers as { areas?: Record<string, string> }).areas?.[supplier.area] ?? supplier.area);
+      : ((t.suppliers as { areas?: Record<string, string> }).areas?.[supplier.area ?? ""] ?? supplier.area ?? "");
   const description =
     lang === "ja"
       ? (supplier.description_ja || supplier.descriptionJa || "")
