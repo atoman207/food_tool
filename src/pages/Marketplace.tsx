@@ -53,7 +53,11 @@ const Marketplace = () => {
           </div>
           <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="h-12 px-4 rounded-xl border bg-background text-sm">
             <option value="">{t.common.allCategories}</option>
-            {(categories || []).map((c) => <option key={c.value} value={c.label}>{c.label}</option>)}
+            {(categories || []).map((c) => (
+              <option key={c.value} value={c.value}>
+                {(t.marketplace as { categories?: Record<string, string> }).categories?.[c.value] ?? c.label}
+              </option>
+            ))}
           </select>
           <select value={selectedCondition} onChange={(e) => setSelectedCondition(e.target.value)} className="h-12 px-4 rounded-xl border bg-background text-sm">
             <option value="">{t.marketplace.allConditions}</option>

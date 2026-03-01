@@ -58,35 +58,37 @@ const Index = () => {
 
   return (
     <Layout>
-      <section className="relative min-h-[560px] flex items-center overflow-hidden">
+      <section className="relative min-h-[480px] md:min-h-[520px] flex items-center overflow-hidden bg-white">
         <div className="absolute inset-0">
           <img src="/hero-bg.jpg" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
         </div>
-        <div className="container relative z-10 py-20">
+        <div className="container relative z-10 py-16 md:py-20">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/30 text-primary-foreground text-xs font-medium mb-6 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium mb-6 animate-fade-in">
               <Sparkles className="h-3.5 w-3.5" />
               {t.home.badge}
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-primary-foreground leading-[1.1] tracking-tight animate-fade-in">
+            <h1 className="text-3xl md:text-5xl font-bold text-white leading-[1.15] tracking-tight animate-fade-in">
               {t.home.heroTitle1}<br />
-              <span className="text-secondary">{t.home.heroTitle2}</span><br />
+              <span className="text-primary">{t.home.heroTitle2}</span><br />
               {t.home.heroTitle3}
             </h1>
-            <p className="mt-5 text-primary-foreground/80 text-base md:text-lg animate-fade-in max-w-lg" style={{ animationDelay: "0.1s" }}>
+            <p className="mt-4 text-white/85 text-base md:text-lg animate-fade-in max-w-lg" style={{ animationDelay: "0.1s" }}>
               {t.home.heroSub}
             </p>
-            <div className="mt-8 bg-background/95 backdrop-blur-md rounded-2xl p-5 shadow-2xl animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <div className="mt-8 bg-white rounded-2xl p-4 md:p-5 shadow-card-hover animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <div className="flex flex-col sm:flex-row gap-3">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="h-12 px-4 rounded-xl border bg-background text-sm sm:w-48"
+                  className="h-12 px-4 rounded-xl border border-border bg-white text-sm font-medium text-foreground sm:w-48 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 >
                   <option value="">{t.home.categoryPlaceholder}</option>
                   {(categories || []).map((cat) => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    <option key={cat.value} value={cat.value}>
+                      {(t.suppliers as { categories?: Record<string, string> }).categories?.[cat.value] ?? cat.label}
+                    </option>
                   ))}
                 </select>
                 <div className="flex-1 relative">
@@ -97,10 +99,10 @@ const Index = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    className="w-full h-12 pl-10 pr-4 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="w-full h-12 pl-10 pr-4 rounded-xl border border-border bg-white text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                   />
                 </div>
-                <Button onClick={handleSearch} className="h-12 px-6 rounded-xl font-bold">
+                <Button onClick={handleSearch} className="h-12 px-6 rounded-xl font-bold bg-primary hover:bg-primary/90 active:scale-[0.97]">
                   {t.common.search}
                 </Button>
               </div>
@@ -109,61 +111,88 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="container py-12">
+      {/* Category chips — horizontal scroll */}
+      {categories && categories.length > 0 && (
+        <section className="border-b border-border bg-white overflow-hidden">
+          <div className="container py-3">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+              <Link
+                href="/suppliers"
+                className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+              >
+                {t.common.all}
+              </Link>
+              {(categories || []).map((cat) => (
+                <Link
+                  key={cat.value}
+                  href={`/suppliers?category=${encodeURIComponent(cat.value)}`}
+                  className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground"
+                >
+                  {(t.suppliers as { categories?: Record<string, string> }).categories?.[cat.value] ?? cat.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="container py-10">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <Link href="/suppliers" className="group">
-            <div className="bg-card border rounded-2xl p-6 card-hover text-center">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+          <Link href="/suppliers" className="group block">
+            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
                 <Search className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="font-bold">{t.home.card1Title}</h3>
-              <p className="text-xs text-muted-foreground mt-1.5">{t.home.card1Sub}</p>
+              <h3 className="font-semibold text-foreground">{t.home.card1Title}</h3>
+              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card1Sub}</p>
             </div>
           </Link>
-          <Link href="/suppliers" className="group">
-            <div className="bg-card border rounded-2xl p-6 card-hover text-center">
-              <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-secondary/20 transition-colors">
-                <Store className="h-5 w-5 text-secondary" />
+          <Link href="/suppliers" className="group block">
+            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                <Store className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="font-bold">{t.home.card2Title}</h3>
-              <p className="text-xs text-muted-foreground mt-1.5">{t.home.card2Sub}</p>
+              <h3 className="font-semibold text-foreground">{t.home.card2Title}</h3>
+              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card2Sub}</p>
             </div>
           </Link>
-          <Link href="/marketplace" className="group">
-            <div className="bg-card border rounded-2xl p-6 card-hover text-center">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
-                <ShoppingBag className="h-5 w-5 text-accent" />
+          <Link href="/marketplace" className="group block">
+            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                <ShoppingBag className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="font-bold">{t.home.card3Title}</h3>
-              <p className="text-xs text-muted-foreground mt-1.5">{t.home.card3Sub}</p>
+              <h3 className="font-semibold text-foreground">{t.home.card3Title}</h3>
+              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card3Sub}</p>
             </div>
           </Link>
         </div>
       </section>
 
-      <section className="container pb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" /> {t.home.popularSuppliers}
-          </h2>
-          <Link href="/suppliers" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1">
-            {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {suppliersLoading
-            ? Array.from({ length: 4 }).map((_, i) => <SupplierSkeleton key={i} />)
-            : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
-          }
+      <section className="bg-[#F8F9FA] py-10 md:py-12">
+        <div className="container">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" /> {t.home.popularSuppliers}
+            </h2>
+            <Link href="/suppliers" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
+              {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {suppliersLoading
+              ? Array.from({ length: 4 }).map((_, i) => <SupplierSkeleton key={i} />)
+              : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
+            }
+          </div>
         </div>
       </section>
 
-      <section className="container pb-16">
+      <section className="container py-10 md:py-14">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-accent" /> {t.home.recentMarketplace}
+          <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
+            <ShoppingBag className="h-5 w-5 text-primary" /> {t.home.recentMarketplace}
           </h2>
-          <Link href="/marketplace" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1">
+          <Link href="/marketplace" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
             {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

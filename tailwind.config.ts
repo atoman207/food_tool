@@ -14,7 +14,16 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Noto Sans JP"', 'sans-serif'],
+        sans: [
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "Roboto",
+          '"Helvetica Neue"',
+          "Arial",
+          "sans-serif",
+        ],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,8 +60,8 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         whatsapp: {
-          DEFAULT: "hsl(var(--whatsapp))",
-          foreground: "hsl(var(--whatsapp-foreground))",
+          DEFAULT: "#25D366",
+          foreground: "#FFFFFF",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -67,14 +76,27 @@ export default {
       },
       borderRadius: {
         none: "0",
-        sm: "0",
-        DEFAULT: "0",
-        md: "0",
-        lg: "0",
-        xl: "0",
-        "2xl": "0",
-        "3xl": "0",
+        sm: "8px",
+        DEFAULT: "12px",
+        md: "12px",
+        lg: "14px",
+        xl: "16px",
+        "2xl": "16px",
+        "3xl": "20px",
         full: "9999px",
+      },
+      boxShadow: {
+        card: "0 2px 8px rgba(0,0,0,0.08)",
+        "card-hover": "0 8px 20px rgba(0,0,0,0.12)",
+        header: "0 1px 0 rgba(0,0,0,0.08)",
+      },
+      transitionDuration: {
+        DEFAULT: "250ms",
+        fast: "200ms",
+        slow: "300ms",
+      },
+      transitionTimingFunction: {
+        smooth: "cubic-bezier(0.4, 0, 0.2, 1)",
       },
       keyframes: {
         "accordion-down": {
@@ -99,17 +121,17 @@ export default {
         },
         "btn-pop": {
           "0%": { transform: "scale(1)" },
-          "40%": { transform: "scale(0.96)" },
+          "40%": { transform: "scale(0.97)" },
           "100%": { transform: "scale(1)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.5s ease-out forwards",
-        "slide-in": "slide-in 0.4s ease-out forwards",
-        "dropdown-open": "dropdown-open 0.18s ease-out forwards",
-        "btn-pop": "btn-pop 0.15s ease-out",
+        "fade-in": "fade-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "slide-in": "slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "dropdown-open": "dropdown-open 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "btn-pop": "btn-pop 0.2s ease-out",
       },
     },
   },

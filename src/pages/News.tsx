@@ -45,7 +45,7 @@ const News = () => {
                 selectedCategory === cat.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
-              {cat.label}
+              {(t.news as { categories?: Record<string, string> }).categories?.[cat.value] ?? cat.label}
             </button>
           ))}
         </div>
@@ -66,7 +66,9 @@ const News = () => {
                   </div>
                   <div className="p-5">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="tag-badge">{article.category}</span>
+                      <span className="tag-badge">
+                        {(t.news as { categories?: Record<string, string> }).categories?.[article.category] ?? article.category}
+                      </span>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {new Date(article.created_at).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG")}

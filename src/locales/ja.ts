@@ -30,6 +30,7 @@ const ja: Translations = {
     suppliers: "サプライヤー",
     marketplace: "マーケットプレイス",
     news: "ニュース",
+    sell: "出品",
     login: "ログイン",
     register: "新規登録",
     dashboard: "ダッシュボード",
@@ -85,6 +86,16 @@ const ja: Translations = {
       north: "北部エリア",
       south: "南部エリア",
     },
+    categories: {
+      seafood: "海鮮・鮮魚",
+      meat: "肉類",
+      vegetables: "野菜・青果",
+      dairy: "乳製品",
+      "dry-goods": "乾物・調味料",
+      beverages: "飲料・酒類",
+      equipment: "厨房機器",
+      packaging: "包装・容器",
+    },
     tags: "タグ",
     smallLot: "少量対応",
     japanese: "日本語対応",
@@ -115,8 +126,10 @@ const ja: Translations = {
     noResults: "条件に一致するアイテムが見つかりません。",
     categories: {
       kitchen: "厨房機器",
+      "kitchen-equipment": "厨房機器",
       tableware: "食器・備品",
       utensils: "調理器具",
+      tools: "調理器具",
       furniture: "家具",
       other: "その他",
     },
@@ -137,6 +150,12 @@ const ja: Translations = {
   // ── News ─────────────────────────────────────────────────────────────────
   news: {
     title: "業界ニュース",
+    categories: {
+      industry: "業界ニュース",
+      regulation: "規制・法律",
+      trend: "トレンド",
+      event: "イベント",
+    },
     subtitle: "シンガポールF&B業界の最新情報",
     noArticles: "ニュース記事がまだありません。",
     noArticlesSub: "近日公開予定です。",

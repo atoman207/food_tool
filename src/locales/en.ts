@@ -28,6 +28,7 @@ const en = {
     suppliers: "Suppliers",
     marketplace: "Marketplace",
     news: "News",
+    sell: "Sell",
     login: "Login",
     register: "Sign Up",
     dashboard: "Dashboard",
@@ -83,6 +84,16 @@ const en = {
       north: "North",
       south: "South",
     },
+    categories: {
+      seafood: "Seafood",
+      meat: "Meat",
+      vegetables: "Vegetables",
+      dairy: "Dairy",
+      "dry-goods": "Dry Goods",
+      beverages: "Beverages",
+      equipment: "Equipment",
+      packaging: "Packaging",
+    },
     tags: "Tags",
     smallLot: "Small lot available",
     japanese: "Japanese support",
@@ -113,8 +124,10 @@ const en = {
     noResults: "No items match your criteria.",
     categories: {
       kitchen: "Kitchen Equipment",
+      "kitchen-equipment": "Kitchen Equipment",
       tableware: "Tableware & Supplies",
       utensils: "Cooking Utensils",
+      tools: "Cooking Utensils",
       furniture: "Furniture",
       other: "Other",
     },
@@ -135,6 +148,12 @@ const en = {
   // ── News ─────────────────────────────────────────────────────────────────
   news: {
     title: "Industry News",
+    categories: {
+      industry: "Industry",
+      regulation: "Regulation",
+      trend: "Trend",
+      event: "Event",
+    },
     subtitle: "Latest news from Singapore's F&B industry",
     noArticles: "No news articles yet.",
     noArticlesSub: "Coming soon.",

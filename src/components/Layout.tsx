@@ -4,7 +4,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import logoImage from "@/assets/logo.png";
 import {
-  Search, Menu, X, ChevronRight, ChevronDown,
+  Menu, X, ChevronRight, ChevronDown,
   User, LogOut, LayoutDashboard, ShieldCheck, Settings,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -100,9 +100,9 @@ function UserMenu() {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 top-full mt-0 w-60 bg-background border border-t-2 border-t-primary shadow-xl z-50 animate-dropdown-open origin-top">
+        <div className="absolute right-0 top-full mt-1 w-60 bg-white border border-border rounded-xl shadow-card-hover z-50 animate-dropdown-open origin-top">
           {/* User info header */}
-          <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border-b">
+          <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 border-b border-border rounded-t-xl">
             <AvatarBadge src={avatarSrc} alt={displayName} size={42} />
             <div className="min-w-0">
               <p className="text-sm font-bold truncate">{profile?.name || t.nav.user}</p>
@@ -176,72 +176,54 @@ export function Header() {
   const displayName = profile?.username ? `@${profile.username}` : (profile?.name || t.nav.user);
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b-2 border-border">
-      <div className="container flex h-20 items-center justify-between gap-6">
-
-        {/* Logo */}
+    <header className="sticky top-0 z-50 bg-white shadow-header">
+      <div className="container flex h-16 md:h-14 items-center gap-4 md:gap-6">
+        {/* Logo — left */}
         <Link href="/" className="flex items-center flex-shrink-0 group">
           <Image
             src={logoImage}
             alt="F&B Portal - Singapore F&B Supplier & Chef Network"
-            height={44}
-            width={220}
-            className="h-11 w-auto object-contain transition-transform group-hover:-translate-y-0.5"
+            height={40}
+            width={200}
+            className="h-10 w-auto object-contain transition-transform duration-200 ease-smooth group-hover:-translate-y-0.5"
             priority
           />
         </Link>
 
-        {/* Desktop right side */}
+        {/* Right — nav, lang, auth */}
         <div className="hidden md:flex items-center gap-0.5 ml-auto">
-
-          {/* Navigation */}
           {navItems.map((item) => (
             <Link
               key={item.path}
               href={item.path}
-              className={`relative px-4 py-2 text-sm font-medium transition-all duration-150 group ${
+              className={`relative px-3 py-2 text-sm font-medium transition-all duration-200 ease-smooth group ${
                 (pathname ?? "").startsWith(item.path)
-                  ? "bg-primary/8 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               }`}
             >
               {item.label}
               <span
-                className={`absolute bottom-0 left-0 right-0 h-0.5 bg-primary transition-all duration-200 ${
-                  (pathname ?? "").startsWith(item.path)
-                    ? "opacity-100"
-                    : "opacity-0 group-hover:opacity-50"
+                className={`absolute bottom-0 left-0 right-0 h-0.5 bg-primary transition-opacity duration-200 ${
+                  (pathname ?? "").startsWith(item.path) ? "opacity-100" : "opacity-0 group-hover:opacity-50"
                 }`}
               />
             </Link>
           ))}
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-border mx-2" />
-
-          {/* Search */}
-          <Link href="/suppliers">
-            <Button variant="ghost" size="icon">
-              <Search className="h-4 w-4" />
-            </Button>
-          </Link>
-
-          {/* Language toggle */}
+          <div className="w-px h-5 bg-border mx-1" />
           <LangToggle />
-
-          {/* Auth */}
           <div className="ml-1">
             {user ? (
               <UserMenu />
             ) : (
               <div className="flex items-center gap-2">
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="font-medium">
+                  <Button variant="ghost" size="sm" className="font-medium text-muted-foreground hover:text-foreground">
                     {t.nav.login}
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm" className="font-bold">
+                  <Button variant="outline" size="sm" className="font-semibold">
                     {t.nav.register}
                   </Button>
                 </Link>
@@ -261,7 +243,7 @@ export function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t-2 bg-background animate-fade-in">
+        <div className="md:hidden border-t border-border bg-white animate-fade-in">
           <nav className="container py-4 space-y-0.5">
             {navItems.map((item) => (
               <Link
@@ -277,7 +259,7 @@ export function Header() {
               </Link>
             ))}
 
-            <div className="border-t my-2" />
+            <div className="border-t border-border my-2" />
 
             {user ? (
               <>
@@ -368,42 +350,39 @@ export function Header() {
 export function Footer() {
   const { t } = useTranslation();
   return (
-    <footer className="border-t-2 bg-foreground text-background">
-      <div className="container py-14">
+    <footer className="border-t border-border bg-[#F8F9FA]">
+      <div className="container py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-black text-xs">食</span>
-              </div>
-              <span className="font-black text-background">{t.nav.brand}</span>
+              <span className="font-bold text-lg text-foreground tracking-tight">{t.nav.brand}</span>
             </div>
-            <p className="text-sm text-background/60 leading-relaxed">{t.footer.tagline}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{t.footer.tagline}</p>
           </div>
           <div>
-            <h4 className="font-bold mb-4 text-sm text-background/80 uppercase tracking-widest text-xs">{t.footer.services}</h4>
-            <ul className="space-y-2.5 text-sm text-background/60">
-              <li><Link href="/suppliers" className="hover:text-background transition-colors">{t.footer.supplierSearch}</Link></li>
-              <li><Link href="/marketplace" className="hover:text-background transition-colors">{t.footer.marketplace}</Link></li>
-              <li><Link href="/news" className="hover:text-background transition-colors">{t.footer.news}</Link></li>
+            <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.services}</h4>
+            <ul className="space-y-2.5 text-sm text-muted-foreground">
+              <li><Link href="/suppliers" className="hover:text-primary transition-colors duration-200">{t.footer.supplierSearch}</Link></li>
+              <li><Link href="/marketplace" className="hover:text-primary transition-colors duration-200">{t.footer.marketplace}</Link></li>
+              <li><Link href="/news" className="hover:text-primary transition-colors duration-200">{t.footer.news}</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4 text-sm text-background/80 uppercase tracking-widest text-xs">{t.footer.info}</h4>
-            <ul className="space-y-2.5 text-sm text-background/60">
-              <li><a href="#" className="hover:text-background transition-colors">{t.footer.terms}</a></li>
-              <li><a href="#" className="hover:text-background transition-colors">{t.footer.privacy}</a></li>
+            <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.info}</h4>
+            <ul className="space-y-2.5 text-sm text-muted-foreground">
+              <li><a href="#" className="hover:text-primary transition-colors duration-200">{t.footer.terms}</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors duration-200">{t.footer.privacy}</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4 text-sm text-background/80 uppercase tracking-widest text-xs">{t.footer.contact}</h4>
-            <ul className="space-y-2.5 text-sm text-background/60">
-              <li><a href="#" className="hover:text-background transition-colors">{t.footer.contactForm}</a></li>
-              <li><Link href="/admin-dashboard" className="hover:text-background transition-colors">{t.footer.adminLogin}</Link></li>
+            <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.contact}</h4>
+            <ul className="space-y-2.5 text-sm text-muted-foreground">
+              <li><a href="#" className="hover:text-primary transition-colors duration-200">{t.footer.contactForm}</a></li>
+              <li><Link href="/admin-dashboard" className="hover:text-primary transition-colors duration-200">{t.footer.adminLogin}</Link></li>
             </ul>
           </div>
         </div>
-        <div className="mt-10 pt-6 border-t border-background/20 text-center text-xs text-background/40">
+        <div className="mt-10 pt-6 border-t border-border text-center text-xs text-muted-foreground">
           {t.footer.copyright}
         </div>
       </div>

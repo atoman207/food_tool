@@ -58,7 +58,7 @@ const Suppliers = () => {
           {(categories || []).map((cat) => (
             <label key={cat.value} className="flex items-center gap-2.5 text-sm cursor-pointer hover:text-foreground transition-colors">
               <input type="checkbox" checked={selectedCategories.includes(cat.value)} onChange={() => toggleCategory(cat.value)} className="rounded border-border accent-primary" />
-              {cat.label}
+              {(t.suppliers as { categories?: Record<string, string> }).categories?.[cat.value] ?? cat.label}
             </label>
           ))}
         </div>
