@@ -354,9 +354,15 @@ export function Footer() {
       <div className="container py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center gap-2.5 mb-4">
-              <span className="font-bold text-lg text-foreground tracking-tight">{t.nav.brand}</span>
-            </div>
+            <Link href="/" className="inline-block mb-4">
+              <Image
+                src={logoImage}
+                alt="F&B Portal - Singapore F&B Supplier & Chef Network"
+                height={36}
+                width={180}
+                className="h-9 w-auto object-contain"
+              />
+            </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">{t.footer.tagline}</p>
           </div>
           <div>
