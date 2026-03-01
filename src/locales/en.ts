@@ -1,0 +1,301 @@
+const en = {
+  // ── Shared ───────────────────────────────────────────────────────────────
+  common: {
+    loading: "Loading...",
+    search: "Search",
+    viewAll: "View All",
+    readMore: "Read more",
+    back: "Back",
+    save: "Save",
+    saving: "Saving...",
+    delete: "Delete",
+    view: "View",
+    cancel: "Cancel",
+    all: "All",
+    error: "An error occurred.",
+    notFound: "Not found.",
+    backToList: "Back to list",
+    noResults: "No results found.",
+    changeSearchCriteria: "Please try changing your search criteria.",
+    allCategories: "All Categories",
+    filter: "Filters",
+    filters: "Filters",
+  },
+
+  // ── Header / Footer ──────────────────────────────────────────────────────
+  nav: {
+    brand: "F&B Portal",
+    suppliers: "Suppliers",
+    marketplace: "Marketplace",
+    news: "News",
+    login: "Login",
+    register: "Sign Up",
+    dashboard: "Dashboard",
+    logout: "Logout",
+    admin: "Admin",
+    user: "User",
+  },
+  footer: {
+    tagline: "Connecting Singapore's F&B industry",
+    services: "Services",
+    supplierSearch: "Supplier Search",
+    marketplace: "Marketplace",
+    news: "News",
+    info: "Information",
+    terms: "Terms of Use",
+    privacy: "Privacy Policy",
+    contact: "Contact",
+    contactForm: "Contact Form",
+    adminLogin: "Admin Login",
+    copyright: "© 2024 F&B Portal. All rights reserved.",
+  },
+
+  // ── Home (Index) ─────────────────────────────────────────────────────────
+  home: {
+    badge: "Singapore's No.1 F&B Platform",
+    heroTitle1: "Singapore",
+    heroTitle2: "F&B Supplier &",
+    heroTitle3: "Chef Network",
+    heroSub: "Find trusted suppliers, connect instantly, trade smart.",
+    categoryPlaceholder: "All Categories",
+    searchPlaceholder: "Suppliers, ingredients, equipment...",
+    card1Title: "Search by Category",
+    card1Sub: "Find ingredients & equipment",
+    card2Title: "Popular Suppliers",
+    card2Sub: "Top-rated vendors",
+    card3Title: "Chef Market",
+    card3Sub: "Buy & sell used equipment",
+    popularSuppliers: "Popular Suppliers",
+    recentMarketplace: "Marketplace",
+  },
+
+  // ── Suppliers ────────────────────────────────────────────────────────────
+  suppliers: {
+    title: "Supplier Directory",
+    subtitle: "Find trusted F&B suppliers",
+    searchPlaceholder: "Search by name, ingredient, category...",
+    category: "Category",
+    area: "Area",
+    areas: {
+      central: "Central",
+      east: "East",
+      west: "West",
+      north: "North",
+      south: "South",
+    },
+    tags: "Tags",
+    smallLot: "Small lot available",
+    japanese: "Japanese support",
+    halal: "Halal",
+    resultCount: (n: number) => `${n} supplier${n !== 1 ? "s" : ""} found`,
+    noResults: "No suppliers match your criteria.",
+    noResultsSub: "Please try changing your search criteria.",
+  },
+
+  // ── Marketplace ──────────────────────────────────────────────────────────
+  marketplace: {
+    title: "Chef Marketplace",
+    subtitle: "Buy & sell used kitchen equipment",
+    searchPlaceholder: "Search items...",
+    allConditions: "All Conditions",
+    conditions: {
+      "like-new": "Like New",
+      good: "Good",
+      used: "Used",
+      "needs-repair": "Needs Repair",
+    },
+    sort: {
+      newest: "Newest",
+      priceAsc: "Price: Low to High",
+      priceDesc: "Price: High to Low",
+    },
+    resultCount: (n: number) => `${n} item${n !== 1 ? "s" : ""}`,
+    noResults: "No items match your criteria.",
+    categories: {
+      kitchen: "Kitchen Equipment",
+      tableware: "Tableware & Supplies",
+      utensils: "Cooking Utensils",
+      furniture: "Furniture",
+      other: "Other",
+    },
+    areas: {
+      central: "Central",
+      east: "East",
+      west: "West",
+      north: "North",
+      south: "South",
+    },
+    deliveryOptions: {
+      pickup: "Pickup only",
+      delivery: "Delivery available",
+      both: "Pickup & Delivery",
+    },
+  },
+
+  // ── News ─────────────────────────────────────────────────────────────────
+  news: {
+    title: "Industry News",
+    subtitle: "Latest news from Singapore's F&B industry",
+    noArticles: "No news articles yet.",
+    noArticlesSub: "Coming soon.",
+  },
+
+  // ── Login ────────────────────────────────────────────────────────────────
+  login: {
+    title: "Login",
+    subtitle: "Sign in to the F&B Portal",
+    email: "Email Address",
+    password: "Password",
+    submit: "Login",
+    submitting: "Logging in...",
+    noAccount: "Don't have an account?",
+    register: "Sign Up",
+    emailNotConfirmedTitle: "Email confirmation required",
+    emailNotConfirmedBody:
+      "Please click the confirmation link in the email sent at registration, then log in.",
+    resendSent: "✔ Confirmation email re-sent. Please check your inbox.",
+    resendButton: "Resend confirmation email",
+    resendError: "Resend error: ",
+  },
+
+  // ── Register ─────────────────────────────────────────────────────────────
+  register: {
+    title: "Sign Up",
+    subtitle: "Create your account",
+    avatarHint: "Click to upload avatar (optional, max 5MB)",
+    avatarError: "Avatar image must be 5MB or less.",
+    name: "Full Name",
+    namePlaceholder: "John Smith",
+    username: "Username",
+    usernamePlaceholder: "john_smith",
+    usernameHint: "Letters, numbers and underscores only · 3-30 characters",
+    email: "Email Address",
+    password: "Password",
+    passwordPlaceholder: "8 characters or more",
+    confirmPassword: "Confirm Password",
+    confirmationNote:
+      "After registration, a confirmation email will be sent. Please click the link to log in.",
+    submit: "Create Account",
+    submitting: "Registering...",
+    hasAccount: "Already have an account?",
+    login: "Login",
+    errorPasswordMismatch: "Passwords do not match.",
+    errorUsernameTooShort: "Username must be at least 3 characters.",
+    confirmationSentTitle: "Confirmation email sent",
+    confirmationSentBody:
+      "A confirmation email has been sent to {email}. Click the link in the email to complete registration.",
+    confirmationTips: "If you don't see it:",
+    confirmationTip1: "• Check your spam / junk folder",
+    confirmationTip2: "• Wait a few minutes and check again",
+    goToLogin: "Go to Login",
+  },
+
+  // ── Dashboard ────────────────────────────────────────────────────────────
+  dashboard: {
+    title: "Dashboard",
+    greeting: "Hello, {name}",
+    newListing: "New Listing",
+    tabListings: "My Listings",
+    tabProfile: "Profile Settings",
+    statusApproved: "Approved",
+    statusPending: "Pending",
+    statusRejected: "Rejected",
+    rejectReason: "Rejection reason: ",
+    noListings: "No listings yet.",
+    firstListing: "Create First Listing",
+    avatarHint: "Click to change avatar (max 5MB)",
+    avatarChange: "Change",
+    avatarError: "Please select an image under 5MB.",
+    fieldName: "Full Name",
+    fieldUsername: "Username",
+    fieldEmail: "Email Address",
+    fieldWhatsapp: "WhatsApp Number",
+    fieldCompany: "Company Name",
+    saveProfile: "Save Profile",
+    savedMsg: "Saved ✓",
+    notConnected: "Supabase not connected",
+  },
+
+  // ── New Item ─────────────────────────────────────────────────────────────
+  newItem: {
+    title: "New Listing",
+    backToDashboard: "Dashboard",
+    fieldTitle: "Title *",
+    fieldCategory: "Category *",
+    fieldPrice: "Price (SGD) *",
+    fieldCondition: "Condition *",
+    fieldYearsUsed: "Years Used *",
+    fieldDescription: "Description *",
+    fieldArea: "Area *",
+    fieldDelivery: "Delivery Method",
+    fieldImageUrl: "Image URL (max 5, comma separated)",
+    agreeTerms: "I agree to the terms of service *",
+    submit: "List Item (published after review)",
+    submitting: "Listing...",
+    successMsg: "Listing complete. Will be published after admin approval.",
+    errorMsg: "An error occurred.",
+  },
+
+  // ── Admin Dashboard ──────────────────────────────────────────────────────
+  admin: {
+    title: "Admin Dashboard",
+    subtitle: "Site management & content editing",
+    tabSuppliers: "Suppliers",
+    tabApprovals: "Approvals",
+    tabNews: "News",
+    tabCategories: "Categories",
+    tabQR: "QR Redirect",
+    tabReports: "Reports",
+    tabAnalytics: "Analytics",
+  },
+
+  // ── Supplier Card ─────────────────────────────────────────────────────────
+  supplierCard: {
+    viewDetail: "View Details",
+    inquire: "I'd like to inquire about this supplier.",
+  },
+
+  // ── Supplier Detail ──────────────────────────────────────────────────────
+  supplierDetail: {
+    backToList: "Supplier List",
+    tabAbout: "About",
+    tabProducts: "Products",
+    tabCertifications: "Certifications",
+    tabContact: "Contact",
+    notFound: "Supplier not found.",
+    useNameField: "en", // which DB field to use: en = name, ja = name_ja
+  },
+
+  // ── Marketplace Item ─────────────────────────────────────────────────────
+  marketplaceItem: {
+    backToList: "Marketplace",
+    condition: "Condition",
+    yearsUsed: "Years Used",
+    area: "Area",
+    delivery: "Delivery",
+    seller: "Seller",
+    contactSeller: "Contact Seller",
+    notFound: "Item not found.",
+    years: "yr",
+  },
+
+  // ── News Detail ──────────────────────────────────────────────────────────
+  newsDetail: {
+    backToList: "News",
+    notFound: "Article not found.",
+  },
+
+  // ── Plans ────────────────────────────────────────────────────────────────
+  plans: {
+    premium: "Premium",
+    standard: "Standard",
+    basic: "Basic",
+    premiumDesc: "Top listing · All features · WhatsApp contact",
+    standardDesc: "Priority listing · WhatsApp contact",
+    basicDesc: "Standard listing",
+    inquire: "Inquire about this plan",
+  },
+};
+
+export type Translations = typeof en;
+export default en;

@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 25% 97%;
+    --foreground: 20 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 20 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 25% 12%;
+
+    --primary: 152 45% 26%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 36 60% 48%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 40 15% 94%;
+    --muted-foreground: 20 10% 48%;
+
+    --accent: 18 80% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 15% 85%;
+    --input: 30 15% 85%;
+    --ring: 152 45% 26%;
+
+    /* Sharp corners everywhere */
+    --radius: 0rem;
+
+    --whatsapp: 142 70% 38%;
+    --whatsapp-foreground: 0 0% 100%;
+
+    --hero-overlay: 20 30% 10%;
+
+    --sidebar-background: 40 20% 96%;
+    --sidebar-foreground: 20 25% 12%;
+    --sidebar-primary: 152 45% 26%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 36 40% 92%;
+    --sidebar-accent-foreground: 20 25% 12%;
+    --sidebar-border: 30 15% 85%;
+    --sidebar-ring: 152 45% 26%;
+  }
+
+  .dark {
+    --background: 20 20% 8%;
+    --foreground: 40 20% 92%;
+    --card: 20 18% 12%;
+    --card-foreground: 40 20% 92%;
+    --popover: 20 18% 12%;
+    --popover-foreground: 40 20% 92%;
+    --primary: 152 45% 40%;
+    --primary-foreground: 20 20% 8%;
+    --secondary: 36 50% 45%;
+    --secondary-foreground: 20 20% 8%;
+    --muted: 20 15% 18%;
+    --muted-foreground: 40 10% 60%;
+    --accent: 18 70% 50%;
+    --accent-foreground: 20 20% 8%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 20 15% 22%;
+    --input: 20 15% 22%;
+    --ring: 152 45% 40%;
+    --sidebar-background: 20 18% 10%;
+    --sidebar-foreground: 40 20% 92%;
+    --sidebar-primary: 152 45% 40%;
+    --sidebar-primary-foreground: 20 20% 8%;
+    --sidebar-accent: 20 15% 16%;
+    --sidebar-accent-foreground: 40 20% 92%;
+    --sidebar-border: 20 15% 22%;
+    --sidebar-ring: 152 45% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    font-feature-settings: "palt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .hero-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--hero-overlay) / 0.75) 0%,
+      hsl(var(--hero-overlay) / 0.45) 60%,
+      hsl(var(--primary) / 0.2) 100%
+    );
+  }
+  .whatsapp-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--whatsapp)) 0%,
+      hsl(152 55% 32%) 100%
+    );
+  }
+
+  /* Card hover — lift + sharper shadow, no border radius */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  /* Tags — keep pill shape */
+  .tag-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary;
+  }
+
+  /* Accent left-border for card sections */
+  .section-accent {
+    @apply border-l-4 border-primary pl-4;
+  }
+}
+
+/* ─── Button animations ──────────────────────────────────────────── */
+@layer base {
+  /* All interactive buttons get a smooth press effect */
+  button:not([disabled]),
+  [role="button"]:not([disabled]) {
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  }
+
+  button:not([disabled]):active,
+  [role="button"]:not([disabled]):active {
+    transform: scale(0.96) translateY(1px) !important;
+  }
+
+  /* Solid primary / secondary buttons get a lift + glow on hover */
+  .btn-primary-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px hsl(var(--primary) / 0.35);
+    filter: brightness(1.06);
+  }
+  .btn-secondary-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px hsl(var(--secondary) / 0.35);
+    filter: brightness(1.06);
+  }
+}

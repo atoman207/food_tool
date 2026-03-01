@@ -1,0 +1,53 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase-server";
+import { categories as mockSupplierCats, marketplaceCategories as mockMPCats } from "@/data/mockData";
+
+const mockCategories = [
+  ...mockSupplierCats.map((c, i) => ({ id: `s${i}`, type: "supplier", value: c.value, label: c.label, sort_order: i })),
+  ...mockMPCats.map((c, i) => ({ id: `m${i}`, type: "marketplace", value: c.value, label: c.label, sort_order: i })),
+  { id: "n1", type: "news", value: "industry", label: "業界ニュース", sort_order: 1 },
+  { id: "n2", type: "news", value: "regulation", label: "規制・法律", sort_order: 2 },
+  { id: "n3", type: "news", value: "trend", label: "トレンド", sort_order: 3 },
+  { id: "n4", type: "news", value: "event", label: "イベント", sort_order: 4 },
+];
+
+export async function GET(req: NextRequest) {
+  const supabase = createServerSupabaseClient();
+  const { searchParams } = new URL(req.url);
+  const type = searchParams.get("type");
+
+  if (!supabase) {
+    const data = type ? mockCategories.filter((c) => c.type === type) : mockCategories;
+    return NextResponse.json(data);
+  }
+
+  let query = supabase.from("categories").select("*").order("sort_order");
+  if (type) query = query.eq("type", type);
+
+  const { data, error } = await query;
+  if (error) {
+    const fallback = type ? mockCategories.filter((c) => c.type === type) : mockCategories;
+    return NextResponse.json(fallback);
+  }
+  return NextResponse.json(data);
+}
+
+export async function POST(req: NextRequest) {
+  const supabase = createAdminSupabaseClient();
+  if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  const body = await req.json();
+  const { data, error } = await supabase.from("categories").insert(body).select().single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
+}
+
+export async function DELETE(req: NextRequest) {
+  const supabase = createAdminSupabaseClient();
+  if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}

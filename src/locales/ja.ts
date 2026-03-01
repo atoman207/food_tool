@@ -1,0 +1,302 @@
+import type { Translations } from "./en";
+
+const ja: Translations = {
+  // ── Shared ───────────────────────────────────────────────────────────────
+  common: {
+    loading: "読み込み中...",
+    search: "検索",
+    viewAll: "全て見る",
+    readMore: "続きを読む",
+    back: "戻る",
+    save: "保存",
+    saving: "保存中...",
+    delete: "削除",
+    view: "表示",
+    cancel: "キャンセル",
+    all: "すべて",
+    error: "エラーが発生しました。",
+    notFound: "見つかりません。",
+    backToList: "一覧に戻る",
+    noResults: "条件に一致する結果が見つかりません。",
+    changeSearchCriteria: "検索条件を変更してお試しください。",
+    allCategories: "全カテゴリー",
+    filter: "フィルター",
+    filters: "フィルター",
+  },
+
+  // ── Header / Footer ──────────────────────────────────────────────────────
+  nav: {
+    brand: "F&Bポータル",
+    suppliers: "サプライヤー",
+    marketplace: "マーケットプレイス",
+    news: "ニュース",
+    login: "ログイン",
+    register: "新規登録",
+    dashboard: "ダッシュボード",
+    logout: "ログアウト",
+    admin: "管理者",
+    user: "ユーザー",
+  },
+  footer: {
+    tagline: "シンガポールのF&B業界をつなぐプラットフォーム",
+    services: "サービス",
+    supplierSearch: "サプライヤー検索",
+    marketplace: "マーケットプレイス",
+    news: "ニュース",
+    info: "情報",
+    terms: "利用規約",
+    privacy: "プライバシーポリシー",
+    contact: "お問い合わせ",
+    contactForm: "お問い合わせフォーム",
+    adminLogin: "管理者ログイン",
+    copyright: "© 2024 F&Bポータル. All rights reserved.",
+  },
+
+  // ── Home (Index) ─────────────────────────────────────────────────────────
+  home: {
+    badge: "シンガポールNo.1 F&Bプラットフォーム",
+    heroTitle1: "シンガポール",
+    heroTitle2: "F&Bサプライヤー＆",
+    heroTitle3: "シェフネットワーク",
+    heroSub: "信頼できるサプライヤーを見つけ、即座につながり、スマートに取引。",
+    categoryPlaceholder: "全カテゴリー",
+    searchPlaceholder: "サプライヤー、食材、設備...",
+    card1Title: "カテゴリーで探す",
+    card1Sub: "食材・機器を探す",
+    card2Title: "人気サプライヤー",
+    card2Sub: "高評価の業者",
+    card3Title: "シェフマーケット",
+    card3Sub: "中古機器を売買",
+    popularSuppliers: "人気サプライヤー",
+    recentMarketplace: "マーケットプレイス",
+  },
+
+  // ── Suppliers ────────────────────────────────────────────────────────────
+  suppliers: {
+    title: "サプライヤーディレクトリ",
+    subtitle: "信頼できるF&Bサプライヤーを探す",
+    searchPlaceholder: "サプライヤー名、食材、カテゴリーで検索...",
+    category: "カテゴリー",
+    area: "エリア",
+    areas: {
+      central: "中央エリア",
+      east: "東部エリア",
+      west: "西部エリア",
+      north: "北部エリア",
+      south: "南部エリア",
+    },
+    tags: "タグ",
+    smallLot: "少量対応",
+    japanese: "日本語対応",
+    halal: "ハラール",
+    resultCount: (n: number) => `${n}件のサプライヤー`,
+    noResults: "条件に一致するサプライヤーが見つかりません。",
+    noResultsSub: "検索条件を変更してお試しください。",
+  },
+
+  // ── Marketplace ──────────────────────────────────────────────────────────
+  marketplace: {
+    title: "シェフマーケットプレイス",
+    subtitle: "中古厨房機器・備品の売買",
+    searchPlaceholder: "アイテムを検索...",
+    allConditions: "全コンディション",
+    conditions: {
+      "like-new": "新品同様",
+      good: "良好",
+      used: "使用感あり",
+      "needs-repair": "要修理",
+    },
+    sort: {
+      newest: "新着順",
+      priceAsc: "価格: 安い順",
+      priceDesc: "価格: 高い順",
+    },
+    resultCount: (n: number) => `${n}件のアイテム`,
+    noResults: "条件に一致するアイテムが見つかりません。",
+    categories: {
+      kitchen: "厨房機器",
+      tableware: "食器・備品",
+      utensils: "調理器具",
+      furniture: "家具",
+      other: "その他",
+    },
+    areas: {
+      central: "中央エリア",
+      east: "東部エリア",
+      west: "西部エリア",
+      north: "北部エリア",
+      south: "南部エリア",
+    },
+    deliveryOptions: {
+      pickup: "引き取りのみ",
+      delivery: "配送可能",
+      both: "引き取り・配送可",
+    },
+  },
+
+  // ── News ─────────────────────────────────────────────────────────────────
+  news: {
+    title: "業界ニュース",
+    subtitle: "シンガポールF&B業界の最新情報",
+    noArticles: "ニュース記事がまだありません。",
+    noArticlesSub: "近日公開予定です。",
+  },
+
+  // ── Login ────────────────────────────────────────────────────────────────
+  login: {
+    title: "ログイン",
+    subtitle: "F&Bポータルにログインしてください",
+    email: "メールアドレス",
+    password: "パスワード",
+    submit: "ログイン",
+    submitting: "ログイン中...",
+    noAccount: "アカウントをお持ちでないですか？",
+    register: "新規登録",
+    emailNotConfirmedTitle: "メールアドレスの確認が必要です",
+    emailNotConfirmedBody:
+      "登録時に送信した確認メールのリンクをクリックしてからログインしてください。",
+    resendSent: "✔ 確認メールを再送しました。受信トレイをご確認ください。",
+    resendButton: "確認メールを再送する",
+    resendError: "再送信エラー: ",
+  },
+
+  // ── Register ─────────────────────────────────────────────────────────────
+  register: {
+    title: "新規登録",
+    subtitle: "アカウントを作成してください",
+    avatarHint: "クリックしてアバター画像を選択（任意・5MB以下）",
+    avatarError: "アバター画像は5MB以下にしてください。",
+    name: "お名前",
+    namePlaceholder: "山田 太郎",
+    username: "ユーザー名",
+    usernamePlaceholder: "yamada_taro",
+    usernameHint: "英数字とアンダースコアのみ・3〜30文字",
+    email: "メールアドレス",
+    password: "パスワード",
+    passwordPlaceholder: "8文字以上",
+    confirmPassword: "パスワード確認",
+    confirmationNote:
+      "登録後、確認メールをお送りします。メール内のリンクをクリックしてログインしてください。",
+    submit: "アカウント作成",
+    submitting: "登録中...",
+    hasAccount: "すでにアカウントをお持ちですか？",
+    login: "ログイン",
+    errorPasswordMismatch: "パスワードが一致しません。",
+    errorUsernameTooShort: "ユーザー名は3文字以上で入力してください。",
+    confirmationSentTitle: "確認メールを送信しました",
+    confirmationSentBody:
+      "{email} に確認メールを送信しました。メール内のリンクをクリックすると登録が完了します。",
+    confirmationTips: "確認できない場合は：",
+    confirmationTip1: "• 迷惑メールフォルダをご確認ください",
+    confirmationTip2: "• 数分待ってから再確認してください",
+    goToLogin: "ログインページへ",
+  },
+
+  // ── Dashboard ────────────────────────────────────────────────────────────
+  dashboard: {
+    title: "ダッシュボード",
+    greeting: "こんにちは、{name}さん",
+    newListing: "新規出品",
+    tabListings: "出品リスト",
+    tabProfile: "プロフィール設定",
+    statusApproved: "承認済み",
+    statusPending: "審査中",
+    statusRejected: "却下",
+    rejectReason: "却下理由: ",
+    noListings: "出品がありません。",
+    firstListing: "初めての出品",
+    avatarHint: "クリックしてアバターを変更（5MB以下）",
+    avatarChange: "変更",
+    avatarError: "5MB以下の画像を選択してください。",
+    fieldName: "お名前",
+    fieldUsername: "ユーザー名",
+    fieldEmail: "メールアドレス",
+    fieldWhatsapp: "WhatsApp番号",
+    fieldCompany: "会社名",
+    saveProfile: "プロフィールを保存",
+    savedMsg: "保存しました ✓",
+    notConnected: "Supabase未接続",
+  },
+
+  // ── New Item ─────────────────────────────────────────────────────────────
+  newItem: {
+    title: "新規出品",
+    backToDashboard: "ダッシュボード",
+    fieldTitle: "タイトル *",
+    fieldCategory: "カテゴリー *",
+    fieldPrice: "価格 (SGD) *",
+    fieldCondition: "コンディション *",
+    fieldYearsUsed: "使用年数 *",
+    fieldDescription: "説明 *",
+    fieldArea: "エリア *",
+    fieldDelivery: "配送方法",
+    fieldImageUrl: "画像URL（最大5枚、カンマ区切り）",
+    agreeTerms: "利用規約に同意する *",
+    submit: "出品する（審査後に公開）",
+    submitting: "出品中...",
+    successMsg: "出品が完了しました。管理者の承認後に公開されます。",
+    errorMsg: "エラーが発生しました。",
+  },
+
+  // ── Admin Dashboard ──────────────────────────────────────────────────────
+  admin: {
+    title: "管理ダッシュボード",
+    subtitle: "サイト管理・コンテンツ編集",
+    tabSuppliers: "サプライヤー管理",
+    tabApprovals: "マーケット承認",
+    tabNews: "ニュース管理",
+    tabCategories: "カテゴリー管理",
+    tabQR: "QRリダイレクト",
+    tabReports: "レポート",
+    tabAnalytics: "統計",
+  },
+
+  // ── Supplier Card ─────────────────────────────────────────────────────────
+  supplierCard: {
+    viewDetail: "詳細を見る",
+    inquire: "について問い合わせです。",
+  },
+
+  // ── Supplier Detail ──────────────────────────────────────────────────────
+  supplierDetail: {
+    backToList: "サプライヤー一覧",
+    tabAbout: "概要",
+    tabProducts: "商品カタログ",
+    tabCertifications: "認証情報",
+    tabContact: "お問い合わせ",
+    notFound: "サプライヤーが見つかりません。",
+    useNameField: "ja",
+  },
+
+  // ── Marketplace Item ─────────────────────────────────────────────────────
+  marketplaceItem: {
+    backToList: "マーケットプレイス",
+    condition: "コンディション",
+    yearsUsed: "使用年数",
+    area: "エリア",
+    delivery: "配送",
+    seller: "出品者",
+    contactSeller: "出品者に連絡",
+    notFound: "アイテムが見つかりません。",
+    years: "年",
+  },
+
+  // ── News Detail ──────────────────────────────────────────────────────────
+  newsDetail: {
+    backToList: "ニュース",
+    notFound: "記事が見つかりません。",
+  },
+
+  // ── Plans ────────────────────────────────────────────────────────────────
+  plans: {
+    premium: "プレミアム",
+    standard: "スタンダード",
+    basic: "ベーシック",
+    premiumDesc: "最上位表示・全機能・WhatsApp連絡",
+    standardDesc: "上位表示・WhatsApp連絡",
+    basicDesc: "通常掲載",
+    inquire: "このプランについて問い合わせる",
+  },
+};
+
+export default ja;
