@@ -66,6 +66,14 @@ export interface SupplierRow {
   logo: string;
   category: string;
   category_ja: string;
+  category_2?: string;
+  category_2_ja?: string;
+  category_3?: string;
+  category_3_ja?: string;
+  catalog_url?: string;
+  image_2?: string;
+  image_3?: string;
+  whatsapp_contact_name?: string;
   tags: string[];
   area: string;
   area_ja: string;

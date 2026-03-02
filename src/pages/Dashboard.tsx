@@ -44,8 +44,8 @@ const Dashboard = () => {
   }, []);
 
   const tabs = [
-    { id: "mypage",  label: lang === "ja" ? "マイページ"    : "My Page",      icon: User },
-    { id: "profile", label: lang === "ja" ? "プロフィール変更" : "Edit Profile", icon: Settings },
+    { id: "mypage",  label: t.dashboard.tabMyPage,    icon: User },
+    { id: "profile", label: t.dashboard.tabEditProfile, icon: Settings },
   ];
 
   useEffect(() => {
@@ -77,7 +77,7 @@ const Dashboard = () => {
   };
 
   const handleDeleteListing = async (slug: string) => {
-    if (!confirm(lang === "ja" ? "この出品を削除しますか？" : "Delete this listing?")) return;
+    if (!confirm(t.dashboard.deleteListingConfirm)) return;
     await fetch(`/api/marketplace/${slug}`, { method: "DELETE" });
     setListings((prev) => prev.filter((l) => l.slug !== slug));
   };

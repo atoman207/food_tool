@@ -93,13 +93,16 @@ const PLAN_BADGE: Record<string, string> = {
 const PLAN_LABEL: Record<string, string> = { premium: "Premium", standard: "Standard", basic: "Basic" };
 
 function SupplierManager() {
+  const { t } = useTranslation();
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "", name_ja: "", slug: "", category: "seafood", category_ja: "海鮮・鮮魚",
+    category_2: "", category_2_ja: "", category_3: "", category_3_ja: "",
     area: "central", area_ja: "中央エリア", tags: "", description: "", description_ja: "",
-    whatsapp: "", logo: "", certifications: "", about: "", featured: false,
+    whatsapp: "", whatsapp_contact_name: "", logo: "", catalog_url: "", image_2: "", image_3: "",
+    certifications: "", about: "", featured: false,
     plan: "basic" as "basic" | "standard" | "premium",
   });
 
@@ -111,16 +114,24 @@ function SupplierManager() {
   };
 
   const resetForm = () => {
-    setForm({ name: "", name_ja: "", slug: "", category: "seafood", category_ja: "海鮮・鮮魚", area: "central", area_ja: "中央エリア", tags: "", description: "", description_ja: "", whatsapp: "", logo: "", certifications: "", about: "", featured: false, plan: "basic" });
+    setForm({
+      name: "", name_ja: "", slug: "", category: "seafood", category_ja: "海鮮・鮮魚",
+      category_2: "", category_2_ja: "", category_3: "", category_3_ja: "",
+      area: "central", area_ja: "中央エリア", tags: "", description: "", description_ja: "",
+      whatsapp: "", whatsapp_contact_name: "", logo: "", catalog_url: "", image_2: "", image_3: "",
+      certifications: "", about: "", featured: false, plan: "basic",
+    });
     setEditSlug(null);
   };
 
   const handleEdit = (s: any) => {
     setForm({
-      name: s.name, name_ja: s.name_ja, slug: s.slug, category: s.category, category_ja: s.category_ja,
+      name: s.name, name_ja: s.name_ja, slug: s.slug, category: s.category || "", category_ja: s.category_ja || "",
+      category_2: s.category_2 || "", category_2_ja: s.category_2_ja || "", category_3: s.category_3 || "", category_3_ja: s.category_3_ja || "",
       area: s.area, area_ja: s.area_ja, tags: (s.tags || []).join(", "),
-      description: s.description, description_ja: s.description_ja, whatsapp: s.whatsapp,
-      logo: s.logo, certifications: (s.certifications || []).join(", "), about: s.about, featured: s.featured,
+      description: s.description, description_ja: s.description_ja, whatsapp: s.whatsapp || "",
+      whatsapp_contact_name: s.whatsapp_contact_name || "", logo: s.logo || "", catalog_url: s.catalog_url || "", image_2: s.image_2 || "", image_3: s.image_3 || "",
+      certifications: (s.certifications || []).join(", "), about: s.about, featured: s.featured,
       plan: s.plan || "basic",
     });
     setEditSlug(s.slug);
@@ -145,7 +156,7 @@ function SupplierManager() {
   };
 
   const handleDelete = async (slug: string) => {
-    if (!confirm("このサプライヤーを削除しますか？")) return;
+    if (!confirm(t.admin.deleteSupplierConfirm)) return;
     await fetch(`/api/suppliers/${slug}`, { method: "DELETE" });
     fetchSuppliers();
   };
@@ -153,48 +164,60 @@ function SupplierManager() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">サプライヤー管理</h2>
+        <h2 className="text-xl font-bold">{t.admin.supplierManagement}</h2>
         <Button onClick={() => { resetForm(); setShowForm(!showForm); }} className="rounded-xl gap-2">
-          <Plus className="h-4 w-4" /> {showForm ? "閉じる" : "追加"}
+          <Plus className="h-4 w-4" /> {showForm ? t.admin.close : t.admin.add}
         </Button>
       </div>
 
       {showForm && (
         <div className="bg-card border rounded-2xl p-6 mb-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="英語名" value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
-            <InputField label="日本語名" value={form.name_ja} onChange={(v) => setForm((p) => ({ ...p, name_ja: v }))} />
+            <InputField label={t.admin.nameEn} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
+            <InputField label={t.admin.nameJa} value={form.name_ja} onChange={(v) => setForm((p) => ({ ...p, name_ja: v }))} />
           </div>
-          <InputField label="スラッグ (URL)" value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} />
+          <InputField label={t.admin.slug} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} />
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="カテゴリー" value={form.category} onChange={(v) => setForm((p) => ({ ...p, category: v }))} />
-            <InputField label="カテゴリー (日本語)" value={form.category_ja} onChange={(v) => setForm((p) => ({ ...p, category_ja: v }))} />
+            <InputField label={t.admin.category1} value={form.category} onChange={(v) => setForm((p) => ({ ...p, category: v }))} />
+            <InputField label={t.admin.category1Ja} value={form.category_ja} onChange={(v) => setForm((p) => ({ ...p, category_ja: v }))} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="エリア" value={form.area} onChange={(v) => setForm((p) => ({ ...p, area: v }))} />
-            <InputField label="エリア (日本語)" value={form.area_ja} onChange={(v) => setForm((p) => ({ ...p, area_ja: v }))} />
+            <InputField label={t.admin.category2} value={form.category_2} onChange={(v) => setForm((p) => ({ ...p, category_2: v }))} />
+            <InputField label={t.admin.category2Ja} value={form.category_2_ja} onChange={(v) => setForm((p) => ({ ...p, category_2_ja: v }))} />
           </div>
-          <InputField label="タグ (カンマ区切り)" value={form.tags} onChange={(v) => setForm((p) => ({ ...p, tags: v }))} />
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={t.admin.category3} value={form.category_3} onChange={(v) => setForm((p) => ({ ...p, category_3: v }))} />
+            <InputField label={t.admin.category3Ja} value={form.category_3_ja} onChange={(v) => setForm((p) => ({ ...p, category_3_ja: v }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={t.admin.area} value={form.area} onChange={(v) => setForm((p) => ({ ...p, area: v }))} />
+            <InputField label={t.admin.areaJa} value={form.area_ja} onChange={(v) => setForm((p) => ({ ...p, area_ja: v }))} />
+          </div>
+          <InputField label={t.admin.tags} value={form.tags} onChange={(v) => setForm((p) => ({ ...p, tags: v }))} />
           <InputField label="WhatsApp" value={form.whatsapp} onChange={(v) => setForm((p) => ({ ...p, whatsapp: v }))} />
-          <InputField label="ロゴURL" value={form.logo} onChange={(v) => setForm((p) => ({ ...p, logo: v }))} />
-          <InputField label="認証 (カンマ区切り)" value={form.certifications} onChange={(v) => setForm((p) => ({ ...p, certifications: v }))} />
+          <InputField label={t.admin.contactNameWhatsApp} value={form.whatsapp_contact_name} onChange={(v) => setForm((p) => ({ ...p, whatsapp_contact_name: v }))} />
+          <ImageField label={t.admin.image1} value={form.logo} onChange={(v) => setForm((p) => ({ ...p, logo: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
+          <InputField label={t.admin.catalogUrl} value={form.catalog_url} onChange={(v) => setForm((p) => ({ ...p, catalog_url: v }))} placeholder="https://..." />
+          <ImageField label={t.admin.image2} value={form.image_2} onChange={(v) => setForm((p) => ({ ...p, image_2: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
+          <ImageField label={t.admin.image3} value={form.image_3} onChange={(v) => setForm((p) => ({ ...p, image_3: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
+          <InputField label={t.admin.certifications} value={form.certifications} onChange={(v) => setForm((p) => ({ ...p, certifications: v }))} />
           <div>
-            <label className="text-sm font-medium block mb-1.5">概要 (日本語)</label>
+            <label className="text-sm font-medium block mb-1.5">{t.admin.aboutJa}</label>
             <textarea value={form.about} onChange={(e) => setForm((p) => ({ ...p, about: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" />
           </div>
           <div>
-            <label className="text-sm font-medium block mb-1.5">掲載プラン</label>
+            <label className="text-sm font-medium block mb-1.5">{t.admin.planLabel}</label>
             <select
               value={form.plan}
               onChange={(e) => setForm((p) => ({ ...p, plan: e.target.value as "basic" | "standard" | "premium" }))}
               className="h-11 px-4 rounded-lg border bg-background text-sm w-full"
             >
-              <option value="basic">Basic — 基本掲載（無料）</option>
-              <option value="standard">Standard — WhatsApp表示・上位表示</option>
-              <option value="premium">Premium — 最上位表示・全機能</option>
+              <option value="basic">{t.admin.planBasic}</option>
+              <option value="standard">{t.admin.planStandard}</option>
+              <option value="premium">{t.admin.planPremium}</option>
             </select>
           </div>
-          <Button onClick={handleSave} className="rounded-xl gap-2"><Save className="h-4 w-4" /> {editSlug ? "更新" : "作成"}</Button>
+          <Button onClick={handleSave} className="rounded-xl gap-2"><Save className="h-4 w-4" /> {editSlug ? t.admin.update : t.admin.create}</Button>
         </div>
       )}
 
@@ -209,7 +232,7 @@ function SupplierManager() {
                   {PLAN_LABEL[s.plan || "basic"]}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">{s.category_ja} · {s.area_ja} · {s.views} views</p>
+              <p className="text-xs text-muted-foreground">{[s.category_ja, s.category_2_ja, s.category_3_ja].filter(Boolean).join(" · ") || "—"} · {s.area_ja} · {s.views} views</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleEdit(s)}><Edit2 className="h-3 w-3" /></Button>
@@ -570,6 +593,51 @@ function AnalyticsPanel() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ImageField({
+  label,
+  value,
+  onChange,
+  hint,
+  uploadLabel,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint: string;
+  uploadLabel: string;
+}) {
+  return (
+    <div>
+      <label className="text-sm font-medium block mb-1.5">{label}</label>
+      <div className="flex flex-wrap gap-2 items-center">
+        <input
+          type="file"
+          accept="image/*,.pdf"
+          className="text-sm"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const fd = new FormData();
+            fd.append("file", file);
+            const res = await fetch("/api/upload", { method: "POST", body: fd });
+            const j = await res.json();
+            if (j?.url) onChange(j.url);
+          }}
+        />
+        <span className="text-xs text-muted-foreground">{uploadLabel}</span>
+      </div>
+      <input
+        type="url"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="https://..."
+        className="mt-1 w-full h-10 px-3 rounded-lg border bg-background text-sm"
+      />
+      <p className="text-xs text-muted-foreground mt-1">{hint}</p>
     </div>
   );
 }

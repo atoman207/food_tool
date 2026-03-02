@@ -22,10 +22,11 @@ export async function GET(req: NextRequest) {
 
   if (!supabase) {
     let data = mockSuppliers.map(normaliseMock);
-    if (category) data = data.filter((s) => s.category === category);
+    if (category) data = data.filter((s) => s.category === category || (s as any).category_2 === category || (s as any).category_3 === category);
     if (area) data = data.filter((s) => s.area === area);
     if (q) data = data.filter((s) =>
       s.name_ja.includes(q) || s.description_ja.includes(q) || s.category_ja.includes(q)
+        || (s as any).category_2_ja?.includes(q) || (s as any).category_3_ja?.includes(q)
     );
     return NextResponse.json(data);
   }
@@ -33,9 +34,9 @@ export async function GET(req: NextRequest) {
   // Fetch all suppliers; tier ordering + daily-seeded shuffle is applied client-side
   // via sortSuppliersByPlan() so every tier gets fair, rotating exposure.
   let query = supabase.from("suppliers").select("*").order("views", { ascending: false });
-  if (category) query = query.eq("category", category);
+  if (category) query = query.or(`category.eq.${category},category_2.eq.${category},category_3.eq.${category}`);
   if (area) query = query.eq("area", area);
-  if (q) query = query.or(`name_ja.ilike.%${q}%,description_ja.ilike.%${q}%,category_ja.ilike.%${q}%`);
+  if (q) query = query.or(`name_ja.ilike.%${q}%,description_ja.ilike.%${q}%,category_ja.ilike.%${q}%,category_2_ja.ilike.%${q}%,category_3_ja.ilike.%${q}%`);
 
   const { data, error } = await query;
   if (error || !data || data.length === 0) {

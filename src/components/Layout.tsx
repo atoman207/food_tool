@@ -111,7 +111,7 @@ function UserMenu() {
               )}
               {isAdmin && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-0.5">
-                  <ShieldCheck className="h-2.5 w-2.5" /> 管理者
+                  <ShieldCheck className="h-2.5 w-2.5" /> {t.nav.adminBadge}
                 </span>
               )}
             </div>
@@ -125,7 +125,7 @@ function UserMenu() {
               className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors"
             >
               <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-              <span>{lang === "ja" ? "マイページ" : "My Page"}</span>
+              <span>{t.nav.myPage}</span>
             </Link>
             <Link
               href="/dashboard?tab=profile"
@@ -133,7 +133,7 @@ function UserMenu() {
               className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors"
             >
               <Settings className="h-4 w-4 text-muted-foreground" />
-              <span>{lang === "ja" ? "プロフィール変更" : "Edit Profile"}</span>
+              <span>{t.nav.editProfile}</span>
             </Link>
             {isAdmin && (
               <Link
@@ -142,7 +142,7 @@ function UserMenu() {
                 className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors"
               >
                 <ShieldCheck className="h-4 w-4 text-primary" />
-                <span className="text-primary font-medium">{lang === "ja" ? "管理者画面" : "Admin Panel"}</span>
+                <span className="text-primary font-medium">{t.nav.adminPanel}</span>
               </Link>
             )}
             <div className="my-1 border-t" />
@@ -151,7 +151,7 @@ function UserMenu() {
               className="flex items-center gap-3 px-4 py-3 text-sm text-destructive hover:bg-destructive/8 w-full transition-colors"
             >
               <LogOut className="h-4 w-4" />
-              <span>{lang === "ja" ? "ログアウト" : t.nav.logout}</span>
+              <span>{t.nav.logout}</span>
             </button>
           </div>
         </div>
@@ -271,7 +271,7 @@ export function Header() {
                       <p className="text-xs text-muted-foreground truncate">@{profile.username}</p>
                     )}
                     {isAdmin && (
-                      <span className="text-[10px] font-bold text-primary">管理者</span>
+                      <span className="text-[10px] font-bold text-primary">{t.nav.adminBadge}</span>
                     )}
                   </div>
                 </div>
@@ -282,7 +282,7 @@ export function Header() {
                 >
                   <span className="flex items-center gap-2">
                     <LayoutDashboard className="h-4 w-4" />
-                    {lang === "ja" ? "マイページ" : "My Page"}
+                    {t.nav.myPage}
                   </span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Link>
@@ -293,7 +293,7 @@ export function Header() {
                 >
                   <span className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
-                    {lang === "ja" ? "プロフィール変更" : "Edit Profile"}
+                    {t.nav.editProfile}
                   </span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Link>
@@ -305,7 +305,7 @@ export function Header() {
                   >
                     <span className="flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4" />
-                      {lang === "ja" ? "管理者画面" : "Admin Panel"}
+                      {t.nav.adminPanel}
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </Link>
@@ -316,7 +316,7 @@ export function Header() {
                 >
                   <span className="flex items-center gap-2">
                     <LogOut className="h-4 w-4" />
-                    {lang === "ja" ? "ログアウト" : t.nav.logout}
+                    {t.nav.logout}
                   </span>
                 </button>
               </>

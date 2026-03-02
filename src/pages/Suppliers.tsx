@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, LayoutGrid, List } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Layout from "@/components/Layout";
 import { SupplierCard } from "@/components/SupplierCard";
@@ -18,6 +18,7 @@ const Suppliers = () => {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [tagFilters, setTagFilters] = useState({ smallLot: false, japanese: false, halal: false });
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { t } = useTranslation();
 
   const { data: suppliers } = useFetch<SupplierRow[]>("/api/suppliers");
@@ -36,10 +37,17 @@ const Suppliers = () => {
   const toggleArea = (val: string) =>
     setSelectedAreas((prev) => prev.includes(val) ? prev.filter((a) => a !== val) : [...prev, val]);
 
+  const supplierCategories = (s: SupplierRow) => [s.category, s.category_2, s.category_3].filter(Boolean);
   const filtered = useMemo(() => {
     const base = (suppliers || []).filter((s) => {
-      if (query && !s.name_ja.includes(query) && !s.description_ja.includes(query) && !s.category_ja.includes(query) && !s.name.toLowerCase().includes(query.toLowerCase())) return false;
-      if (selectedCategories.length && !selectedCategories.includes(s.category)) return false;
+      if (query) {
+        const q = query.toLowerCase();
+        const matchName = s.name_ja?.includes(query) || s.name?.toLowerCase().includes(q);
+        const matchDesc = s.description_ja?.includes(query) || s.description?.toLowerCase().includes(q);
+        const matchCat = [s.category_ja, s.category_2_ja, s.category_3_ja, s.category, s.category_2, s.category_3].some((c) => c && (String(c).includes(query) || String(c).toLowerCase().includes(q)));
+        if (!matchName && !matchDesc && !matchCat) return false;
+      }
+      if (selectedCategories.length && !selectedCategories.some((c) => supplierCategories(s).includes(c))) return false;
       if (selectedAreas.length && !selectedAreas.includes(s.area)) return false;
       if (tagFilters.smallLot && !s.tags.includes("少量対応")) return false;
       if (tagFilters.japanese && !s.tags.includes("日本語対応")) return false;
@@ -130,9 +138,29 @@ const Suppliers = () => {
             </div>
           )}
           <div className="flex-1">
-            <p className="text-sm text-muted-foreground mb-4 font-medium">{t.suppliers.resultCount(filtered.length)}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filtered.map((s) => <SupplierCard key={s.id} supplier={s} />)}
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <p className="text-sm text-muted-foreground font-medium">{t.suppliers.resultCount(filtered.length)}</p>
+              <div className="flex border border-border rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2.5 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                  title={t.suppliers.viewGrid}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  className={`p-2.5 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                  title={t.suppliers.viewList}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <div className={viewMode === "list" ? "space-y-3" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"}>
+              {filtered.map((s) => <SupplierCard key={s.id} supplier={s} variant={viewMode} />)}
             </div>
             {filtered.length === 0 && (
               <div className="text-center py-20 text-muted-foreground">

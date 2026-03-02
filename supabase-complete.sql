@@ -59,6 +59,15 @@ CREATE TABLE IF NOT EXISTS public.suppliers (
 -- Add plan columns if table already existed without them
 ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS plan            text NOT NULL DEFAULT 'basic' CHECK (plan IN ('basic','standard','premium'));
 ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS plan_expires_at timestamptz;
+-- Up to 3 categories, catalog URL, extra images, WhatsApp contact name
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS category_2      text DEFAULT '';
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS category_2_ja   text DEFAULT '';
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS category_3      text DEFAULT '';
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS category_3_ja   text DEFAULT '';
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS catalog_url     text DEFAULT '';
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS image_2         text DEFAULT '';
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS image_3         text DEFAULT '';
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS whatsapp_contact_name text DEFAULT '';
 
 -- Supplier Products
 CREATE TABLE IF NOT EXISTS public.supplier_products (
@@ -286,6 +295,17 @@ CREATE POLICY "Avatar owner update"
 CREATE POLICY "Avatar owner delete"
   ON storage.objects FOR DELETE
   USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+-- Logos bucket (for supplier logos; upload via API with service role)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'logos', 'logos', true, 5242880,
+  ARRAY['image/jpeg','image/png','image/webp','image/gif']
+)
+ON CONFLICT (id) DO UPDATE SET public = true;
+DROP POLICY IF EXISTS "Logos public read" ON storage.objects;
+CREATE POLICY "Logos public read"
+  ON storage.objects FOR SELECT USING (bucket_id = 'logos');
 
 -- ──────────────────────────────────────────────────────────────
 -- 6. SEED — settings & categories

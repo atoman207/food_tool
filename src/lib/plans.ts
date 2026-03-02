@@ -14,6 +14,8 @@ export interface PlanConfig {
   showWhatsApp: boolean;
   /** Max product images shown on detail page */
   maxProducts: number;
+  /** Logo/image size on card — Tailwind width/height class (e.g. w-14 h-14) */
+  cardImageSize: string;
 }
 
 export const PLANS: Record<PlanTier, PlanConfig> = {
@@ -24,9 +26,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     labelJa: "プレミアム",
     badgeClass:
       "bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-400",
-    borderClass: "border-amber-400 shadow-amber-100 dark:shadow-amber-900/20",
+    borderClass: "border-2 border-amber-400 shadow-lg shadow-amber-100 dark:shadow-amber-900/20",
     showWhatsApp: true,
     maxProducts: 12,
+    cardImageSize: "w-20 h-20",
   },
   standard: {
     tier: "standard",
@@ -35,9 +38,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     labelJa: "スタンダード",
     badgeClass:
       "bg-sky-100 text-sky-700 border border-sky-300 dark:bg-sky-900/30 dark:text-sky-400",
-    borderClass: "border-sky-300",
+    borderClass: "border-2 border-sky-300",
     showWhatsApp: true,
     maxProducts: 6,
+    cardImageSize: "w-16 h-16",
   },
   basic: {
     tier: "basic",
@@ -49,6 +53,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     borderClass: "",
     showWhatsApp: false,
     maxProducts: 3,
+    cardImageSize: "w-12 h-12",
   },
 };
 

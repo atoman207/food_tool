@@ -24,8 +24,15 @@ const SupplierDetail = () => {
   ];
 
   const displayName = lang === "ja" ? (supplier?.name_ja || supplier?.name) : (supplier?.name || supplier?.name_ja);
-  const displayCategory = lang === "ja" ? (supplier?.category_ja || supplier?.category) : (supplier?.category || supplier?.category_ja);
+  const displayCategories = [
+    lang === "ja" ? (supplier?.category_ja || supplier?.category) : (supplier?.category || supplier?.category_ja),
+    lang === "ja" ? (supplier?.category_2_ja || supplier?.category_2) : (supplier?.category_2 || supplier?.category_2_ja),
+    lang === "ja" ? (supplier?.category_3_ja || supplier?.category_3) : (supplier?.category_3 || supplier?.category_3_ja),
+  ].filter(Boolean) as string[];
   const displayArea = lang === "ja" ? (supplier?.area_ja || supplier?.area) : (supplier?.area || supplier?.area_ja);
+  const galleryImages = [supplier?.logo, supplier?.image_2, supplier?.image_3].filter(Boolean) as string[];
+  const catalogUrl = supplier?.catalog_url?.trim();
+  const contactName = supplier?.whatsapp_contact_name?.trim();
   const contactMsg = lang === "ja"
     ? `${displayName}について問い合わせです。`
     : `I'd like to inquire about ${displayName}.`;
@@ -58,12 +65,18 @@ const SupplierDetail = () => {
         </Link>
         <div className="bg-card border rounded-2xl p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <img src={supplier.logo} alt={displayName} className="w-28 h-28 rounded-2xl object-cover border shadow-sm" />
+            <div className="flex gap-3 flex-shrink-0">
+              {galleryImages.slice(0, 3).map((src, i) => (
+                <img key={i} src={src} alt={`${displayName} ${i + 1}`} className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border shadow-sm" />
+              ))}
+            </div>
             <div className="flex-1">
               <h1 className="text-2xl font-black tracking-tight">{displayName}</h1>
               <p className="text-sm text-muted-foreground mt-1">{lang === "ja" ? supplier.name : supplier.name_ja}</p>
               <div className="flex flex-wrap gap-2 mt-3">
-                <span className="tag-badge">{displayCategory}</span>
+                {displayCategories.map((cat) => (
+                  <span key={cat} className="tag-badge">{cat}</span>
+                ))}
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <MapPin className="h-3 w-3" /> {displayArea}
                 </span>
@@ -71,6 +84,7 @@ const SupplierDetail = () => {
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {(supplier.tags || []).map((tag: string) => <span key={tag} className="tag-badge">{tag}</span>)}
               </div>
+              {contactName && <p className="text-xs text-muted-foreground mt-1">{t.supplierDetail.contactLabel}{contactName}</p>}
             </div>
             <div className="hidden sm:block">
               <WhatsAppButton phone={supplier.whatsapp} message={contactMsg} size="lg" />
@@ -97,16 +111,25 @@ const SupplierDetail = () => {
             </div>
           )}
           {activeTab === "products" && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {products.map((p: any) => (
-                <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border rounded-2xl overflow-hidden text-left card-hover">
-                  <div className="aspect-[4/3] overflow-hidden"><img src={p.image} alt={p.name} className="w-full h-full object-cover" /></div>
-                  <div className="p-4">
-                    <p className="text-sm font-semibold">{p.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{moqLabel}{p.moq}</p>
-                  </div>
-                </button>
-              ))}
+            <div className="space-y-6">
+              {catalogUrl && (
+                <div className="p-4 bg-muted/50 rounded-2xl border">
+                  <a href={catalogUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline inline-flex items-center gap-2">
+                    {t.supplierDetail.catalogLink} ↗
+                  </a>
+                </div>
+              )}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                {products.map((p: any) => (
+                  <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border rounded-2xl overflow-hidden text-left card-hover">
+                    <div className="aspect-[4/3] overflow-hidden"><img src={p.image} alt={p.name} className="w-full h-full object-cover" /></div>
+                    <div className="p-4">
+                      <p className="text-sm font-semibold">{p.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{moqLabel}{p.moq}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           {activeTab === "certifications" && (
@@ -122,7 +145,12 @@ const SupplierDetail = () => {
             <div className="max-w-md space-y-4">
               <div className="flex items-center gap-3 p-5 bg-card border rounded-2xl">
                 <Phone className="h-5 w-5 text-muted-foreground" />
-                <div><p className="text-xs text-muted-foreground">WhatsApp</p><p className="text-sm font-semibold">+{supplier.whatsapp}</p></div>
+                <div>
+                  {contactName && <p className="text-xs text-muted-foreground">{t.supplierDetail.contactLabel}</p>}
+                  {contactName && <p className="text-sm font-semibold">{contactName}</p>}
+                  <p className="text-xs text-muted-foreground mt-1">WhatsApp</p>
+                  <p className="text-sm font-semibold">+{supplier.whatsapp}</p>
+                </div>
               </div>
               <WhatsAppButton phone={supplier.whatsapp} message={contactMsg} fullWidth size="lg" />
             </div>

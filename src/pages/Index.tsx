@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Search, ArrowRight, Store, ShoppingBag, TrendingUp, Sparkles } from "lucide-react";
+import { Search, ArrowRight, ShoppingBag, TrendingUp, Sparkles } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
@@ -136,38 +136,7 @@ const Index = () => {
         </section>
       )}
 
-      <section className="container py-10">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <Link href="/suppliers" className="group block">
-            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
-                <Search className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">{t.home.card1Title}</h3>
-              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card1Sub}</p>
-            </div>
-          </Link>
-          <Link href="/suppliers" className="group block">
-            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
-                <Store className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">{t.home.card2Title}</h3>
-              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card2Sub}</p>
-            </div>
-          </Link>
-          <Link href="/marketplace" className="group block">
-            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
-                <ShoppingBag className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">{t.home.card3Title}</h3>
-              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card3Sub}</p>
-            </div>
-          </Link>
-        </div>
-      </section>
-
+      {/* ① 人気サプライヤー first */}
       <section className="bg-[#F8F9FA] py-10 md:py-12">
         <div className="container">
           <div className="flex items-center justify-between mb-6">
@@ -184,6 +153,30 @@ const Index = () => {
               : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
             }
           </div>
+        </div>
+      </section>
+
+      {/* ② カテゴリーで探す・シェフマーケット — two cards only */}
+      <section className="container py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <Link href="/suppliers" className="group block">
+            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                <Search className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">{t.home.card1Title}</h3>
+              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card1Sub}</p>
+            </div>
+          </Link>
+          <Link href="/marketplace" className="group block">
+            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                <ShoppingBag className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">{t.home.card3Title}</h3>
+              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card3Sub}</p>
+            </div>
+          </Link>
         </div>
       </section>
 
