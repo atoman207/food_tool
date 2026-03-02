@@ -642,11 +642,11 @@ function ImageField({
   );
 }
 
-function InputField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function InputField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div>
       <label className="text-sm font-medium block mb-1.5">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
     </div>
   );
 }
