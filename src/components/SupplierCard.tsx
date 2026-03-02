@@ -36,10 +36,11 @@ interface SupplierCardProps {
 function PlanBadge({ plan, lang }: { plan?: string | null; lang: string }) {
   const cfg = getPlanConfig(plan);
   if (cfg.tier === "basic") return null;
+  const label = (lang === "ja" ? cfg.badgeLabelJa ?? cfg.labelJa : cfg.badgeLabelEn ?? cfg.labelEn);
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${cfg.badgeClass}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${cfg.badgeClass}`}>
       {cfg.tier === "premium" ? <Crown className="h-2.5 w-2.5" /> : <Star className="h-2.5 w-2.5" />}
-      {lang === "ja" ? cfg.labelJa : cfg.labelEn}
+      {label}
     </span>
   );
 }
@@ -71,9 +72,8 @@ export function SupplierCard({ supplier, variant = "grid" }: SupplierCardProps) 
       : (supplier.description || supplier.description_ja || "");
 
   const isList = variant === "list";
-  const isPremium = supplier.plan === "premium";
   const imageSizeClass = isList ? "w-12 h-12" : cfg.cardImageSize;
-  const borderClass = isPremium ? "border-amber-400 shadow-amber-100/50 dark:shadow-amber-900/20" : (cfg.borderClass || "border-border");
+  const wrapperClass = `${cfg.borderClass} ${cfg.cardWrapperClass}`;
 
   const cardContent = (
     <div className={`p-3 ${isList ? "flex flex-row items-center gap-4 w-full" : ""}`}>
@@ -88,7 +88,7 @@ export function SupplierCard({ supplier, variant = "grid" }: SupplierCardProps) 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-1 mb-0.5">
             <Link href={`/suppliers/${supplier.slug}`} className="hover:underline min-w-0">
-              <h3 className={`font-medium leading-snug line-clamp-2 ${isList ? "text-sm" : supplier.plan === "premium" ? "text-[16px]" : "text-[15px]"}`}>{displayName}</h3>
+              <h3 className={`leading-snug line-clamp-2 ${isList ? "text-sm font-medium" : cfg.titleClass}`}>{displayName}</h3>
             </Link>
             <PlanBadge plan={supplier.plan} lang={lang} />
           </div>
@@ -113,7 +113,7 @@ export function SupplierCard({ supplier, variant = "grid" }: SupplierCardProps) 
       </div>
       <div className={`flex gap-2 ${isList ? "flex-shrink-0" : ""}`}>
         <Link href={`/suppliers/${supplier.slug}`} className={isList ? "" : "flex-1"}>
-          <button className={`rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition-all duration-200 active:scale-[0.98] ${isList ? "h-8 px-3" : "w-full h-9"}`}>
+          <button className={`rounded-xl border transition-all duration-200 active:scale-[0.98] ${isList ? "h-8 px-3" : "w-full"} ${cfg.ctaClass}`}>
             {t.supplierCard.viewDetail}
           </button>
         </Link>
@@ -129,7 +129,7 @@ export function SupplierCard({ supplier, variant = "grid" }: SupplierCardProps) 
   );
 
   return (
-    <div className={`group bg-card rounded-xl overflow-hidden shadow-card card-hover border ${borderClass} ${isList ? "flex flex-row items-center" : ""}`}>
+    <div className={`group bg-card rounded-xl overflow-hidden shadow-card card-hover border ${wrapperClass} ${isList ? "flex flex-row items-center" : ""}`}>
       {cardContent}
     </div>
   );

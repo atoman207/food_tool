@@ -6,10 +6,19 @@ export interface PlanConfig {
   weight: number;
   labelEn: string;
   labelJa: string;
+  /** Optional short badge label (e.g. "Most Popular") — shown in addition to plan name */
+  badgeLabelEn?: string;
+  badgeLabelJa?: string;
   /** Tailwind classes for the badge */
   badgeClass: string;
-  /** Tailwind border classes applied to the card */
+  /** Tailwind border + shadow classes applied to the card */
   borderClass: string;
+  /** Extra wrapper classes: size, elevation (e.g. premium = larger, deeper shadow) */
+  cardWrapperClass: string;
+  /** Title font: larger + bold for premium, medium for basic */
+  titleClass: string;
+  /** CTA (View Details button) style: prominent for premium, subtle for basic */
+  ctaClass: string;
   /** Show WhatsApp button (basic hides it to encourage upgrade) */
   showWhatsApp: boolean;
   /** Max product images shown on detail page */
@@ -24,9 +33,14 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     weight: 3,
     labelEn: "Premium",
     labelJa: "プレミアム",
+    badgeLabelEn: "Most Popular",
+    badgeLabelJa: "人気No.1",
     badgeClass:
-      "bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-400",
-    borderClass: "border-2 border-amber-400 shadow-lg shadow-amber-100 dark:shadow-amber-900/20",
+      "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-2 border-amber-400 dark:border-amber-500 font-bold",
+    borderClass: "border-2 border-amber-400 dark:border-amber-500",
+    cardWrapperClass: "shadow-xl shadow-amber-200/40 dark:shadow-amber-900/30 ring-1 ring-amber-400/30",
+    titleClass: "text-base font-bold",
+    ctaClass: "bg-primary text-primary-foreground border-primary hover:bg-primary/90 font-bold h-10 text-sm",
     showWhatsApp: true,
     maxProducts: 12,
     cardImageSize: "w-20 h-20",
@@ -36,9 +50,14 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     weight: 2,
     labelEn: "Standard",
     labelJa: "スタンダード",
+    badgeLabelEn: "Recommended",
+    badgeLabelJa: "おすすめ",
     badgeClass:
-      "bg-sky-100 text-sky-700 border border-sky-300 dark:bg-sky-900/30 dark:text-sky-400",
-    borderClass: "border-2 border-sky-300",
+      "bg-primary/10 text-primary border border-primary/40 dark:bg-primary/20 dark:text-primary dark:border-primary/50 font-semibold",
+    borderClass: "border-2 border-primary/50",
+    cardWrapperClass: "shadow-md shadow-primary/10 dark:shadow-primary/20",
+    titleClass: "text-[15px] font-semibold",
+    ctaClass: "border-primary text-primary hover:bg-primary/10 font-semibold h-9 text-sm",
     showWhatsApp: true,
     maxProducts: 6,
     cardImageSize: "w-16 h-16",
@@ -48,9 +67,11 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     weight: 1,
     labelEn: "Basic",
     labelJa: "ベーシック",
-    badgeClass:
-      "bg-muted text-muted-foreground border border-border",
-    borderClass: "",
+    badgeClass: "bg-muted text-muted-foreground border border-border",
+    borderClass: "border border-border",
+    cardWrapperClass: "shadow-sm",
+    titleClass: "text-sm font-medium",
+    ctaClass: "border-border text-muted-foreground hover:bg-muted hover:text-foreground h-9 text-xs font-medium",
     showWhatsApp: false,
     maxProducts: 3,
     cardImageSize: "w-12 h-12",
