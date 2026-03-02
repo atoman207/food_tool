@@ -43,7 +43,7 @@ const ja: Translations = {
     adminPanel: "管理者画面",
     adminBadge: "管理者",
     favoriteSuppliers: "お気に入りサプライヤー",
-    about: "About",
+    about: "このサイトについて",
     contact: "お問い合わせ",
   },
   footer: {
