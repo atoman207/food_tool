@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import logoImage from "@/assets/logo.png";
 import {
   Menu, X, ChevronRight, ChevronDown,
-  User, LogOut, LayoutDashboard, ShieldCheck, Settings,
+  User, LogOut, LayoutDashboard, ShieldCheck, Settings, Globe,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,9 +34,21 @@ function AvatarBadge({ src, alt, size = 32 }: { src?: string | null; alt: string
   );
 }
 
-/** EN / 日本語 language toggle */
-function LangToggle() {
+/** EN / 日本語 language toggle. On mobile use compact={true} for globe-only. */
+function LangToggle({ compact = false }: { compact?: boolean }) {
   const { lang, setLang } = useTranslation();
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={() => setLang(lang === "en" ? "ja" : "en")}
+        className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        aria-label={lang === "en" ? "Switch to 日本語" : "Switch to English"}
+      >
+        <Globe className="h-5 w-5" />
+      </button>
+    );
+  }
   return (
     <div className="flex border overflow-hidden text-xs font-bold flex-shrink-0">
       <button
@@ -64,10 +76,10 @@ function LangToggle() {
   );
 }
 
-/** User menu dropdown — avatar + name, then My Page / Profile / Logout */
-function UserMenu() {
+/** User menu dropdown — avatar + name (or avatar-only when compact), then My Page / Profile / Logout */
+function UserMenu({ compact = false }: { compact?: boolean }) {
   const { user, profile, signOut } = useAuth();
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -82,20 +94,29 @@ function UserMenu() {
   const isAdmin = profile?.role === "admin";
   const displayName = profile?.username ? `@${profile.username}` : (profile?.name || t.nav.user);
   const avatarSrc = profile?.avatar_url || null;
+  const hoverName = profile?.name || profile?.username || t.nav.user;
 
   return (
     <div className="relative" ref={ref}>
-      {/* Trigger */}
+      {/* Trigger: compact = avatar only with title for hover name */}
       <button
+        type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-2 border border-transparent hover:border-border hover:bg-muted transition-all duration-150"
+        title={hoverName}
+        className={`flex items-center border border-transparent hover:border-border hover:bg-muted transition-all duration-150 ${
+          compact ? "p-1.5 rounded-full" : "gap-2 px-3 py-2"
+        }`}
       >
-        <AvatarBadge src={avatarSrc} alt={displayName} size={30} />
-        <span className="max-w-[110px] truncate text-sm font-semibold hidden sm:block">{displayName}</span>
-        {isAdmin && <ShieldCheck className="h-3.5 w-3.5 text-primary hidden sm:block" />}
-        <ChevronDown
-          className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
+        <AvatarBadge src={avatarSrc} alt={displayName} size={compact ? 32 : 30} />
+        {!compact && (
+          <>
+            <span className="max-w-[110px] truncate text-sm font-semibold hidden sm:block">{displayName}</span>
+            {isAdmin && <ShieldCheck className="h-3.5 w-3.5 text-primary hidden sm:block" />}
+            <ChevronDown
+              className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            />
+          </>
+        )}
       </button>
 
       {/* Dropdown panel */}
@@ -163,17 +184,14 @@ function UserMenu() {
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const { user, profile, signOut } = useAuth();
-  const { t, lang } = useTranslation();
+  const { user } = useAuth();
+  const { t } = useTranslation();
 
   const navItems = [
     { label: t.nav.suppliers,  path: "/suppliers" },
     { label: t.nav.marketplace, path: "/marketplace" },
     { label: t.nav.news,       path: "/news" },
   ];
-
-  const isAdmin = profile?.role === "admin";
-  const displayName = profile?.username ? `@${profile.username}` : (profile?.name || t.nav.user);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-header">
@@ -232,16 +250,27 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile: lang + hamburger */}
-        <div className="md:hidden flex items-center gap-2 ml-auto">
-          <LangToggle />
-          <button className="p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+        {/* Mobile: globe + avatar (if logged in) + menu */}
+        <div className="md:hidden flex items-center gap-1 ml-auto">
+          <LangToggle compact />
+          {user && (
+            <div className="flex items-center">
+              <UserMenu compact />
+            </div>
+          )}
+          <button
+            type="button"
+            className="p-2 rounded-lg text-foreground hover:bg-muted transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-expanded={mobileOpen}
+            aria-label="Toggle menu"
+          >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — header menu only (Suppliers, Marketplace, News) */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-white animate-fade-in">
           <nav className="container py-4 space-y-0.5">
@@ -258,88 +287,6 @@ export function Header() {
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </Link>
             ))}
-
-            <div className="border-t border-border my-2" />
-
-            {user ? (
-              <>
-                <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border-l-4 border-primary">
-                  <AvatarBadge src={profile?.avatar_url || null} alt={displayName} size={44} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold truncate">{profile?.name || t.nav.user}</p>
-                    {profile?.username && (
-                      <p className="text-xs text-muted-foreground truncate">@{profile.username}</p>
-                    )}
-                    {isAdmin && (
-                      <span className="text-[10px] font-bold text-primary">{t.nav.adminBadge}</span>
-                    )}
-                  </div>
-                </div>
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between px-4 py-3.5 text-sm font-medium hover:bg-muted"
-                >
-                  <span className="flex items-center gap-2">
-                    <LayoutDashboard className="h-4 w-4" />
-                    {t.nav.myPage}
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-                <Link
-                  href="/dashboard?tab=profile"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between px-4 py-3.5 text-sm font-medium hover:bg-muted"
-                >
-                  <span className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    {t.nav.editProfile}
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-                {isAdmin && (
-                  <Link
-                    href="/admin-dashboard"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-between px-4 py-3.5 text-sm font-medium hover:bg-muted text-primary"
-                  >
-                    <span className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4" />
-                      {t.nav.adminPanel}
-                    </span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                )}
-                <button
-                  onClick={() => { signOut(); setMobileOpen(false); }}
-                  className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-medium hover:bg-muted text-destructive"
-                >
-                  <span className="flex items-center gap-2">
-                    <LogOut className="h-4 w-4" />
-                    {t.nav.logout}
-                  </span>
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between px-4 py-3.5 text-sm font-medium hover:bg-muted"
-                >
-                  {t.nav.login}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-                <Link
-                  href="/register"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between px-4 py-3.5 text-sm font-bold bg-primary/5 text-primary hover:bg-primary/10"
-                >
-                  {t.nav.register}
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              </>
-            )}
           </nav>
         </div>
       )}
