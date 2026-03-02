@@ -31,6 +31,7 @@ interface SupplierCardProps {
     plan?: string | null;
   };
   variant?: "grid" | "list";
+  rank?: number;
 }
 
 function PlanBadge({ plan, lang }: { plan?: string | null; lang: string }) {
@@ -45,7 +46,7 @@ function PlanBadge({ plan, lang }: { plan?: string | null; lang: string }) {
   );
 }
 
-export function SupplierCard({ supplier, variant = "grid" }: SupplierCardProps) {
+export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardProps) {
   const { t, lang } = useTranslation();
   const cfg = getPlanConfig(supplier.plan);
 
@@ -53,6 +54,9 @@ export function SupplierCard({ supplier, variant = "grid" }: SupplierCardProps) 
   const nameJa = supplier.name_ja || supplier.nameJa || supplier.name || "";
   const displayName = lang === "ja" ? nameJa : nameEn;
   const contactName = supplier.whatsapp_contact_name?.trim();
+
+  const tagMap = (t.suppliers as { tagMap?: Record<string, string> }).tagMap ?? {};
+  const translateTag = (tag: string) => tagMap[tag] ?? tag;
 
   const categories = (lang === "ja"
     ? [supplier.category_ja || supplier.categoryJa, supplier.category_2_ja, supplier.category_3_ja]
@@ -108,7 +112,7 @@ export function SupplierCard({ supplier, variant = "grid" }: SupplierCardProps) 
           <span key={cat} className="tag-badge">{cat}</span>
         ))}
         {!isList && supplier.tags?.slice(0, 2).map((tag) => (
-          <span key={tag} className="tag-badge">{tag}</span>
+          <span key={tag} className="tag-badge">{translateTag(tag)}</span>
         ))}
       </div>
       <div className={`flex gap-2 ${isList ? "flex-shrink-0" : ""}`}>
@@ -129,7 +133,20 @@ export function SupplierCard({ supplier, variant = "grid" }: SupplierCardProps) 
   );
 
   return (
-    <div className={`group bg-card rounded-xl overflow-hidden shadow-card card-hover border ${wrapperClass} ${isList ? "flex flex-row items-center" : ""}`}>
+    <div className={`group bg-card rounded-xl overflow-hidden shadow-card card-hover border relative ${wrapperClass} ${isList ? "flex flex-row items-center" : ""}`}>
+      {cfg.tier === "premium" && !isList && (
+        <div className="h-1.5 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500" />
+      )}
+      {cfg.featuredLabelEn && !isList && (
+        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-sm z-10">
+          {lang === "ja" ? cfg.featuredLabelJa : cfg.featuredLabelEn}
+        </div>
+      )}
+      {rank != null && (
+        <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-sm z-10">
+          {rank}
+        </div>
+      )}
       {cardContent}
     </div>
   );

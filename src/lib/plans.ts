@@ -25,6 +25,10 @@ export interface PlanConfig {
   maxProducts: number;
   /** Logo/image size on card — Tailwind width/height class (e.g. w-14 h-14) */
   cardImageSize: string;
+  /** Featured badge label shown on premium cards (English) */
+  featuredLabelEn?: string;
+  /** Featured badge label shown on premium cards (Japanese) */
+  featuredLabelJa?: string;
 }
 
 export const PLANS: Record<PlanTier, PlanConfig> = {
@@ -44,6 +48,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     showWhatsApp: true,
     maxProducts: 12,
     cardImageSize: "w-20 h-20",
+    featuredLabelEn: "Featured",
+    featuredLabelJa: "おすすめ",
   },
   standard: {
     tier: "standard",

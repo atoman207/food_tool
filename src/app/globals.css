@@ -70,6 +70,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Yu Mincho for Japanese text */
+  :lang(ja),
+  [lang="ja"],
+  .lang-ja {
+    font-family: "Yu Mincho", "游明朝", "YuMincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN",
+                 "HG明朝E", "MS P明朝", "MS PMincho", serif;
+  }
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -130,4 +138,24 @@
     transform: translateY(-1px);
     box-shadow: 0 6px 20px rgba(255, 38, 54, 0.35);
   }
+}
+
+/* Safari flexbox/gap fixes */
+@supports (-webkit-touch-callout: none) {
+  .flex { gap: inherit; }
+}
+
+/* Force hardware acceleration for smoother animations */
+.card-hover {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* -webkit-backdrop-filter for Safari */
+.backdrop-blur-sm {
+  -webkit-backdrop-filter: blur(4px);
+}
+.backdrop-blur-md {
+  -webkit-backdrop-filter: blur(12px);
 }

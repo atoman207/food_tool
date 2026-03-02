@@ -24,12 +24,15 @@ const SupplierDetail = () => {
   ];
 
   const displayName = lang === "ja" ? (supplier?.name_ja || supplier?.name) : (supplier?.name || supplier?.name_ja);
+  const catLabels = (t.suppliers as { categories?: Record<string, string> }).categories;
   const displayCategories = [
-    lang === "ja" ? (supplier?.category_ja || supplier?.category) : (supplier?.category || supplier?.category_ja),
-    lang === "ja" ? (supplier?.category_2_ja || supplier?.category_2) : (supplier?.category_2 || supplier?.category_2_ja),
-    lang === "ja" ? (supplier?.category_3_ja || supplier?.category_3) : (supplier?.category_3 || supplier?.category_3_ja),
+    lang === "ja" ? (supplier?.category_ja || supplier?.category) : (catLabels?.[supplier?.category ?? ""] ?? supplier?.category ?? ""),
+    lang === "ja" ? (supplier?.category_2_ja || supplier?.category_2) : (catLabels?.[supplier?.category_2 ?? ""] ?? supplier?.category_2 ?? ""),
+    lang === "ja" ? (supplier?.category_3_ja || supplier?.category_3) : (catLabels?.[supplier?.category_3 ?? ""] ?? supplier?.category_3 ?? ""),
   ].filter(Boolean) as string[];
   const displayArea = lang === "ja" ? (supplier?.area_ja || supplier?.area) : (supplier?.area || supplier?.area_ja);
+  const tagMap = (t.suppliers as { tagMap?: Record<string, string> }).tagMap ?? {};
+  const translateTag = (tag: string) => tagMap[tag] ?? tag;
   const galleryImages = [supplier?.logo, supplier?.image_2, supplier?.image_3].filter(Boolean) as string[];
   const catalogUrl = supplier?.catalog_url?.trim();
   const contactName = supplier?.whatsapp_contact_name?.trim();
@@ -82,7 +85,7 @@ const SupplierDetail = () => {
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5 mt-3">
-                {(supplier.tags || []).map((tag: string) => <span key={tag} className="tag-badge">{tag}</span>)}
+                {(supplier.tags || []).map((tag: string) => <span key={tag} className="tag-badge">{translateTag(tag)}</span>)}
               </div>
               {contactName && <p className="text-xs text-muted-foreground mt-1">{t.supplierDetail.contactLabel}{contactName}</p>}
             </div>

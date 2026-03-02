@@ -68,6 +68,7 @@ ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS catalog_url     text DEFAU
 ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS image_2         text DEFAULT '';
 ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS image_3         text DEFAULT '';
 ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS whatsapp_contact_name text DEFAULT '';
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS about_ja             text DEFAULT '';
 
 -- Supplier Products
 CREATE TABLE IF NOT EXISTS public.supplier_products (

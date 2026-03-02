@@ -93,16 +93,17 @@ const PLAN_BADGE: Record<string, string> = {
 const PLAN_LABEL: Record<string, string> = { premium: "Premium", standard: "Standard", basic: "Basic" };
 
 function SupplierManager() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
+  const [productSlug, setProductSlug] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "", name_ja: "", slug: "", category: "seafood", category_ja: "海鮮・鮮魚",
     category_2: "", category_2_ja: "", category_3: "", category_3_ja: "",
     area: "central", area_ja: "中央エリア", tags: "", description: "", description_ja: "",
     whatsapp: "", whatsapp_contact_name: "", logo: "", catalog_url: "", image_2: "", image_3: "",
-    certifications: "", about: "", featured: false,
+    certifications: "", about: "", about_ja: "", featured: false,
     plan: "basic" as "basic" | "standard" | "premium",
   });
 
@@ -119,7 +120,7 @@ function SupplierManager() {
       category_2: "", category_2_ja: "", category_3: "", category_3_ja: "",
       area: "central", area_ja: "中央エリア", tags: "", description: "", description_ja: "",
       whatsapp: "", whatsapp_contact_name: "", logo: "", catalog_url: "", image_2: "", image_3: "",
-      certifications: "", about: "", featured: false, plan: "basic",
+      certifications: "", about: "", about_ja: "", featured: false, plan: "basic",
     });
     setEditSlug(null);
   };
@@ -131,7 +132,7 @@ function SupplierManager() {
       area: s.area, area_ja: s.area_ja, tags: (s.tags || []).join(", "),
       description: s.description, description_ja: s.description_ja, whatsapp: s.whatsapp || "",
       whatsapp_contact_name: s.whatsapp_contact_name || "", logo: s.logo || "", catalog_url: s.catalog_url || "", image_2: s.image_2 || "", image_3: s.image_3 || "",
-      certifications: (s.certifications || []).join(", "), about: s.about, featured: s.featured,
+      certifications: (s.certifications || []).join(", "), about: s.about || "", about_ja: s.about_ja || "", featured: s.featured,
       plan: s.plan || "basic",
     });
     setEditSlug(s.slug);
@@ -202,8 +203,12 @@ function SupplierManager() {
           <ImageField label={t.admin.image3} value={form.image_3} onChange={(v) => setForm((p) => ({ ...p, image_3: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
           <InputField label={t.admin.certifications} value={form.certifications} onChange={(v) => setForm((p) => ({ ...p, certifications: v }))} />
           <div>
-            <label className="text-sm font-medium block mb-1.5">{t.admin.aboutJa}</label>
+            <label className="text-sm font-medium block mb-1.5">{t.admin.aboutEn}</label>
             <textarea value={form.about} onChange={(e) => setForm((p) => ({ ...p, about: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{t.admin.aboutJa}</label>
+            <textarea value={form.about_ja} onChange={(e) => setForm((p) => ({ ...p, about_ja: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" />
           </div>
           <div>
             <label className="text-sm font-medium block mb-1.5">{t.admin.planLabel}</label>
@@ -223,24 +228,107 @@ function SupplierManager() {
 
       <div className="space-y-3">
         {suppliers.map((s: any) => (
-          <div key={s.id} className="bg-card border rounded-2xl p-4 flex items-center gap-4">
-            <img src={s.logo} alt="" className="w-12 h-12 rounded-xl object-cover" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <p className="font-bold text-sm truncate">{s.name_ja}</p>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${PLAN_BADGE[s.plan || "basic"]}`}>
-                  {PLAN_LABEL[s.plan || "basic"]}
-                </span>
+          <div key={s.id}>
+            <div className="bg-card border rounded-2xl p-4 flex items-center gap-4">
+              <img src={s.logo} alt="" className="w-12 h-12 rounded-xl object-cover" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="font-bold text-sm truncate">{lang === "ja" ? s.name_ja : s.name}</p>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${PLAN_BADGE[s.plan || "basic"]}`}>
+                    {PLAN_LABEL[s.plan || "basic"]}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">{
+                  (lang === "ja"
+                    ? [s.category_ja, s.category_2_ja, s.category_3_ja]
+                    : [
+                        (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category] ?? s.category,
+                        (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category_2] ?? s.category_2,
+                        (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category_3] ?? s.category_3,
+                      ]
+                  ).filter(Boolean).join(" · ") || "—"
+                } · {lang === "ja" ? s.area_ja : ((t.suppliers as { areas?: Record<string, string> }).areas?.[s.area] ?? s.area)} · {s.views} views</p>
               </div>
-              <p className="text-xs text-muted-foreground">{[s.category_ja, s.category_2_ja, s.category_3_ja].filter(Boolean).join(" · ") || "—"} · {s.area_ja} · {s.views} views</p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setProductSlug(productSlug === s.slug ? null : s.slug)}>
+                  <ShoppingBag className="h-3 w-3 mr-1" /> {t.admin.manageProducts}
+                </Button>
+                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleEdit(s)}><Edit2 className="h-3 w-3" /></Button>
+                <Button variant="outline" size="sm" className="rounded-xl text-destructive" onClick={() => handleDelete(s.slug)}><Trash2 className="h-3 w-3" /></Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleEdit(s)}><Edit2 className="h-3 w-3" /></Button>
-              <Button variant="outline" size="sm" className="rounded-xl text-destructive" onClick={() => handleDelete(s.slug)}><Trash2 className="h-3 w-3" /></Button>
-            </div>
+            {productSlug === s.slug && <ProductManager slug={s.slug} />}
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ProductManager({ slug }: { slug: string }) {
+  const { t } = useTranslation();
+  const [products, setProducts] = useState<any[]>([]);
+  const [form, setForm] = useState({ name: "", name_en: "", image: "", moq: "" });
+
+  useEffect(() => { fetchProducts(); }, [slug]);
+
+  const fetchProducts = async () => {
+    const res = await fetch(`/api/suppliers/${slug}/products`);
+    setProducts(await res.json());
+  };
+
+  const handleAdd = async () => {
+    if (!form.name) return;
+    await fetch(`/api/suppliers/${slug}/products`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    setForm({ name: "", name_en: "", image: "", moq: "" });
+    fetchProducts();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t.admin.deleteProductConfirm)) return;
+    await fetch(`/api/suppliers/${slug}/products`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    fetchProducts();
+  };
+
+  return (
+    <div className="ml-4 mt-2 bg-muted/50 border rounded-xl p-4 space-y-4">
+      <h3 className="text-sm font-bold">{t.admin.productManagement}</h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <InputField label={t.admin.productName} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
+        <InputField label={t.admin.productNameEn} value={form.name_en} onChange={(v) => setForm((p) => ({ ...p, name_en: v }))} />
+        <InputField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} placeholder="https://..." />
+        <InputField label={t.admin.productMoq} value={form.moq} onChange={(v) => setForm((p) => ({ ...p, moq: v }))} />
+      </div>
+      <Button size="sm" className="rounded-xl gap-1" onClick={handleAdd}>
+        <Plus className="h-3 w-3" /> {t.admin.addProduct}
+      </Button>
+      {products.length === 0 ? (
+        <p className="text-xs text-muted-foreground">{t.admin.noProducts}</p>
+      ) : (
+        <div className="space-y-2">
+          {products.map((p: any) => (
+            <div key={p.id} className="flex items-center gap-3 bg-card border rounded-lg p-2">
+              {p.image && <img src={p.image} alt="" className="w-10 h-10 rounded object-cover" />}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{p.name}</p>
+                {p.name_en && <p className="text-xs text-muted-foreground">{p.name_en}</p>}
+                {p.moq && <p className="text-xs text-muted-foreground">MOQ: {p.moq}</p>}
+              </div>
+              <Button variant="outline" size="sm" className="rounded-lg text-destructive" onClick={() => handleDelete(p.id)}>
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -359,51 +447,112 @@ function NewsManager() {
     fetchArticles();
   };
 
+  const { lang } = useTranslation();
+  const categoryOptions = ["industry", "regulation", "trend", "event"];
+  const categoryLabels: Record<string, { en: string; ja: string }> = {
+    industry: { en: "Industry", ja: "業界ニュース" },
+    regulation: { en: "Regulation", ja: "規制・法律" },
+    trend: { en: "Trend", ja: "トレンド" },
+    event: { en: "Event", ja: "イベント" },
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">ニュース管理</h2>
-        <Button onClick={() => { resetForm(); setShowForm(!showForm); }} className="rounded-xl gap-2"><Plus className="h-4 w-4" /> {showForm ? "閉じる" : "追加"}</Button>
+        <div>
+          <h2 className="text-xl font-bold">{t.admin.tabNews}</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{articles.length} {lang === "ja" ? "件" : "articles"}</p>
+        </div>
+        <Button onClick={() => { resetForm(); setShowForm(!showForm); }} className="rounded-xl gap-2">
+          <Plus className="h-4 w-4" /> {showForm ? t.admin.close : t.admin.add}
+        </Button>
       </div>
       {showForm && (
         <div className="bg-card border rounded-2xl p-6 mb-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <InputField label="英語タイトル" value={form.title} onChange={(v) => setForm((p) => ({ ...p, title: v }))} />
-            <InputField label="日本語タイトル" value={form.title_ja} onChange={(v) => setForm((p) => ({ ...p, title_ja: v }))} />
+          <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+            {editSlug ? (lang === "ja" ? "記事を編集" : "Edit Article") : (lang === "ja" ? "新規記事を追加" : "Add New Article")}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputField label={lang === "ja" ? "タイトル（英語）" : "Title (English)"} value={form.title} onChange={(v) => setForm((p) => ({ ...p, title: v }))} />
+            <InputField label={lang === "ja" ? "タイトル（日本語）" : "Title (Japanese)"} value={form.title_ja} onChange={(v) => setForm((p) => ({ ...p, title_ja: v }))} />
           </div>
-          <InputField label="スラッグ" value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} />
-          <InputField label="画像URL" value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputField label={lang === "ja" ? "抜粋（英語）" : "Excerpt (English)"} value={form.excerpt} onChange={(v) => setForm((p) => ({ ...p, excerpt: v }))} />
+            <InputField label={lang === "ja" ? "抜粋（日本語）" : "Excerpt (Japanese)"} value={form.excerpt_ja} onChange={(v) => setForm((p) => ({ ...p, excerpt_ja: v }))} />
+          </div>
+          <InputField label={lang === "ja" ? "スラッグ（URL）" : "Slug (URL)"} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} placeholder="my-article-slug" />
+          <InputField label={lang === "ja" ? "画像URL" : "Image URL"} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} placeholder="https://..." />
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="カテゴリー" value={form.category} onChange={(v) => setForm((p) => ({ ...p, category: v }))} />
-            <InputField label="著者" value={form.author} onChange={(v) => setForm((p) => ({ ...p, author: v }))} />
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "カテゴリー" : "Category"}</label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+                className="w-full h-11 px-3 rounded-lg border bg-background text-sm"
+              >
+                {categoryOptions.map((c) => (
+                  <option key={c} value={c}>{lang === "ja" ? categoryLabels[c].ja : categoryLabels[c].en}</option>
+                ))}
+              </select>
+            </div>
+            <InputField label={lang === "ja" ? "著者" : "Author"} value={form.author} onChange={(v) => setForm((p) => ({ ...p, author: v }))} />
           </div>
           <div>
-            <label className="text-sm font-medium block mb-1.5">内容 (日本語)</label>
-            <textarea value={form.content_ja} onChange={(e) => setForm((p) => ({ ...p, content_ja: e.target.value }))} className="w-full h-32 p-3 rounded-lg border bg-background text-sm resize-none" />
+            <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "本文（英語）" : "Content (English)"}</label>
+            <textarea value={form.content} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))} rows={4} className="w-full p-3 rounded-lg border bg-background text-sm resize-none" />
           </div>
           <div>
-            <label className="text-sm font-medium block mb-1.5">抜粋 (日本語)</label>
-            <input value={form.excerpt_ja} onChange={(e) => setForm((p) => ({ ...p, excerpt_ja: e.target.value }))} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+            <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "本文（日本語）" : "Content (Japanese)"}</label>
+            <textarea value={form.content_ja} onChange={(e) => setForm((p) => ({ ...p, content_ja: e.target.value }))} rows={4} className="w-full p-3 rounded-lg border bg-background text-sm resize-none" />
           </div>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input type="checkbox" checked={form.published} onChange={() => setForm((p) => ({ ...p, published: !p.published }))} className="accent-primary" />
-            公開する
+            {lang === "ja" ? "公開する" : "Publish"}
           </label>
-          <Button onClick={handleSave} className="rounded-xl gap-2"><Save className="h-4 w-4" /> {editSlug ? "更新" : "作成"}</Button>
+          <div className="flex gap-3">
+            <Button onClick={handleSave} className="rounded-xl gap-2">
+              <Save className="h-4 w-4" /> {editSlug ? t.admin.update : t.admin.create}
+            </Button>
+            <Button variant="outline" onClick={() => { setShowForm(false); resetForm(); }} className="rounded-xl">
+              {t.admin.close}
+            </Button>
+          </div>
         </div>
       )}
-      <div className="space-y-3">
-        {articles.map((a: any) => (
-          <div key={a.id} className="bg-card border rounded-2xl p-4 flex items-center gap-4">
-            <div className="flex-1">
-              <p className="font-bold text-sm">{a.title_ja || a.title}</p>
-              <p className="text-xs text-muted-foreground">{a.published ? "公開中" : "下書き"} · {new Date(a.created_at).toLocaleDateString("ja-JP")}</p>
+      {articles.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Newspaper className="h-10 w-10 mx-auto mb-3 opacity-30" />
+          <p>{lang === "ja" ? "記事がまだありません" : "No articles yet"}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {articles.map((a: any) => (
+            <div key={a.id} className="bg-card border rounded-2xl p-4 flex items-center gap-4">
+              {a.image && (
+                <img src={a.image} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0 hidden sm:block" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm truncate">{lang === "ja" ? (a.title_ja || a.title) : (a.title || a.title_ja)}</p>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${a.published ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                    {a.published ? (lang === "ja" ? "公開中" : "Published") : (lang === "ja" ? "下書き" : "Draft")}
+                  </span>
+                  <span className="text-[10px] tag-badge">{lang === "ja" ? (categoryLabels[a.category]?.ja ?? a.category) : (categoryLabels[a.category]?.en ?? a.category)}</span>
+                  <span className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG")}</span>
+                </div>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleEdit(a)}>
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+                <Button variant="outline" size="sm" className="rounded-xl text-destructive hover:bg-destructive/10" onClick={() => handleDelete(a.slug)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleEdit(a)}><Edit2 className="h-3 w-3" /></Button>
-            <Button variant="outline" size="sm" className="rounded-xl text-destructive" onClick={() => handleDelete(a.slug)}><Trash2 className="h-3 w-3" /></Button>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

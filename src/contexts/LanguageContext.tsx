@@ -40,8 +40,19 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLangState(l);
     try {
       localStorage.setItem(STORAGE_KEY, l);
+      // Sync html[lang] so :lang(ja) CSS selector activates Yu Mincho
+      if (typeof document !== "undefined") {
+        document.documentElement.lang = l;
+      }
     } catch {}
   }, []);
+
+  // Set html[lang] on mount once preference is restored
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = lang;
+    }
+  }, [lang]);
 
   const toggleLang = useCallback(() => {
     setLang(lang === "en" ? "ja" : "en");

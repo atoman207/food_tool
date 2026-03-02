@@ -160,7 +160,14 @@ const Suppliers = () => {
               </div>
             </div>
             <div className={viewMode === "list" ? "space-y-3" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"}>
-              {filtered.map((s) => <SupplierCard key={s.id} supplier={s} variant={viewMode} />)}
+              {filtered.map((s, i) => (
+                <SupplierCard
+                  key={s.id}
+                  supplier={s}
+                  variant={viewMode}
+                  rank={selectedCategories.length === 1 ? i + 1 : undefined}
+                />
+              ))}
             </div>
             {filtered.length === 0 && (
               <div className="text-center py-20 text-muted-foreground">

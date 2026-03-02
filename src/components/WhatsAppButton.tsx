@@ -20,7 +20,7 @@ export function WhatsAppButton({ phone, message = '', className = '', size = 'de
         size={size}
       >
         <MessageCircle className="mr-2 h-4 w-4" />
-        WhatsAppで連絡
+        WhatsApp
       </Button>
     </a>
   );

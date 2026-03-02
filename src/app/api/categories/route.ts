@@ -29,7 +29,15 @@ export async function GET(req: NextRequest) {
     const fallback = type ? mockCategories.filter((c) => c.type === type) : mockCategories;
     return NextResponse.json(fallback);
   }
-  return NextResponse.json(data);
+
+  // Deduplicate by value — prevents double entries if SQL seed was run more than once
+  const seen = new Set<string>();
+  const unique = (data || []).filter((c: { value: string }) => {
+    if (seen.has(c.value)) return false;
+    seen.add(c.value);
+    return true;
+  });
+  return NextResponse.json(unique);
 }
 
 export async function POST(req: NextRequest) {
