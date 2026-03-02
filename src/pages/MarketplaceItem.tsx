@@ -18,7 +18,7 @@ const MarketplaceItemPage = () => {
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const { user } = useAuth();
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
 
   if (loading) return <Layout><div className="container py-16 text-center text-muted-foreground">{t.common.loading}</div></Layout>;
 
@@ -44,14 +44,8 @@ const MarketplaceItemPage = () => {
     });
     setShowReport(false);
     setReportReason("");
-    alert(lang === "ja" ? "報告が送信されました。" : "Report submitted.");
+    alert(t.marketplaceItem.reportSent);
   };
-
-  const reportLabel = lang === "ja" ? "この商品を報告" : "Report this item";
-  const reportTitle = lang === "ja" ? "商品を報告" : "Report Item";
-  const reportPlaceholder = lang === "ja" ? "報告理由を入力してください..." : "Enter reason for report...";
-  const sendLabel = lang === "ja" ? "送信" : "Submit";
-  const descLabel = lang === "ja" ? "商品説明" : "Description";
 
   return (
     <Layout>
@@ -88,7 +82,7 @@ const MarketplaceItemPage = () => {
               <div className="flex items-center gap-3 text-sm"><Truck className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.delivery}: <strong>{item.delivery}</strong></span></div>
             </div>
             <div className="mt-6 p-5 bg-card border rounded-2xl">
-              <h3 className="font-bold text-sm mb-2">{descLabel}</h3>
+              <h3 className="font-bold text-sm mb-2">{t.marketplaceItem.description}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
             </div>
             <div className="mt-6 p-5 bg-card border rounded-2xl">
@@ -100,7 +94,7 @@ const MarketplaceItemPage = () => {
             </div>
             {user && (
               <button onClick={() => setShowReport(true)} className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive">
-                <Flag className="h-3 w-3" /> {reportLabel}
+                <Flag className="h-3 w-3" /> {t.marketplaceItem.report}
               </button>
             )}
           </div>
@@ -111,11 +105,11 @@ const MarketplaceItemPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setShowReport(false)} />
           <div className="relative bg-background rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-in">
-            <h3 className="text-lg font-bold mb-4">{reportTitle}</h3>
-            <textarea value={reportReason} onChange={(e) => setReportReason(e.target.value)} placeholder={reportPlaceholder} className="w-full h-24 p-3 rounded-xl border bg-background text-sm resize-none" />
+            <h3 className="text-lg font-bold mb-4">{t.marketplaceItem.reportTitle}</h3>
+            <textarea value={reportReason} onChange={(e) => setReportReason(e.target.value)} placeholder={t.marketplaceItem.reportPlaceholder} className="w-full h-24 p-3 rounded-xl border bg-background text-sm resize-none" />
             <div className="flex gap-3 mt-4">
               <Button variant="outline" onClick={() => setShowReport(false)} className="flex-1 rounded-xl">{t.common.cancel}</Button>
-              <Button onClick={handleReport} className="flex-1 rounded-xl" disabled={!reportReason}>{sendLabel}</Button>
+              <Button onClick={handleReport} className="flex-1 rounded-xl" disabled={!reportReason}>{t.marketplaceItem.reportSend}</Button>
             </div>
           </div>
         </div>

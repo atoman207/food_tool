@@ -38,17 +38,15 @@ function SupplierSkeleton() {
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const { data: suppliers, loading: suppliersLoading } = useFetch<SupplierRow[]>("/api/suppliers");
   const { data: marketplaceItems } = useFetch<MarketplaceItemRow[]>("/api/marketplace");
   const { data: categories } = useFetch<CategoryRow[]>("/api/categories?type=supplier");
   const { data: newsArticles } = useFetch<NewsArticleRow[]>("/api/news");
 
-  // Sort by plan tier (premium → standard → basic) then shuffle within each
-  // tier using a daily seed so every supplier in a tier gets fair rotation.
   const sortedSuppliers = useMemo(() => sortSuppliersByPlan(suppliers || []), [suppliers]);
-  const popularSuppliers = sortedSuppliers.slice(0, 4);
+  const popularSuppliers = sortedSuppliers.slice(0, 3);
   const recentItems = (marketplaceItems || []).slice(0, 6);
   const latestNews = (newsArticles || []).slice(0, 5);
   const featuredLinks = LINKS_DATA.flatMap((g) => g.items).slice(0, 6);
@@ -62,6 +60,7 @@ const Index = () => {
 
   return (
     <Layout>
+      {/* Hero */}
       <section className="relative min-h-[480px] md:min-h-[520px] flex items-center overflow-hidden bg-white">
         <div className="absolute inset-0">
           <img src="/hero-bg.jpg" alt="" className="w-full h-full object-cover" />
@@ -115,31 +114,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Category chips — horizontal scroll */}
-      {categories && categories.length > 0 && (
-        <section className="border-b border-border bg-white overflow-hidden">
-          <div className="container py-3">
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-              <Link
-                href="/suppliers"
-                className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-              >
-                {t.common.all}
-              </Link>
-              {(categories || []).map((cat) => (
-                <Link
-                  key={cat.value}
-                  href={`/suppliers?category=${encodeURIComponent(cat.value)}`}
-                  className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground"
-                >
-                  {(t.suppliers as { categories?: Record<string, string> }).categories?.[cat.value] ?? cat.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* News section */}
       {latestNews.length > 0 && (
         <section className="container py-10 md:py-12">
@@ -184,47 +158,61 @@ const Index = () => {
         </section>
       )}
 
-      {/* ① 人気サプライヤー first */}
+      {/* ── 3-column feature section: Search by Category · Popular Suppliers · Buy & Sell ── */}
       <section className="bg-[#F8F9FA] py-10 md:py-12">
         <div className="container">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" /> {t.home.popularSuppliers}
-            </h2>
-            <Link href="/suppliers" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
-              {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {/* Card 1: Search by Category */}
+            <Link href="/suppliers" className="group block">
+              <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                  <Search className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-base">{t.home.card1Title}</h3>
+                <p className="text-sm text-muted-foreground mt-2">{t.home.card1Sub}</p>
+              </div>
             </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {suppliersLoading
-              ? Array.from({ length: 3 }).map((_, i) => <SupplierSkeleton key={i} />)
-              : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
-            }
+
+            {/* Card 2: Popular Suppliers */}
+            <Link href="/suppliers" className="group block">
+              <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-base">{t.home.popularSuppliers}</h3>
+                <p className="text-sm text-muted-foreground mt-2">{t.home.card2Sub}</p>
+              </div>
+            </Link>
+
+            {/* Card 3: Buy & Sell */}
+            <Link href="/marketplace" className="group block">
+              <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                  <ShoppingBag className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-base">{t.home.card3Title}</h3>
+                <p className="text-sm text-muted-foreground mt-2">{t.home.card3Sub}</p>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ② カテゴリーで探す・シェフマーケット — two cards only */}
-      <section className="container py-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <Link href="/suppliers" className="group block">
-            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
-                <Search className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">{t.home.card1Title}</h3>
-              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card1Sub}</p>
-            </div>
+      {/* Popular Suppliers */}
+      <section className="container py-10 md:py-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" /> {t.home.popularSuppliers}
+          </h2>
+          <Link href="/suppliers" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
+            {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
-          <Link href="/marketplace" className="group block">
-            <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
-                <ShoppingBag className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">{t.home.card3Title}</h3>
-              <p className="text-sm text-muted-foreground mt-1.5">{t.home.card3Sub}</p>
-            </div>
-          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {suppliersLoading
+            ? Array.from({ length: 3 }).map((_, i) => <SupplierSkeleton key={i} />)
+            : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
+          }
         </div>
       </section>
 
@@ -263,6 +251,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Recent Buy & Sell */}
       <section className="container py-10 md:py-14">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">

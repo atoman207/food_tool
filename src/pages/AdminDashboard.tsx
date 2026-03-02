@@ -19,6 +19,7 @@ const AdminDashboard = () => {
     { id: "approvals",  label: t.admin.tabApprovals,  icon: CheckCircle },
     { id: "news",       label: t.admin.tabNews,       icon: Newspaper },
     { id: "categories", label: t.admin.tabCategories, icon: Tag },
+    { id: "terms",      label: t.admin.tabTerms,      icon: Shield },
     { id: "qr",         label: t.admin.tabQR,         icon: Link2 },
     { id: "reports",    label: t.admin.tabReports,    icon: AlertTriangle },
     { id: "analytics",  label: t.admin.tabAnalytics,  icon: BarChart3 },
@@ -75,6 +76,7 @@ const AdminDashboard = () => {
             {activeTab === "approvals" && <ApprovalQueue />}
             {activeTab === "news" && <NewsManager />}
             {activeTab === "categories" && <CategoryManager />}
+            {activeTab === "terms" && <TermsManager />}
             {activeTab === "qr" && <QRManager />}
             {activeTab === "reports" && <ReportManager />}
             {activeTab === "analytics" && <AnalyticsPanel />}
@@ -337,12 +339,14 @@ function ApprovalQueue() {
   const [items, setItems] = useState<any[]>([]);
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const { t } = useTranslation();
 
   useEffect(() => { fetchItems(); }, []);
 
   const fetchItems = async () => {
-    const res = await fetch("/api/marketplace?status=pending");
-    setItems(await res.json());
+    const res = await fetch("/api/marketplace?status=pending&noFallback=true");
+    const data = await res.json();
+    setItems(Array.isArray(data) ? data : []);
   };
 
   const handleApprove = async (slug: string) => {
@@ -359,11 +363,11 @@ function ApprovalQueue() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">マーケットプレイス承認キュー</h2>
+      <h2 className="text-xl font-bold mb-6">{t.admin.approvalQueueTitle}</h2>
       {items.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <CheckCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-          <p>承認待ちのアイテムはありません。</p>
+          <p>{t.admin.approvalEmpty}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -379,17 +383,17 @@ function ApprovalQueue() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <Button size="sm" className="rounded-xl gap-1" onClick={() => handleApprove(item.slug)}>
-                    <CheckCircle className="h-3 w-3" /> 承認
+                    <CheckCircle className="h-3 w-3" /> {t.admin.approvalApprove}
                   </Button>
                   <Button variant="outline" size="sm" className="rounded-xl gap-1 text-destructive" onClick={() => setRejectId(item.id)}>
-                    <XCircle className="h-3 w-3" /> 却下
+                    <XCircle className="h-3 w-3" /> {t.admin.approvalReject}
                   </Button>
                 </div>
               </div>
               {rejectId === item.id && (
                 <div className="mt-4 flex gap-2">
-                  <input value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="却下理由..." className="flex-1 h-10 px-3 rounded-lg border bg-background text-sm" />
-                  <Button size="sm" className="rounded-xl" onClick={() => handleReject(item.slug)}>送信</Button>
+                  <input value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder={t.admin.approvalRejectPlaceholder} className="flex-1 h-10 px-3 rounded-lg border bg-background text-sm" />
+                  <Button size="sm" className="rounded-xl" onClick={() => handleReject(item.slug)}>{t.admin.approvalSend}</Button>
                 </div>
               )}
             </div>
@@ -620,6 +624,47 @@ function CategoryManager() {
   );
 }
 
+function TermsManager() {
+  const [termsText, setTermsText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    fetch("/api/settings?key=terms_of_service").then((r) => r.json()).then((d) => setTermsText(d?.value || ""));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "terms_of_service", value: termsText }) });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold mb-6">{t.admin.tabTerms}</h2>
+      <div className="bg-card border rounded-2xl p-6 max-w-2xl">
+        <label className="text-sm font-medium block mb-1.5">{t.admin.termsLabel}</label>
+        <textarea
+          value={termsText}
+          onChange={(e) => setTermsText(e.target.value)}
+          rows={12}
+          className="w-full p-3 rounded-lg border bg-background text-sm resize-y font-mono mb-4"
+          placeholder="Enter terms of service content here..."
+        />
+        <div className="flex items-center gap-3">
+          <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}>
+            <Save className="h-4 w-4" /> {saving ? t.common.saving : t.admin.termsSave}
+          </Button>
+          {saved && <span className="text-sm text-emerald-600 font-medium">{t.admin.termsSaved}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QRManager() {
   const [redirectUrl, setRedirectUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -653,6 +698,7 @@ function QRManager() {
 
 function ReportManager() {
   const [reports, setReports] = useState<any[]>([]);
+  const { t, lang } = useTranslation();
 
   useEffect(() => { fetchReports(); }, []);
 
@@ -666,24 +712,45 @@ function ReportManager() {
     fetchReports();
   };
 
+  const handleDeleteItem = async (r: any) => {
+    if (!confirm(t.admin.reportDeleteConfirm)) return;
+    if (r.item_type === "marketplace_item" && r.item_id) {
+      const itemRes = await fetch(`/api/marketplace/${r.item_id}?byId=true`);
+      if (itemRes.ok) {
+        const item = await itemRes.json();
+        if (item?.slug) {
+          await fetch(`/api/marketplace/${item.slug}`, { method: "DELETE" });
+        }
+      }
+    }
+    await handleStatus(r.id, "reviewed");
+    alert(t.admin.reportNotifyMsg);
+  };
+
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">レポート管理</h2>
+      <h2 className="text-xl font-bold mb-6">{t.admin.reportManagerTitle}</h2>
       {reports.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground"><p>レポートはありません。</p></div>
+        <div className="text-center py-16 text-muted-foreground"><p>{t.admin.reportEmpty}</p></div>
       ) : (
         <div className="space-y-3">
           {reports.map((r: any) => (
             <div key={r.id} className="bg-card border rounded-2xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{r.item_type} · {new Date(r.created_at).toLocaleDateString("ja-JP")}</span>
+                <span className="text-xs text-muted-foreground">{r.item_type} · {new Date(r.created_at).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG")}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.status === "pending" ? "bg-yellow-100 text-yellow-700" : r.status === "reviewed" ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>{r.status}</span>
               </div>
-              <p className="text-sm">{r.reason}</p>
+              <p className="text-sm font-medium mb-0.5">{r.item_type} · ID: {r.item_id}</p>
+              <p className="text-sm text-muted-foreground">{r.reason}</p>
               {r.status === "pending" && (
-                <div className="flex gap-2 mt-3">
-                  <Button size="sm" className="rounded-xl" onClick={() => handleStatus(r.id, "reviewed")}>確認済み</Button>
-                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleStatus(r.id, "dismissed")}>却下</Button>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Button size="sm" className="rounded-xl" onClick={() => handleStatus(r.id, "reviewed")}>{t.admin.reportReviewed}</Button>
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleStatus(r.id, "dismissed")}>{t.admin.reportDismiss}</Button>
+                  {r.item_type === "marketplace_item" && (
+                    <Button variant="outline" size="sm" className="rounded-xl text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => handleDeleteItem(r)}>
+                      <Trash2 className="h-3 w-3 mr-1" /> {t.admin.reportDelete}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

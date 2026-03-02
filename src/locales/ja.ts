@@ -28,7 +28,7 @@ const ja: Translations = {
   nav: {
     brand: "F&Bポータル",
     suppliers: "サプライヤー",
-    marketplace: "マーケットプレイス",
+    marketplace: "Buy & Sell",
     news: "ニュース",
     links: "リンク集",
     sell: "出品",
@@ -42,12 +42,15 @@ const ja: Translations = {
     editProfile: "プロフィール変更",
     adminPanel: "管理者画面",
     adminBadge: "管理者",
+    favoriteSuppliers: "お気に入りサプライヤー",
+    about: "About",
+    contact: "お問い合わせ",
   },
   footer: {
     tagline: "The Kitchen Connection",
     services: "サービス",
     supplierSearch: "サプライヤー検索",
-    marketplace: "マーケットプレイス",
+    marketplace: "Buy & Sell",
     news: "ニュース",
     links: "リンク集",
     info: "情報",
@@ -72,10 +75,10 @@ const ja: Translations = {
     card1Sub: "食材・機器を探す",
     card2Title: "人気サプライヤー",
     card2Sub: "高評価の業者",
-    card3Title: "シェフマーケット",
+    card3Title: "Buy & Sell",
     card3Sub: "中古機器を売買",
     popularSuppliers: "人気サプライヤー",
-    recentMarketplace: "マーケットプレイス",
+    recentMarketplace: "Buy & Sell",
   },
 
   // ── Suppliers ────────────────────────────────────────────────────────────
@@ -124,7 +127,7 @@ const ja: Translations = {
 
   // ── Marketplace ──────────────────────────────────────────────────────────
   marketplace: {
-    title: "シェフマーケットプレイス",
+    title: "Buy & Sell",
     subtitle: "中古厨房機器・備品の売買",
     searchPlaceholder: "アイテムを検索...",
     allConditions: "全コンディション",
@@ -294,6 +297,10 @@ const ja: Translations = {
     saveProfile: "プロフィールを保存",
     savedMsg: "保存しました ✓",
     notConnected: "Supabase未接続",
+    tabFavorites: "お気に入りサプライヤー",
+    noFavorites: "お気に入りサプライヤーがまだありません。",
+    noFavoritesSub: "サプライヤーカードのハートマークを押してお気に入り登録できます。",
+    removeFavorite: "削除",
   },
 
   // ── New Item ─────────────────────────────────────────────────────────────
@@ -302,18 +309,23 @@ const ja: Translations = {
     backToDashboard: "ダッシュボード",
     fieldTitle: "タイトル *",
     fieldCategory: "カテゴリー *",
+    fieldCategoryOtherPlaceholder: "カテゴリーの詳細を入力してください...",
     fieldPrice: "価格 (SGD) *",
     fieldCondition: "コンディション *",
     fieldYearsUsed: "使用年数 *",
     fieldDescription: "説明 *",
     fieldArea: "エリア *",
     fieldDelivery: "配送方法",
-    fieldImageUrl: "画像URL（最大5枚、カンマ区切り）",
+    fieldImages: "画像をアップロード（最大5枚）",
+    fieldImagesHint: "最大5枚までアップロードできます。",
     agreeTerms: "利用規約に同意する *",
+    termsTitle: "利用規約",
     submit: "出品する（審査後に公開）",
     submitting: "出品中...",
     successMsg: "出品が完了しました。管理者の承認後に公開されます。",
     errorMsg: "エラーが発生しました。",
+    fieldSeller: "お名前（英語のみ）*",
+    fieldSellerPlaceholder: "Name (English only)",
   },
 
   // ── Admin Dashboard ──────────────────────────────────────────────────────
@@ -327,6 +339,7 @@ const ja: Translations = {
     tabQR: "QRリダイレクト",
     tabReports: "レポート",
     tabAnalytics: "統計",
+    tabTerms: "利用規約",
     supplierManagement: "サプライヤー管理",
     add: "追加",
     close: "閉じる",
@@ -369,6 +382,22 @@ const ja: Translations = {
     deleteProductConfirm: "この商品を削除しますか？",
     noProducts: "商品がまだありません。",
     manageProducts: "商品管理",
+    termsLabel: "利用規約（出品ページに表示）",
+    termsSave: "保存",
+    termsSaved: "保存しました ✓",
+    approvalQueueTitle: "Buy & Sell 承認キュー",
+    approvalApprove: "承認",
+    approvalReject: "却下",
+    approvalRejectPlaceholder: "却下理由...",
+    approvalSend: "送信",
+    approvalEmpty: "承認待ちのアイテムはありません。",
+    reportManagerTitle: "レポート管理",
+    reportEmpty: "レポートはありません。",
+    reportReviewed: "確認済み",
+    reportDismiss: "却下",
+    reportDelete: "商品を削除",
+    reportDeleteConfirm: "この商品を削除して出品者に通知しますか？",
+    reportNotifyMsg: "違反報告により、あなたの出品が削除されました。",
   },
 
   // ── Supplier Card ─────────────────────────────────────────────────────────
@@ -393,7 +422,7 @@ const ja: Translations = {
 
   // ── Marketplace Item ─────────────────────────────────────────────────────
   marketplaceItem: {
-    backToList: "マーケットプレイス",
+    backToList: "Buy & Sell",
     condition: "コンディション",
     yearsUsed: "使用年数",
     area: "エリア",
@@ -402,12 +431,58 @@ const ja: Translations = {
     contactSeller: "出品者に連絡",
     notFound: "アイテムが見つかりません。",
     years: "年",
+    description: "商品説明",
+    report: "この商品を報告",
+    reportTitle: "商品を報告",
+    reportPlaceholder: "報告理由を入力してください...",
+    reportSend: "送信",
+    reportSent: "報告が送信されました。",
   },
 
   // ── News Detail ──────────────────────────────────────────────────────────
   newsDetail: {
     backToList: "ニュース",
     notFound: "記事が見つかりません。",
+  },
+
+  // ── Contact ──────────────────────────────────────────────────────────────
+  contact: {
+    pageTitle: "お問い合わせ",
+    pageSubtitle: "ご不明な点がございましたら、お気軽にお問い合わせください。",
+    name: "お名前",
+    email: "メールアドレス",
+    subject: "件名",
+    message: "メッセージ",
+    submit: "送信する",
+    submitting: "送信中...",
+    successTitle: "送信完了！",
+    successMsg: "お問い合わせありがとうございます。内容を確認次第、ご連絡いたします。",
+    errorMsg: "エラーが発生しました。再度お試しください。",
+    backHome: "ホームに戻る",
+  },
+
+  // ── About ─────────────────────────────────────────────────────────────────
+  about: {
+    pageTitle: "このプラットフォームを選ぶ理由",
+    pageSubtitle: "シンガポール最大のF&Bサプライヤーネットワーク",
+    heroTitle: "つながる。取引する。成長する。",
+    heroSub: "シンガポールのF&B業界向けオールインワンプラットフォーム。サプライヤーを探し、機器を取引し、ビジネスを成長させましょう。",
+    feature1Title: "信頼できるサプライヤーを探す",
+    feature1Desc: "シンガポール全土の認定F&Bサプライヤーを検索。カテゴリー・エリア・認証情報でフィルタリングして最適なサプライヤーを見つけましょう。",
+    feature2Title: "機器を売買する",
+    feature2Desc: "質の高い中古厨房機器を購入してコストを節約。自分の機器を出品して、何千人ものシェフやレストランオーナーにリーチしましょう。",
+    feature3Title: "最新情報を入手する",
+    feature3Desc: "シンガポールのF&Bセクターの最新業界ニュース、規制アップデート、トレンドをすべて一か所で確認できます。",
+    feature4Title: "日本語サポート",
+    feature4Desc: "シンガポールで働く日本人シェフ・レストラン経営者向けに完全日本語サポートを提供しています。",
+    ctaTitle: "さあ、始めましょう！",
+    ctaSub: "F&Bポータルコミュニティに参加しましょう。",
+    ctaButton: "サプライヤーを探す",
+    ctaButton2: "ビジネスを掲載する",
+    stat1: "認定サプライヤー",
+    stat2: "機器出品",
+    stat3: "業界カテゴリー",
+    stat4: "対応言語",
   },
 
   // ── Plans ────────────────────────────────────────────────────────────────

@@ -26,7 +26,7 @@ const en = {
   nav: {
     brand: "F&B Portal",
     suppliers: "Suppliers",
-    marketplace: "Marketplace",
+    marketplace: "Buy & Sell",
     news: "News",
     links: "Links",
     sell: "Sell",
@@ -40,12 +40,15 @@ const en = {
     editProfile: "Edit Profile",
     adminPanel: "Admin Panel",
     adminBadge: "Admin",
+    favoriteSuppliers: "Favorite Suppliers",
+    about: "About",
+    contact: "Contact",
   },
   footer: {
     tagline: "The Kitchen Connection",
     services: "Services",
     supplierSearch: "Supplier Search",
-    marketplace: "Marketplace",
+    marketplace: "Buy & Sell",
     news: "News",
     links: "Links",
     info: "Information",
@@ -70,10 +73,10 @@ const en = {
     card1Sub: "Find ingredients & equipment",
     card2Title: "Popular Suppliers",
     card2Sub: "Top-rated vendors",
-    card3Title: "Chef Market",
+    card3Title: "Buy & Sell",
     card3Sub: "Buy & sell used equipment",
     popularSuppliers: "Popular Suppliers",
-    recentMarketplace: "Marketplace",
+    recentMarketplace: "Buy & Sell",
   },
 
   // ── Suppliers ────────────────────────────────────────────────────────────
@@ -122,7 +125,7 @@ const en = {
 
   // ── Marketplace ──────────────────────────────────────────────────────────
   marketplace: {
-    title: "Chef Marketplace",
+    title: "Buy & Sell",
     subtitle: "Buy & sell used kitchen equipment",
     searchPlaceholder: "Search items...",
     allConditions: "All Conditions",
@@ -292,6 +295,10 @@ const en = {
     saveProfile: "Save Profile",
     savedMsg: "Saved ✓",
     notConnected: "Supabase not connected",
+    tabFavorites: "Favorite Suppliers",
+    noFavorites: "No favorite suppliers yet.",
+    noFavoritesSub: "Click the heart icon on a supplier card to save favorites.",
+    removeFavorite: "Remove",
   },
 
   // ── New Item ─────────────────────────────────────────────────────────────
@@ -300,18 +307,23 @@ const en = {
     backToDashboard: "Dashboard",
     fieldTitle: "Title *",
     fieldCategory: "Category *",
+    fieldCategoryOtherPlaceholder: "Please describe the category...",
     fieldPrice: "Price (SGD) *",
     fieldCondition: "Condition *",
     fieldYearsUsed: "Years Used *",
     fieldDescription: "Description *",
     fieldArea: "Area *",
     fieldDelivery: "Delivery Method",
-    fieldImageUrl: "Image URL (max 5, comma separated)",
+    fieldImages: "Upload Images (max 5)",
+    fieldImagesHint: "You can upload up to 5 images.",
     agreeTerms: "I agree to the terms of service *",
+    termsTitle: "Terms of Service",
     submit: "List Item (published after review)",
     submitting: "Listing...",
     successMsg: "Listing complete. Will be published after admin approval.",
     errorMsg: "An error occurred.",
+    fieldSeller: "Your Name (English only) *",
+    fieldSellerPlaceholder: "Name (English only)",
   },
 
   // ── Admin Dashboard ──────────────────────────────────────────────────────
@@ -325,6 +337,7 @@ const en = {
     tabQR: "QR Redirect",
     tabReports: "Reports",
     tabAnalytics: "Analytics",
+    tabTerms: "Terms",
     supplierManagement: "Supplier Management",
     add: "Add",
     close: "Close",
@@ -368,6 +381,22 @@ const en = {
     deleteProductConfirm: "Delete this product?",
     noProducts: "No products yet.",
     manageProducts: "Products",
+    termsLabel: "Terms of Service (displayed on the listing page)",
+    termsSave: "Save Terms",
+    termsSaved: "Terms saved ✓",
+    approvalQueueTitle: "Buy & Sell Approval Queue",
+    approvalApprove: "Approve",
+    approvalReject: "Reject",
+    approvalRejectPlaceholder: "Rejection reason...",
+    approvalSend: "Send",
+    approvalEmpty: "No items pending approval.",
+    reportManagerTitle: "Report Manager",
+    reportEmpty: "No reports.",
+    reportReviewed: "Reviewed",
+    reportDismiss: "Dismiss",
+    reportDelete: "Delete Item",
+    reportDeleteConfirm: "Delete this reported item and notify the seller?",
+    reportNotifyMsg: "Your listing has been removed due to a violation report.",
   },
 
   // ── Supplier Card ─────────────────────────────────────────────────────────
@@ -392,7 +421,7 @@ const en = {
 
   // ── Marketplace Item ─────────────────────────────────────────────────────
   marketplaceItem: {
-    backToList: "Marketplace",
+    backToList: "Buy & Sell",
     condition: "Condition",
     yearsUsed: "Years Used",
     area: "Area",
@@ -401,12 +430,58 @@ const en = {
     contactSeller: "Contact Seller",
     notFound: "Item not found.",
     years: "yr",
+    description: "Description",
+    report: "Report this item",
+    reportTitle: "Report Item",
+    reportPlaceholder: "Enter reason for report...",
+    reportSend: "Submit",
+    reportSent: "Report submitted.",
   },
 
   // ── News Detail ──────────────────────────────────────────────────────────
   newsDetail: {
     backToList: "News",
     notFound: "Article not found.",
+  },
+
+  // ── Contact ──────────────────────────────────────────────────────────────
+  contact: {
+    pageTitle: "Contact Us",
+    pageSubtitle: "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+    name: "Your Name",
+    email: "Email Address",
+    subject: "Subject",
+    message: "Message",
+    submit: "Send Message",
+    submitting: "Sending...",
+    successTitle: "Message Sent!",
+    successMsg: "Thank you for contacting us. We will get back to you shortly.",
+    errorMsg: "An error occurred. Please try again.",
+    backHome: "Back to Home",
+  },
+
+  // ── About ─────────────────────────────────────────────────────────────────
+  about: {
+    pageTitle: "Why Choose Our Platform",
+    pageSubtitle: "Singapore's most trusted F&B supplier network",
+    heroTitle: "Connect. Trade. Grow.",
+    heroSub: "The all-in-one platform for Singapore's F&B industry — find suppliers, trade equipment, and grow your business.",
+    feature1Title: "Find Trusted Suppliers",
+    feature1Desc: "Browse hundreds of verified F&B suppliers across Singapore. Filter by category, area, and certifications to find exactly what you need.",
+    feature2Title: "Buy & Sell Equipment",
+    feature2Desc: "Save costs by buying quality used kitchen equipment. List your own items and reach thousands of chefs and restaurant owners.",
+    feature3Title: "Stay Informed",
+    feature3Desc: "Get the latest industry news, regulatory updates, and trends in Singapore's F&B sector — all in one place.",
+    feature4Title: "Japanese Support",
+    feature4Desc: "Full Japanese language support for Japanese chefs and restaurant operators working in Singapore.",
+    ctaTitle: "Ready to Get Started?",
+    ctaSub: "Join the F&B Portal community today.",
+    ctaButton: "Find Suppliers",
+    ctaButton2: "List Your Business",
+    stat1: "Verified Suppliers",
+    stat2: "Equipment Listings",
+    stat3: "Industry Categories",
+    stat4: "Languages Supported",
   },
 
   // ── Plans ────────────────────────────────────────────────────────────────

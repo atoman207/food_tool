@@ -27,9 +27,27 @@ const Marketplace = () => {
   ];
 
   const filtered = useMemo(() => {
+    const otherLabel = t.marketplace.categories.other;
     let result = (items || []).filter((item) => {
-      if (query && !item.title.toLowerCase().includes(query.toLowerCase()) && !item.description.toLowerCase().includes(query.toLowerCase())) return false;
-      if (selectedCategory && item.category !== selectedCategory) return false;
+      if (query) {
+        const q = query.toLowerCase();
+        const categoryText = item.category?.toLowerCase() || "";
+        if (
+          !item.title.toLowerCase().includes(q) &&
+          !item.description.toLowerCase().includes(q) &&
+          !categoryText.includes(q)
+        ) return false;
+      }
+      if (selectedCategory) {
+        const catKey = selectedCategory.toLowerCase();
+        const itemCat = item.category?.toLowerCase() || "";
+        const isOtherSelected = catKey === "other" || catKey === otherLabel.toLowerCase();
+        if (isOtherSelected) {
+          if (!itemCat.startsWith(otherLabel.toLowerCase()) && itemCat !== catKey) return false;
+        } else {
+          if (item.category !== selectedCategory) return false;
+        }
+      }
       if (selectedCondition && item.condition !== selectedCondition) return false;
       return true;
     });

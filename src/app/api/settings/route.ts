@@ -8,12 +8,13 @@ export async function GET(req: NextRequest) {
 
   if (!supabase) {
     if (key === "qr_redirect_url") return NextResponse.json({ key, value: "/suppliers" });
+    if (key) return NextResponse.json({ key, value: null });
     return NextResponse.json([{ key: "qr_redirect_url", value: "/suppliers" }]);
   }
 
   if (key) {
     const { data, error } = await supabase.from("site_settings").select("*").eq("key", key).single();
-    if (error) return NextResponse.json({ key, value: "/suppliers" });
+    if (error) return NextResponse.json({ key, value: null });
     return NextResponse.json(data);
   }
 

@@ -1,5 +1,7 @@
+"use client";
 import Link from "next/link";
-import { MapPin, Crown, Star } from "lucide-react";
+import { MapPin, Crown, Star, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { getPlanConfig } from "@/lib/plans";
@@ -46,9 +48,32 @@ function PlanBadge({ plan, lang }: { plan?: string | null; lang: string }) {
   );
 }
 
+function useFavorites() {
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("favorite_suppliers");
+      if (stored) setFavorites(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  const toggle = (id: string) => {
+    setFavorites((prev) => {
+      const next = prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id];
+      try { localStorage.setItem("favorite_suppliers", JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  return { favorites, toggle };
+}
+
 export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardProps) {
   const { t, lang } = useTranslation();
   const cfg = getPlanConfig(supplier.plan);
+  const { favorites, toggle } = useFavorites();
+  const isFav = favorites.includes(supplier.id);
 
   const nameEn = supplier.name || supplier.name_ja || supplier.nameJa || "";
   const nameJa = supplier.name_ja || supplier.nameJa || supplier.name || "";
@@ -128,6 +153,16 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
             size="sm"
           />
         )}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); toggle(supplier.id); }}
+          title={isFav ? (lang === "ja" ? "お気に入りから削除" : "Remove from favorites") : (lang === "ja" ? "お気に入りに追加" : "Add to favorites")}
+          className={`h-9 w-9 flex items-center justify-center rounded-xl border transition-colors flex-shrink-0 ${
+            isFav ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100" : "border-border text-muted-foreground hover:text-red-400 hover:border-red-200"
+          }`}
+        >
+          <Heart className={`h-4 w-4 ${isFav ? "fill-red-500" : ""}`} />
+        </button>
       </div>
     </div>
   );

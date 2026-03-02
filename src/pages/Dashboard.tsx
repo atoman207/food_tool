@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Plus, Trash2, Package, User, Settings,
-  Eye, Clock, Camera, CalendarDays, BadgeCheck, ChevronRight,
+  Eye, Clock, Camera, CalendarDays, BadgeCheck, ChevronRight, Heart,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { getSupabase } from "@/lib/supabase";
-import type { MarketplaceItemRow } from "@/types/database";
+import type { MarketplaceItemRow, SupplierRow } from "@/types/database";
+import { useFetch } from "@/hooks/useSupabaseData";
 
 const Dashboard = () => {
   const { user, profile, loading: authLoading } = useRequireAuth();
@@ -41,11 +42,13 @@ const Dashboard = () => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get("tab");
     if (tab === "profile") setActiveTab("profile");
+    else if (tab === "favorites") setActiveTab("favorites");
   }, []);
 
   const tabs = [
-    { id: "mypage",  label: t.dashboard.tabMyPage,    icon: User },
-    { id: "profile", label: t.dashboard.tabEditProfile, icon: Settings },
+    { id: "mypage",     label: t.dashboard.tabMyPage,      icon: User },
+    { id: "favorites",  label: t.dashboard.tabFavorites,   icon: Heart },
+    { id: "profile",    label: t.dashboard.tabEditProfile, icon: Settings },
   ];
 
   useEffect(() => {
@@ -312,6 +315,9 @@ const Dashboard = () => {
             </div>
           )}
 
+          {/* ── FAVORITES tab ───────────────────────────────────────────────── */}
+          {activeTab === "favorites" && <FavoritesTab t={t} lang={lang} />}
+
           {/* ── PROFILE CHANGE tab ──────────────────────────────────────────── */}
           {activeTab === "profile" && (
             <div className="max-w-xl">
@@ -440,5 +446,76 @@ const Dashboard = () => {
     </Layout>
   );
 };
+
+function FavoritesTab({ t, lang }: { t: any; lang: string }) {
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const { data: allSuppliers } = useFetch<SupplierRow[]>("/api/suppliers");
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("favorite_suppliers");
+      if (stored) setFavoriteIds(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  const favoriteSuppliers = (allSuppliers || []).filter((s) => favoriteIds.includes(s.id));
+
+  const removeFavorite = (id: string) => {
+    const next = favoriteIds.filter((f) => f !== id);
+    setFavoriteIds(next);
+    try { localStorage.setItem("favorite_suppliers", JSON.stringify(next)); } catch {}
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-black mb-6 section-accent">{t.dashboard.tabFavorites}</h2>
+      {favoriteSuppliers.length === 0 ? (
+        <div className="bg-background border-2 border-dashed border-border text-center py-16 text-muted-foreground">
+          <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+          <p className="font-bold">{t.dashboard.noFavorites}</p>
+          <p className="text-sm mt-2">{t.dashboard.noFavoritesSub}</p>
+          <a href="/suppliers">
+            <Button className="mt-4">{lang === "ja" ? "サプライヤーを探す" : "Browse Suppliers"}</Button>
+          </a>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {favoriteSuppliers.map((s) => {
+            const name = lang === "ja" ? (s.name_ja || s.name) : s.name;
+            const area = lang === "ja" ? s.area_ja : s.area;
+            const cats = (lang === "ja"
+              ? [s.category_ja, s.category_2_ja, s.category_3_ja]
+              : [s.category, s.category_2, s.category_3]
+            ).filter(Boolean).join(" · ");
+            return (
+              <div key={s.id} className="bg-background border-2 border-border flex items-center gap-4 p-4">
+                <img src={s.logo} alt={name || ""} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm truncate">{name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{area}{cats ? ` · ${cats}` : ""}</p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <a href={`/suppliers/${s.slug}`}>
+                    <Button variant="outline" size="sm" className="rounded-xl">
+                      <Eye className="h-3 w-3 mr-1" /> {lang === "ja" ? "詳細" : "View"}
+                    </Button>
+                  </a>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl text-destructive hover:bg-destructive/10 border-destructive/30"
+                    onClick={() => removeFavorite(s.id)}
+                  >
+                    <Heart className="h-3 w-3 mr-1 fill-red-400" /> {t.dashboard.removeFavorite}
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default Dashboard;

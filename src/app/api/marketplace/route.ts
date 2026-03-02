@@ -43,7 +43,8 @@ export async function GET(req: NextRequest) {
   else query = query.order("created_at", { ascending: false });
 
   const { data, error } = await query;
-  if (error || !data || data.length === 0) {
+  // Only fall back to mock data on actual error, not on empty result set
+  if (error) {
     let fallback = mockItems.map(normaliseMock).filter((i) => i.status === status);
     if (seller_id) fallback = mockItems.map(normaliseMock).filter((i) => i.seller_id === seller_id);
     if (category) fallback = fallback.filter((i) => i.category === category);
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
     else if (sort === "price-desc") fallback.sort((a, b) => b.price - a.price);
     return NextResponse.json(fallback);
   }
-  return NextResponse.json(data);
+  return NextResponse.json(data ?? []);
 }
 
 export async function POST(req: NextRequest) {

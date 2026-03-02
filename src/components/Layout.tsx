@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import logoImage from "@/assets/logo.png";
 import {
   Menu, X, ChevronRight, ChevronDown,
-  User, LogOut, LayoutDashboard, ShieldCheck, Settings, Globe, ChevronUp,
+  User, LogOut, LayoutDashboard, ShieldCheck, Settings, Globe, ChevronUp, Heart,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -133,6 +133,14 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
               <span>{t.nav.myPage}</span>
             </Link>
             <Link
+              href="/dashboard?tab=favorites"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors"
+            >
+              <Heart className="h-4 w-4 text-muted-foreground" />
+              <span>{t.nav.favoriteSuppliers}</span>
+            </Link>
+            <Link
               href="/dashboard?tab=profile"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors"
@@ -176,6 +184,8 @@ export function Header() {
     { label: t.nav.marketplace, path: "/marketplace" },
     { label: t.nav.news,        path: "/news" },
     { label: t.nav.links,       path: "/links" },
+    { label: t.nav.about,       path: "/about" },
+    { label: t.nav.contact,     path: "/contact" },
   ];
 
   return (
@@ -304,6 +314,7 @@ export function Footer() {
               <li><Link href="/marketplace" className="hover:text-primary transition-colors duration-200">{t.footer.marketplace}</Link></li>
               <li><Link href="/news" className="hover:text-primary transition-colors duration-200">{t.footer.news}</Link></li>
               <li><Link href="/links" className="hover:text-primary transition-colors duration-200">{t.footer.links}</Link></li>
+              <li><Link href="/about" className="hover:text-primary transition-colors duration-200">{t.about.pageTitle}</Link></li>
             </ul>
           </div>
           <div>
@@ -316,7 +327,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.contact}</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-primary transition-colors duration-200">{t.footer.contactForm}</a></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors duration-200">{t.footer.contactForm}</Link></li>
               <li><Link href="/admin-dashboard" className="hover:text-primary transition-colors duration-200">{t.footer.adminLogin}</Link></li>
             </ul>
           </div>
