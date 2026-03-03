@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { MapPin, ArrowLeft, Award, Phone } from "lucide-react";
+import { MapPin, ArrowLeft, Award, Phone, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
@@ -14,6 +14,7 @@ const SupplierDetail = () => {
   const { data: supplier, loading } = useFetch<any>(`/api/suppliers/${slug}`, [slug]);
   const [activeTab, setActiveTab] = useState("about");
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const { t, lang } = useTranslation();
 
   const tabs = [
@@ -66,13 +67,65 @@ const SupplierDetail = () => {
         <Link href="/suppliers" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 font-medium">
           <ArrowLeft className="h-4 w-4" /> {t.supplierDetail.backToList}
         </Link>
-        <div className="bg-card border rounded-2xl p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <div className="flex gap-3 flex-shrink-0">
-              {galleryImages.slice(0, 3).map((src, i) => (
-                <img key={i} src={src} alt={`${displayName} ${i + 1}`} className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border shadow-sm" />
-              ))}
-            </div>
+        <div className="bg-card rounded-2xl p-6 sm:p-8">
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            {/* Gallery */}
+            {galleryImages.length > 0 && (
+              <div className="flex-shrink-0 w-full lg:w-[28rem]">
+                {/* Main image */}
+                <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: "4/3" }}>
+                  <img
+                    src={galleryImages[activeImageIndex]}
+                    alt={`${displayName} ${activeImageIndex + 1}`}
+                    className="w-full h-full object-cover transition-opacity duration-300"
+                  />
+                  {galleryImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setActiveImageIndex((activeImageIndex - 1 + galleryImages.length) % galleryImages.length)}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setActiveImageIndex((activeImageIndex + 1) % galleryImages.length)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                        {galleryImages.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setActiveImageIndex(i)}
+                            className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeImageIndex ? "bg-white" : "bg-white/50"}`}
+                            aria-label={`Go to image ${i + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+                {/* Thumbnails */}
+                {galleryImages.length > 1 && (
+                  <div className="flex gap-2 mt-2">
+                    {galleryImages.map((src, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveImageIndex(i)}
+                        className={`flex-1 rounded-xl overflow-hidden border-2 transition-colors ${i === activeImageIndex ? "border-primary" : "border-transparent"}`}
+                        style={{ aspectRatio: "1/1" }}
+                        aria-label={`View image ${i + 1}`}
+                      >
+                        <img src={src} alt={`${displayName} ${i + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="flex-1">
               <h1 className="text-2xl font-black tracking-tight">{displayName}</h1>
               <p className="text-sm text-muted-foreground mt-1">{lang === "ja" ? supplier.name : supplier.name_ja}</p>

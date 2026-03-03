@@ -41,10 +41,14 @@ function PlanBadge({ plan, lang }: { plan?: string | null; lang: string }) {
   if (cfg.tier === "basic") return null;
   const label = (lang === "ja" ? cfg.badgeLabelJa ?? cfg.labelJa : cfg.badgeLabelEn ?? cfg.labelEn);
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${cfg.badgeClass}`}>
+    <Link
+      href="/plans"
+      onClick={(e) => e.stopPropagation()}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] hover:opacity-80 transition-opacity ${cfg.badgeClass}`}
+    >
       {cfg.tier === "premium" ? <Crown className="h-2.5 w-2.5" /> : <Star className="h-2.5 w-2.5" />}
       {label}
-    </span>
+    </Link>
   );
 }
 
@@ -173,9 +177,13 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
         <div className="h-1.5 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500" />
       )}
       {cfg.featuredLabelEn && !isList && (
-        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-sm z-10">
+        <Link
+          href="/plans"
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold shadow-sm z-10 transition-colors"
+        >
           {lang === "ja" ? cfg.featuredLabelJa : cfg.featuredLabelEn}
-        </div>
+        </Link>
       )}
       {rank != null && (
         <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-sm z-10">

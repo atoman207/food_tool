@@ -398,6 +398,7 @@ const ja: Translations = {
     reportDelete: "商品を削除",
     reportDeleteConfirm: "この商品を削除して出品者に通知しますか？",
     reportNotifyMsg: "違反報告により、あなたの出品が削除されました。",
+    tabLinks: "リンク管理",
   },
 
   // ── Supplier Card ─────────────────────────────────────────────────────────
@@ -502,8 +503,16 @@ const ja: Translations = {
     featureProducts: "商品カタログ表示",
     featureAnalytics: "分析ダッシュボード",
     featurePriority: "優先サポート",
+    featureSearchPriority: "検索表示順位",
     contactUs: "お問い合わせ",
     mostPopular: "一番人気",
+    comparisonTitle: "機能比較一覧",
+    valueStandard: "通常掲載",
+    valuePrioritized: "優先掲載",
+    valueHighest: "最優先掲載",
+    productsBasic: "最大3件",
+    productsStandard: "最大6件",
+    productsPremium: "最大12件",
   },
 };
 

@@ -396,6 +396,7 @@ const en = {
     reportDelete: "Delete Item",
     reportDeleteConfirm: "Delete this reported item and notify the seller?",
     reportNotifyMsg: "Your listing has been removed due to a violation report.",
+    tabLinks: "Links",
   },
 
   // ── Supplier Card ─────────────────────────────────────────────────────────
@@ -500,8 +501,16 @@ const en = {
     featureProducts: "Product catalog display",
     featureAnalytics: "Analytics dashboard",
     featurePriority: "Priority support",
+    featureSearchPriority: "Search ranking",
     contactUs: "Contact Us",
     mostPopular: "Most Popular",
+    comparisonTitle: "Feature Comparison",
+    valueStandard: "Standard",
+    valuePrioritized: "Prioritized",
+    valueHighest: "Highest priority",
+    productsBasic: "Up to 3 items",
+    productsStandard: "Up to 6 items",
+    productsPremium: "Up to 12 items",
   },
 };
 

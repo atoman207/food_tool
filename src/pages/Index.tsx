@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { Search, ArrowRight, ShoppingBag, TrendingUp, Sparkles, Newspaper, Calendar, Globe, ExternalLink } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Search, ArrowRight, ShoppingBag, TrendingUp, Sparkles, Newspaper, Globe, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { SupplierCard } from "@/components/SupplierCard";
@@ -10,7 +10,6 @@ import { useFetch } from "@/hooks/useSupabaseData";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { sortSuppliersByPlan } from "@/lib/plans";
 import type { SupplierRow, MarketplaceItemRow, CategoryRow, NewsArticleRow } from "@/types/database";
-import { LINKS_DATA } from "@/pages/Links";
 
 function SupplierSkeleton() {
   return (
@@ -49,7 +48,34 @@ const Index = () => {
   const popularSuppliers = sortedSuppliers.slice(0, 3);
   const recentItems = (marketplaceItems || []).slice(0, 6);
   const latestNews = (newsArticles || []).slice(0, 5);
-  const featuredLinks = LINKS_DATA.flatMap((g) => g.items).slice(0, 6);
+
+  const { data: linksData } = useFetch<any[]>("/api/links");
+  const featuredLinks = linksData || [];
+  const VISIBLE = 3;
+  const [linksIndex, setLinksIndex] = useState(0);
+  const maxLinksIndex = Math.max(0, featuredLinks.length - VISIBLE);
+  const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startAutoTimer = useCallback(() => {
+    if (autoTimerRef.current) clearInterval(autoTimerRef.current);
+    autoTimerRef.current = setInterval(() => {
+      setLinksIndex((i) => (i >= maxLinksIndex ? 0 : i + 1));
+    }, 2000);
+  }, [maxLinksIndex]);
+
+  useEffect(() => {
+    startAutoTimer();
+    return () => { if (autoTimerRef.current) clearInterval(autoTimerRef.current); };
+  }, [startAutoTimer]);
+
+  const goLeft = () => {
+    setLinksIndex((i) => Math.max(0, i - 1));
+    startAutoTimer();
+  };
+  const goRight = () => {
+    setLinksIndex((i) => Math.min(maxLinksIndex, i + 1));
+    startAutoTimer();
+  };
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -126,34 +152,33 @@ const Index = () => {
               {t.news.viewAllNews} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {latestNews.map((article) => (
-              <Link key={article.id} href={`/news/${article.slug}`} className="group">
-                <div className="bg-card border border-border rounded-2xl overflow-hidden card-hover h-full flex flex-col">
-                  <div className="aspect-[16/9] overflow-hidden flex-shrink-0">
-                    <img
-                      src={article.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=225&fit=crop"}
-                      alt={lang === "ja" ? (article.title_ja || article.title) : article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-3 flex flex-col flex-1">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="tag-badge text-[10px]">
-                        {(t.news as { categories?: Record<string, string> }).categories?.[article.category] ?? article.category}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        <Calendar className="h-2.5 w-2.5" />
-                        {new Date(article.created_at).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG")}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-xs leading-snug line-clamp-3 group-hover:text-primary transition-colors flex-1">
-                      {lang === "ja" ? (article.title_ja || article.title) : (article.title || article.title_ja)}
-                    </h3>
-                  </div>
-                </div>
-              </Link>
-            ))}
+          <div className="bg-card rounded-2xl overflow-hidden shadow-sm">
+            <div className="max-h-64 overflow-y-auto">
+              {latestNews.map((article, index) => {
+                const isCurrent = index === 0;
+                const d = new Date(article.created_at);
+                const dateStr = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+                const categoryLabel = (t.news as { categories?: Record<string, string> }).categories?.[article.category] ?? article.category;
+                const title = lang === "ja" ? (article.title_ja || article.title) : (article.title || article.title_ja);
+                return (
+                  <Link
+                    key={article.id}
+                    href={`/news/${article.slug}`}
+                    className={`flex items-center gap-4 px-6 py-4 hover:bg-muted/40 transition-colors group ${index % 2 === 1 ? "bg-muted/20" : "bg-transparent"}`}
+                  >
+                    <span className={`text-sm tabular-nums flex-shrink-0 w-24 ${isCurrent ? "font-bold text-primary" : "font-medium text-muted-foreground"}`}>
+                      {dateStr}
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary text-white flex-shrink-0">
+                      {categoryLabel}
+                    </span>
+                    <span className="text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                      {title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </section>
       )}
@@ -216,40 +241,112 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Our Links section */}
-      <section className="bg-[#F8F9FA] py-10 md:py-12">
-        <div className="container">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
-              {t.links.homeSectionTitle}
-            </h2>
-            <Link href="/links" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
-              {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+      {/* Our Links section — full width, 3 items at a time, auto-advance every 2s */}
+      {featuredLinks.length > 0 && (
+        <section className="bg-[#F8F9FA] py-10 md:py-12 w-full overflow-hidden">
+          <div className="container">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" />
+                {t.links.homeSectionTitle}
+              </h2>
+              <Link href="/links" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
+                {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">
+              {t.links.homeSectionSubtitle}
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground mb-6 -mt-3">
-            {t.links.homeSectionSubtitle}
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {featuredLinks.map((link) => (
-              <a
-                key={link.url}
-                href={link.url}
-                target={link.url.startsWith("http") ? "_blank" : "_self"}
-                rel="noopener noreferrer"
-                className="group bg-card border border-border rounded-2xl p-4 card-hover flex flex-col items-center text-center gap-2 hover:border-primary/40 transition-colors"
+
+          <div className="relative w-full">
+            {/* Left arrow */}
+            <button
+              type="button"
+              onClick={goLeft}
+              disabled={linksIndex === 0}
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/95 shadow-card border border-border flex items-center justify-center text-foreground hover:bg-white hover:border-primary/40 hover:text-primary transition-all duration-200 disabled:opacity-30 disabled:cursor-default"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            {/* Right arrow */}
+            <button
+              type="button"
+              onClick={goRight}
+              disabled={linksIndex >= maxLinksIndex}
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/95 shadow-card border border-border flex items-center justify-center text-foreground hover:bg-white hover:border-primary/40 hover:text-primary transition-all duration-200 disabled:opacity-30 disabled:cursor-default"
+              aria-label="Next"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+
+            {/* Viewport — clipped window showing exactly 3 cards */}
+            <div className="overflow-hidden px-14 md:px-16">
+              {/*
+                Track math (gap-free, using padding on card wrappers):
+                  track width  = N/3 × 100% of viewport
+                  card slot    = 100%/N of track = viewport/3 ✓
+                  per-step     = translateX(-100%/N) of track = viewport/3 ✓
+              */}
+              <div
+                className="flex transition-transform duration-500 ease-out"
+                style={{
+                  width: `${(featuredLinks.length / VISIBLE) * 100}%`,
+                  transform: `translateX(${-linksIndex * (100 / featuredLinks.length)}%)`,
+                }}
               >
-                <span className="text-2xl">{link.icon}</span>
-                <h3 className="text-xs font-semibold leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                  {lang === "ja" ? link.nameJa : link.name}
-                </h3>
-                <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
-              </a>
-            ))}
+                {featuredLinks.map((link: any) => (
+                  <div
+                    key={link.id ?? link.url}
+                    style={{ width: `${100 / featuredLinks.length}%`, flexShrink: 0, padding: "0 0.5rem" }}
+                  >
+                    <a
+                      href={link.url}
+                      target={link.url.startsWith("http") ? "_blank" : "_self"}
+                      rel="noopener noreferrer"
+                      className="group relative block w-full aspect-[208/144] rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300"
+                    >
+                      <img
+                        src={link.bg_image || link.bgImage}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10 transition-opacity duration-300 group-hover:from-black/85 group-hover:via-black/45" />
+                      <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
+                        <div className="self-end">
+                          <ExternalLink className="h-3.5 w-3.5 text-white/60 group-hover:text-white transition-colors" />
+                        </div>
+                        <div>
+                          <h3 className="text-white text-xs font-bold leading-snug line-clamp-2 drop-shadow-sm">
+                            {lang === "ja" ? (link.name_ja || link.nameJa || link.name) : link.name}
+                          </h3>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Dot indicators */}
+            {maxLinksIndex > 0 && (
+              <div className="flex justify-center gap-1.5 mt-4">
+                {Array.from({ length: maxLinksIndex + 1 }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => { setLinksIndex(i); startAutoTimer(); }}
+                    className={`rounded-full transition-all duration-200 ${i === linksIndex ? "w-5 h-1.5 bg-primary" : "w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/60"}`}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Recent Buy & Sell */}
       <section className="container py-10 md:py-14">

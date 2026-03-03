@@ -124,6 +124,10 @@ export default {
           "40%": { transform: "scale(0.97)" },
           "100%": { transform: "scale(1)" },
         },
+        "marquee-ltr": {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -132,6 +136,7 @@ export default {
         "slide-in": "slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards",
         "dropdown-open": "dropdown-open 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards",
         "btn-pop": "btn-pop 0.2s ease-out",
+        "marquee-ltr": "marquee-ltr 40s linear infinite",
       },
     },
   },

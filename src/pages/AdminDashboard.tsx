@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import {
   Store, ShoppingBag, CheckCircle, XCircle, Plus, Trash2, Edit2, Link2,
-  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper
+  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ const AdminDashboard = () => {
     { id: "suppliers",  label: t.admin.tabSuppliers,  icon: Store },
     { id: "approvals",  label: t.admin.tabApprovals,  icon: CheckCircle },
     { id: "news",       label: t.admin.tabNews,       icon: Newspaper },
+    { id: "links",      label: t.admin.tabLinks,      icon: Globe },
     { id: "categories", label: t.admin.tabCategories, icon: Tag },
     { id: "terms",      label: t.admin.tabTerms,      icon: Shield },
     { id: "qr",         label: t.admin.tabQR,         icon: Link2 },
@@ -75,6 +76,7 @@ const AdminDashboard = () => {
             {activeTab === "suppliers" && <SupplierManager />}
             {activeTab === "approvals" && <ApprovalQueue />}
             {activeTab === "news" && <NewsManager />}
+            {activeTab === "links" && <LinksManager />}
             {activeTab === "categories" && <CategoryManager />}
             {activeTab === "terms" && <TermsManager />}
             {activeTab === "qr" && <QRManager />}
@@ -809,6 +811,176 @@ function AnalyticsPanel() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function LinksManager() {
+  const { lang } = useTranslation();
+  const [links, setLinks] = useState<any[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const emptyForm = {
+    name: "", name_ja: "", description: "", description_ja: "",
+    url: "", icon: "🔗", bg_image: "", category: "government", sort_order: 0, active: true,
+  };
+  const [form, setForm] = useState(emptyForm);
+
+  useEffect(() => { fetchLinks(); }, []);
+
+  const fetchLinks = async () => {
+    const res = await fetch("/api/links");
+    if (res.ok) setLinks(await res.json());
+  };
+
+  const resetForm = () => { setForm(emptyForm); setEditId(null); };
+
+  const handleEdit = (l: any) => {
+    setForm({
+      name: l.name || "", name_ja: l.name_ja || "",
+      description: l.description || "", description_ja: l.description_ja || "",
+      url: l.url || "", icon: l.icon || "🔗",
+      bg_image: l.bg_image || l.bgImage || "",
+      category: l.category || "government",
+      sort_order: l.sort_order ?? 0,
+      active: l.active !== false,
+    });
+    setEditId(l.id);
+    setShowForm(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.name || !form.url) return;
+    const body = { ...form, sort_order: Number(form.sort_order) };
+    if (editId) {
+      await fetch("/api/links", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: editId, ...body }) });
+    } else {
+      await fetch("/api/links", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    }
+    setShowForm(false);
+    resetForm();
+    fetchLinks();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(lang === "ja" ? "このリンクを削除しますか？" : "Delete this link?")) return;
+    await fetch(`/api/links?id=${id}`, { method: "DELETE" });
+    fetchLinks();
+  };
+
+  const categoryOptions = ["government", "association", "platform", "resource"];
+  const categoryLabel = (c: string) => ({ government: "Government", association: "Association", platform: "Platform", resource: "Resource" }[c] ?? c);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-bold">{lang === "ja" ? "リンク管理" : "Links Manager"}</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{links.length} {lang === "ja" ? "件" : "links"}</p>
+        </div>
+        <Button onClick={() => { resetForm(); setShowForm(!showForm); }} className="rounded-xl gap-2">
+          <Plus className="h-4 w-4" /> {showForm ? (lang === "ja" ? "閉じる" : "Close") : (lang === "ja" ? "追加" : "Add")}
+        </Button>
+      </div>
+
+      {showForm && (
+        <div className="bg-card border rounded-2xl p-6 mb-6 space-y-4">
+          <h3 className="font-semibold text-sm text-muted-foreground">
+            {editId ? (lang === "ja" ? "リンクを編集" : "Edit Link") : (lang === "ja" ? "新規リンクを追加" : "Add New Link")}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputField label={lang === "ja" ? "名前（英語）" : "Name (English)"} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
+            <InputField label={lang === "ja" ? "名前（日本語）" : "Name (Japanese)"} value={form.name_ja} onChange={(v) => setForm((p) => ({ ...p, name_ja: v }))} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputField label={lang === "ja" ? "説明（英語）" : "Description (English)"} value={form.description} onChange={(v) => setForm((p) => ({ ...p, description: v }))} />
+            <InputField label={lang === "ja" ? "説明（日本語）" : "Description (Japanese)"} value={form.description_ja} onChange={(v) => setForm((p) => ({ ...p, description_ja: v }))} />
+          </div>
+          <InputField label="URL" value={form.url} onChange={(v) => setForm((p) => ({ ...p, url: v }))} placeholder="https://..." />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <InputField label={lang === "ja" ? "アイコン（絵文字）" : "Icon (emoji)"} value={form.icon} onChange={(v) => setForm((p) => ({ ...p, icon: v }))} placeholder="🔗" />
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "カテゴリー" : "Category"}</label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+                className="w-full h-11 px-3 rounded-lg border bg-background text-sm"
+              >
+                {categoryOptions.map((c) => <option key={c} value={c}>{categoryLabel(c)}</option>)}
+              </select>
+            </div>
+            <InputField label={lang === "ja" ? "表示順" : "Sort Order"} value={String(form.sort_order)} onChange={(v) => setForm((p) => ({ ...p, sort_order: Number(v) || 0 }))} placeholder="0" />
+            <div className="flex flex-col justify-end pb-0.5">
+              <label className="flex items-center gap-2 text-sm cursor-pointer h-11">
+                <input type="checkbox" checked={form.active} onChange={() => setForm((p) => ({ ...p, active: !p.active }))} className="accent-primary w-4 h-4" />
+                {lang === "ja" ? "表示する" : "Active"}
+              </label>
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "背景画像URL" : "Background Image URL"}</label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={form.bg_image}
+                onChange={(e) => setForm((p) => ({ ...p, bg_image: e.target.value }))}
+                placeholder="https://images.unsplash.com/..."
+                className="flex-1 h-11 px-4 rounded-lg border bg-background text-sm"
+              />
+              {form.bg_image && (
+                <img src={form.bg_image} alt="" className="w-16 h-11 rounded-lg object-cover border flex-shrink-0" />
+              )}
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={handleSave} className="rounded-xl gap-2">
+              <Save className="h-4 w-4" /> {editId ? (lang === "ja" ? "更新" : "Update") : (lang === "ja" ? "作成" : "Create")}
+            </Button>
+            <Button variant="outline" onClick={() => { setShowForm(false); resetForm(); }} className="rounded-xl">
+              {lang === "ja" ? "キャンセル" : "Cancel"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {links.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Globe className="h-10 w-10 mx-auto mb-3 opacity-30" />
+          <p>{lang === "ja" ? "リンクがまだありません" : "No links yet"}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {links.map((l: any) => (
+            <div key={l.id} className="bg-card border rounded-2xl p-4 flex items-center gap-4">
+              {l.bg_image || l.bgImage ? (
+                <img src={l.bg_image || l.bgImage} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-16 h-12 rounded-lg bg-muted flex items-center justify-center text-2xl flex-shrink-0">{l.icon}</div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm truncate">{lang === "ja" ? (l.name_ja || l.name) : l.name}</p>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${l.active !== false ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                    {l.active !== false ? (lang === "ja" ? "表示中" : "Active") : (lang === "ja" ? "非表示" : "Hidden")}
+                  </span>
+                  <span className="text-[10px] tag-badge">{categoryLabel(l.category)}</span>
+                  <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-0.5 hover:underline truncate max-w-[200px]">
+                    <ExternalLink className="h-3 w-3 flex-shrink-0" />{l.url}
+                  </a>
+                </div>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleEdit(l)}>
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+                <Button variant="outline" size="sm" className="rounded-xl text-destructive hover:bg-destructive/10" onClick={() => handleDelete(l.id)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
