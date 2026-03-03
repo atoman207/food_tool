@@ -370,7 +370,6 @@ const en = {
     certifications: "Certifications (comma separated)",
     imageHint: "Convert PDFs to images (PNG/JPG), upload to image hosting, and enter the URL here.",
     aboutEn: "About (English)",
-    aboutJa: "About (Japanese)",
     descriptionEn: "Description (English)",
     productManagement: "Product Catalog",
     productName: "Product Name",
