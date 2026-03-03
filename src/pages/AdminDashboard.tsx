@@ -451,7 +451,7 @@ function NewsManager() {
     fetchArticles();
   };
 
-  const { lang } = useTranslation();
+  const { t, lang } = useTranslation();
   const categoryOptions = ["industry", "regulation", "trend", "event"];
   const categoryLabels: Record<string, { en: string; ja: string }> = {
     industry: { en: "Industry", ja: "業界ニュース" },
