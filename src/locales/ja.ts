@@ -193,6 +193,11 @@ const ja: Translations = {
       used: "使用感あり",
       "needs-repair": "要修理",
     } as Record<string, string>,
+    deliveryDisplay: {
+      "引き取りのみ": "引き取りのみ",
+      "配送可能": "配送可能",
+      "引き取り・配送可": "引き取り・配送可",
+    } as Record<string, string>,
   },
 
   // ── News ─────────────────────────────────────────────────────────────────
