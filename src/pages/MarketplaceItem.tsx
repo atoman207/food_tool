@@ -18,7 +18,7 @@ const MarketplaceItemPage = () => {
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   if (loading) return <Layout><div className="container py-16 text-center text-muted-foreground">{t.common.loading}</div></Layout>;
 
@@ -34,6 +34,18 @@ const MarketplaceItemPage = () => {
   }
 
   const images = item.images || [item.image];
+  const mkt = t.marketplace as { areaDisplay?: Record<string, string>; conditionDisplay?: Record<string, string>; deliveryDisplay?: Record<string, string> };
+  const displayTitle = lang === "en" && item.title_en ? item.title_en : item.title;
+  const displayDescription = lang === "en" && item.description_en ? item.description_en : item.description;
+  const displayArea = lang === "en"
+    ? (item.area_en?.trim() || mkt.areaDisplay?.[item.area] || item.area)
+    : item.area;
+  const displayCondition = lang === "en"
+    ? (item.condition_en?.trim() || mkt.conditionDisplay?.[item.condition] || item.condition)
+    : item.condition;
+  const displayDelivery = lang === "en"
+    ? (item.delivery_en?.trim() || mkt.deliveryDisplay?.[item.delivery] || item.delivery)
+    : item.delivery;
 
   const handleReport = async () => {
     if (!reportReason || !user) return;
@@ -73,24 +85,24 @@ const MarketplaceItemPage = () => {
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight">{item.title}</h1>
+            <h1 className="text-2xl font-black tracking-tight">{displayTitle}</h1>
             <p className="text-3xl font-black text-primary mt-2">S${Number(item.price).toLocaleString()}</p>
             <div className="mt-6 space-y-3">
-              <div className="flex items-center gap-3 text-sm"><Package className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.condition}: <strong>{item.condition}</strong></span></div>
+              <div className="flex items-center gap-3 text-sm"><Package className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.condition}: <strong>{displayCondition}</strong></span></div>
               <div className="flex items-center gap-3 text-sm"><Calendar className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.yearsUsed}: <strong>{item.years_used}{t.marketplaceItem.years}</strong></span></div>
-              <div className="flex items-center gap-3 text-sm"><MapPin className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.area}: <strong>{item.area}</strong></span></div>
-              <div className="flex items-center gap-3 text-sm"><Truck className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.delivery}: <strong>{item.delivery}</strong></span></div>
+              <div className="flex items-center gap-3 text-sm"><MapPin className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.area}: <strong>{displayArea}</strong></span></div>
+              <div className="flex items-center gap-3 text-sm"><Truck className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.delivery}: <strong>{displayDelivery}</strong></span></div>
             </div>
             <div className="mt-6 p-5 bg-card border rounded-2xl">
               <h3 className="font-bold text-sm mb-2">{t.marketplaceItem.description}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{displayDescription}</p>
             </div>
             <div className="mt-6 p-5 bg-card border rounded-2xl">
               <h3 className="font-bold text-sm mb-2">{t.marketplaceItem.seller}</h3>
               <p className="text-sm font-semibold">{item.seller_name}</p>
             </div>
             <div className="mt-4 hidden sm:block">
-              <WhatsAppButton phone={item.seller_whatsapp} message={`Hi, I'm interested in your ${item.title} listed on the F&B Portal.`} fullWidth size="lg" />
+              <WhatsAppButton phone={item.seller_whatsapp} message={`Hi, I'm interested in your ${displayTitle} listed on the F&B Portal.`} fullWidth size="lg" />
             </div>
             {user && (
               <button onClick={() => setShowReport(true)} className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive">
@@ -116,7 +128,7 @@ const MarketplaceItemPage = () => {
       )}
 
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t sm:hidden z-40">
-        <WhatsAppButton phone={item.seller_whatsapp} message={`Hi, I'm interested in your ${item.title} listed on the F&B Portal.`} fullWidth size="lg" />
+        <WhatsAppButton phone={item.seller_whatsapp} message={`Hi, I'm interested in your ${displayTitle} listed on the F&B Portal.`} fullWidth size="lg" />
       </div>
     </Layout>
   );

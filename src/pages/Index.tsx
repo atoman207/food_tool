@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import { SupplierCard } from "@/components/SupplierCard";
 import { MarketplaceCard } from "@/components/MarketplaceCard";
 import { useFetch } from "@/hooks/useSupabaseData";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { sortSuppliersByPlan } from "@/lib/plans";
 import type { SupplierRow, MarketplaceItemRow, CategoryRow, NewsArticleRow } from "@/types/database";
@@ -47,14 +48,29 @@ const Index = () => {
   const sortedSuppliers = useMemo(() => sortSuppliersByPlan(suppliers || []), [suppliers]);
   const popularSuppliers = sortedSuppliers.slice(0, 3);
   const recentItems = (marketplaceItems || []).slice(0, 6);
-  const latestNews = (newsArticles || []).slice(0, 5);
+  const latestNews = useMemo(
+    () =>
+      [...(newsArticles || [])]
+        .sort((a, b) => {
+          const da = (a as { published_at?: string }).published_at || a.created_at;
+          const db = (b as { published_at?: string }).published_at || b.created_at;
+          return new Date(db).getTime() - new Date(da).getTime();
+        })
+        .slice(0, 10),
+    [newsArticles]
+  );
 
   const { data: linksData } = useFetch<any[]>("/api/links");
   const featuredLinks = linksData || [];
-  const VISIBLE = 3;
+  const isMobile = useIsMobile();
+  const VISIBLE = isMobile ? 1 : 3;
   const [linksIndex, setLinksIndex] = useState(0);
   const maxLinksIndex = Math.max(0, featuredLinks.length - VISIBLE);
   const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    setLinksIndex((i) => Math.min(i, Math.max(0, featuredLinks.length - VISIBLE)));
+  }, [VISIBLE, featuredLinks.length]);
 
   const startAutoTimer = useCallback(() => {
     if (autoTimerRef.current) clearInterval(autoTimerRef.current);
@@ -106,7 +122,31 @@ const Index = () => {
             <p className="mt-4 text-white/85 text-base md:text-lg animate-fade-in max-w-lg" style={{ animationDelay: "0.1s" }}>
               {t.home.heroSub}
             </p>
-            <div className="mt-8 bg-white rounded-2xl p-4 md:p-5 shadow-card-hover animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            {/* メインメニュー: カテゴリーで探す・人気サプライヤー・Buy & Sell を横並び（スマホでも3列） */}
+            <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3 animate-fade-in" style={{ animationDelay: "0.15s" }}>
+              <Link
+                href="/suppliers"
+                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm"
+              >
+                <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="text-center leading-tight">{t.home.card1Title}</span>
+              </Link>
+              <Link
+                href="/suppliers"
+                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm"
+              >
+                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="text-center leading-tight">{t.home.popularSuppliers}</span>
+              </Link>
+              <Link
+                href="/marketplace"
+                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm"
+              >
+                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="text-center leading-tight">{t.home.card3Title}</span>
+              </Link>
+            </div>
+            <div className="mt-6 bg-white rounded-2xl p-4 md:p-5 shadow-card-hover animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <div className="flex flex-col sm:flex-row gap-3">
                 <select
                   value={selectedCategory}
@@ -140,7 +180,79 @@ const Index = () => {
         </div>
       </section>
 
-      {/* News section */}
+      {/* 1. 3 main menu cards: カテゴリー / 人気サプライヤー / Buy & Sell */}
+      <section className="bg-[#F8F9FA] py-10 md:py-12">
+        <div className="container">
+          <div className="grid grid-cols-3 gap-2 sm:gap-5">
+            <Link href="/suppliers" className="group block">
+              <div className="bg-card border border-border rounded-xl p-3 sm:p-6 shadow-card card-hover text-center h-full">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                  <Search className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-xs sm:text-base leading-tight">{t.home.card1Title}</h3>
+                <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-2">{t.home.card1Sub}</p>
+              </div>
+            </Link>
+            <Link href="/suppliers" className="group block">
+              <div className="bg-card border border-border rounded-xl p-3 sm:p-6 shadow-card card-hover text-center h-full">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                  <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-xs sm:text-base leading-tight">{t.home.popularSuppliers}</h3>
+                <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-2">{t.home.card2Sub}</p>
+              </div>
+            </Link>
+            <Link href="/marketplace" className="group block">
+              <div className="bg-card border border-border rounded-xl p-3 sm:p-6 shadow-card card-hover text-center h-full">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+                  <ShoppingBag className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-xs sm:text-base leading-tight">{t.home.card3Title}</h3>
+                <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-2">{t.home.card3Sub}</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Popular Suppliers */}
+      <section className="container py-10 md:py-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" /> {t.home.popularSuppliers}
+          </h2>
+          <div className="flex items-center gap-3">
+            <Link href="/suppliers" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors duration-200 group">
+              {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+          {suppliersLoading
+            ? Array.from({ length: 3 }).map((_, i) => <SupplierSkeleton key={i} />)
+            : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
+          }
+        </div>
+      </section>
+
+      {/* 3. Buy & Sell (Recent marketplace) */}
+      <section className="bg-[#F8F9FA] py-10 md:py-14">
+        <div className="container">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
+              <ShoppingBag className="h-5 w-5 text-primary" /> {t.home.recentMarketplace}
+            </h2>
+            <Link href="/marketplace" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors duration-200 group">
+              {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            {recentItems.map((item) => <MarketplaceCard key={item.id} item={item} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Latest News */}
       {latestNews.length > 0 && (
         <section className="container py-10 md:py-12">
           <div className="flex items-center justify-between mb-6">
@@ -148,16 +260,17 @@ const Index = () => {
               <Newspaper className="h-5 w-5 text-primary" />
               {t.news.homeSection}
             </h2>
-            <Link href="/news" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
-              {t.news.viewAllNews} <ArrowRight className="h-3.5 w-3.5" />
+            <Link href="/news" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors duration-200 group">
+              {t.news.viewAllNews} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
           <div className="bg-card rounded-2xl overflow-hidden shadow-sm">
             <div className="max-h-64 overflow-y-auto">
               {latestNews.map((article, index) => {
                 const isCurrent = index === 0;
-                const d = new Date(article.created_at);
-                const dateStr = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+                const displayDate = (article as { published_at?: string }).published_at || article.created_at;
+                const d = new Date(displayDate);
+                const dateStr = `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, "0")}.${String(d.getUTCDate()).padStart(2, "0")}`;
                 const categoryLabel = (t.news as { categories?: Record<string, string> }).categories?.[article.category] ?? article.category;
                 const title = lang === "ja" ? (article.title_ja || article.title) : (article.title || article.title_ja);
                 return (
@@ -183,65 +296,7 @@ const Index = () => {
         </section>
       )}
 
-      {/* ── 3-column feature section: Search by Category · Popular Suppliers · Buy & Sell ── */}
-      <section className="bg-[#F8F9FA] py-10 md:py-12">
-        <div className="container">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {/* Card 1: Search by Category */}
-            <Link href="/suppliers" className="group block">
-              <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
-                  <Search className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-bold text-foreground text-base">{t.home.card1Title}</h3>
-                <p className="text-sm text-muted-foreground mt-2">{t.home.card1Sub}</p>
-              </div>
-            </Link>
-
-            {/* Card 2: Popular Suppliers */}
-            <Link href="/suppliers" className="group block">
-              <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
-                  <TrendingUp className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-bold text-foreground text-base">{t.home.popularSuppliers}</h3>
-                <p className="text-sm text-muted-foreground mt-2">{t.home.card2Sub}</p>
-              </div>
-            </Link>
-
-            {/* Card 3: Buy & Sell */}
-            <Link href="/marketplace" className="group block">
-              <div className="bg-card border border-border rounded-xl p-6 shadow-card card-hover text-center h-full">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-200">
-                  <ShoppingBag className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-bold text-foreground text-base">{t.home.card3Title}</h3>
-                <p className="text-sm text-muted-foreground mt-2">{t.home.card3Sub}</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Suppliers */}
-      <section className="container py-10 md:py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" /> {t.home.popularSuppliers}
-          </h2>
-          <Link href="/suppliers" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
-            {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {suppliersLoading
-            ? Array.from({ length: 3 }).map((_, i) => <SupplierSkeleton key={i} />)
-            : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
-          }
-        </div>
-      </section>
-
-      {/* Our Links section — full width, 3 items at a time, auto-advance every 2s */}
+      {/* 5. Links (リンク集) */}
       {featuredLinks.length > 0 && (
         <section className="bg-[#F8F9FA] py-10 md:py-12 w-full overflow-hidden">
           <div className="container">
@@ -250,8 +305,8 @@ const Index = () => {
                 <Globe className="h-5 w-5 text-primary" />
                 {t.links.homeSectionTitle}
               </h2>
-              <Link href="/links" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
-                {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
+              <Link href="/links" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors duration-200 group">
+                {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
             </div>
             <p className="text-sm text-muted-foreground mb-6">
@@ -281,25 +336,31 @@ const Index = () => {
               <ChevronRight className="h-5 w-5" />
             </button>
 
-            {/* Viewport — clipped window showing exactly 3 cards */}
+            {/* Viewport — on mobile: 1 card at 60vw; on desktop: 3 cards */}
             <div className="overflow-hidden px-14 md:px-16">
-              {/*
-                Track math (gap-free, using padding on card wrappers):
-                  track width  = N/3 × 100% of viewport
-                  card slot    = 100%/N of track = viewport/3 ✓
-                  per-step     = translateX(-100%/N) of track = viewport/3 ✓
-              */}
               <div
-                className="flex transition-transform duration-500 ease-out"
-                style={{
-                  width: `${(featuredLinks.length / VISIBLE) * 100}%`,
-                  transform: `translateX(${-linksIndex * (100 / featuredLinks.length)}%)`,
-                }}
+                className="flex flex-nowrap transition-transform duration-500 ease-out"
+                style={
+                  isMobile
+                    ? {
+                        width: "max-content",
+                        transform: `translateX(-${linksIndex * 60}vw)`,
+                      }
+                    : {
+                        width: `${(featuredLinks.length / VISIBLE) * 100}%`,
+                        transform: `translateX(${-linksIndex * (100 / featuredLinks.length)}%)`,
+                      }
+                }
               >
                 {featuredLinks.map((link: any) => (
                   <div
                     key={link.id ?? link.url}
-                    style={{ width: `${100 / featuredLinks.length}%`, flexShrink: 0, padding: "0 0.5rem" }}
+                    className="flex-shrink-0"
+                    style={
+                      isMobile
+                        ? { width: "60vw", padding: "0 0.5rem" }
+                        : { width: `${100 / featuredLinks.length}%`, padding: "0 0.5rem" }
+                    }
                   >
                     <a
                       href={link.url}
@@ -348,20 +409,6 @@ const Index = () => {
         </section>
       )}
 
-      {/* Recent Buy & Sell */}
-      <section className="container py-10 md:py-14">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-primary" /> {t.home.recentMarketplace}
-          </h2>
-          <Link href="/marketplace" className="text-sm text-primary font-semibold hover:underline flex items-center gap-1 transition-opacity duration-200">
-            {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {recentItems.map((item) => <MarketplaceCard key={item.id} item={item} />)}
-        </div>
-      </section>
     </Layout>
   );
 };

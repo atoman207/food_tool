@@ -10,21 +10,31 @@ function normaliseMock(item: any) {
     seller_name: item.sellerName ?? item.seller_name ?? "",
     seller_whatsapp: item.sellerWhatsapp ?? item.seller_whatsapp ?? "",
     created_at: item.createdAt ?? item.created_at ?? new Date().toISOString(),
+    area_en: item.area_en ?? item.areaEn,
+    condition_en: item.condition_en ?? item.conditionEn,
   };
 }
 
 export async function GET(req: NextRequest) {
-  const supabase = createServerSupabaseClient();
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
+  const all = searchParams.get("all") === "true";
   const status = searchParams.get("status") || "approved";
   const sort = searchParams.get("sort") || "newest";
   const seller_id = searchParams.get("seller_id");
+  // When true, never fall back to mock data – return real DB results only.
+  // Used by the admin approval queue so mock pending items don't pollute it.
+  const noFallback = searchParams.get("noFallback") === "true";
+
+  const useAdmin = all || status === "pending";
+  const supabase = useAdmin ? createAdminSupabaseClient() : createServerSupabaseClient();
 
   if (!supabase) {
+    // DB not configured – honour noFallback
+    if (noFallback) return NextResponse.json([]);
     let data = mockItems.map(normaliseMock);
     if (seller_id) data = data.filter((i) => i.seller_id === seller_id);
-    else data = data.filter((i) => i.status === status);
+    else if (!all) data = data.filter((i) => i.status === status);
     if (category) data = data.filter((i) => i.category === category);
     if (sort === "price-asc") data.sort((a, b) => a.price - b.price);
     else if (sort === "price-desc") data.sort((a, b) => b.price - a.price);
@@ -34,7 +44,7 @@ export async function GET(req: NextRequest) {
   let query = supabase.from("marketplace_items").select("*");
   if (seller_id) {
     query = query.eq("seller_id", seller_id);
-  } else {
+  } else if (!all) {
     query = query.eq("status", status);
   }
   if (category) query = query.eq("category", category);
@@ -43,10 +53,13 @@ export async function GET(req: NextRequest) {
   else query = query.order("created_at", { ascending: false });
 
   const { data, error } = await query;
-  // Only fall back to mock data on actual error, not on empty result set
   if (error) {
-    let fallback = mockItems.map(normaliseMock).filter((i) => i.status === status);
-    if (seller_id) fallback = mockItems.map(normaliseMock).filter((i) => i.seller_id === seller_id);
+    // On DB error, honour noFallback – return empty so the queue shows nothing
+    // instead of potentially confusing mock items.
+    if (noFallback) return NextResponse.json([]);
+    let fallback = mockItems.map(normaliseMock);
+    if (seller_id) fallback = fallback.filter((i) => i.seller_id === seller_id);
+    else if (!all) fallback = fallback.filter((i) => i.status === status);
     if (category) fallback = fallback.filter((i) => i.category === category);
     if (sort === "price-asc") fallback.sort((a, b) => a.price - b.price);
     else if (sort === "price-desc") fallback.sort((a, b) => b.price - a.price);
@@ -59,7 +72,7 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   const body = await req.json();
-  body.status = "pending";
+  if (!body.status) body.status = "pending";
   const { data, error } = await supabase.from("marketplace_items").insert(body).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);

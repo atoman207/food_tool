@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }: SignUpOptions): Promise<SignUpResult> => {
     const sb = getSupabase();
     if (!sb)
-      return { error: "Supabase が設定されていません。.env.local を確認してください。" };
+      return { error: "Supabase is not configured. Please check .env.local." };
 
     // ── Step 1: try server-side registration ──────────────────────────────
     try {
@@ -186,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq("username", username)
       .maybeSingle();
     if (existing)
-      return { error: "このユーザー名はすでに使用されています。別のユーザー名をお試しください。" };
+      return { error: "This username is already taken. Please try another." };
 
     const { data: authData, error: authError } = await sb.auth.signUp({
       email,
@@ -194,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       options: { data: { name, username } },
     });
     if (authError) return { error: authError.message };
-    if (!authData.user) return { error: "ユーザーの作成に失敗しました。" };
+    if (!authData.user) return { error: "Failed to create user." };
 
     const userId = authData.user.id;
 
@@ -251,7 +251,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     const sb = getSupabase();
     if (!sb)
-      return { error: "Supabase が設定されていません。.env.local を確認してください。" };
+      return { error: "Supabase is not configured. Please check .env.local." };
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       // Translate common Supabase error messages to Japanese
@@ -265,7 +265,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error.message.includes("Invalid login credentials") ||
         error.message.includes("invalid_credentials")
       ) {
-        return { error: "メールアドレスまたはパスワードが正しくありません。" };
+        return { error: "Invalid email or password." };
       }
       return { error: error.message };
     }
@@ -283,7 +283,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   /** Re-send the Supabase confirmation email */
   const resendConfirmationEmail = async (email: string) => {
     const sb = getSupabase();
-    if (!sb) return { error: "Supabase が設定されていません。" };
+    if (!sb) return { error: "Supabase is not configured." };
     const { error } = await sb.auth.resend({ type: "signup", email });
     return { error: error?.message ?? null };
   };

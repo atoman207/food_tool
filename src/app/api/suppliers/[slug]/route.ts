@@ -52,9 +52,13 @@ export async function PUT(req: NextRequest, { params }: { params: { slug: string
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   const body = await req.json();
+  // 説明文を含む全フィールドを明示的に渡す（欠落で上書きされないようにする）
+  const updatePayload: Record<string, unknown> = { ...body };
+  if (typeof body.description !== "undefined") updatePayload.description = body.description;
+  if (typeof body.description_ja !== "undefined") updatePayload.description_ja = body.description_ja;
   const { data, error } = await supabase
     .from("suppliers")
-    .update(body)
+    .update(updatePayload)
     .eq("slug", params.slug)
     .select()
     .single();

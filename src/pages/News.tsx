@@ -1,14 +1,17 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { Calendar, ArrowRight, Newspaper } from "lucide-react";
+import { Calendar, ArrowRight, Newspaper, ChevronLeft, ChevronRight } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useFetch } from "@/hooks/useSupabaseData";
 import { useTranslation } from "@/contexts/LanguageContext";
 import type { NewsArticleRow, CategoryRow } from "@/types/database";
 
+const PER_PAGE = 9;
+
 const News = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [page, setPage] = useState(1);
   const { t, lang } = useTranslation();
   const { data: articles, loading } = useFetch<NewsArticleRow[]>("/api/news");
   const { data: categories } = useFetch<CategoryRow[]>("/api/categories?type=news");
@@ -16,6 +19,20 @@ const News = () => {
   const filtered = (articles || []).filter(
     (a) => !selectedCategory || a.category === selectedCategory
   );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE),
+    [filtered, page]
+  );
+
+  const goToPage = (p: number) => {
+    setPage(Math.max(1, Math.min(p, totalPages)));
+  };
+
+  useEffect(() => {
+    if (page > totalPages) setPage(1);
+  }, [page, totalPages]);
 
   return (
     <Layout>
@@ -53,8 +70,9 @@ const News = () => {
         {loading ? (
           <div className="text-center py-16 text-muted-foreground">{t.common.loading}</div>
         ) : filtered.length > 0 ? (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((article) => (
+            {paginated.map((article) => (
               <Link key={article.id} href={`/news/${article.slug}`} className="group">
                 <div className="bg-card border rounded-2xl overflow-hidden card-hover">
                   <div className="aspect-[16/9] overflow-hidden">
@@ -71,7 +89,7 @@ const News = () => {
                       </span>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(article.created_at).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG")}
+                        {new Date((article as { published_at?: string }).published_at || article.created_at).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG")}
                       </span>
                     </div>
                     <h3 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">
@@ -88,6 +106,30 @@ const News = () => {
               </Link>
             ))}
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-10">
+              <button
+                type="button"
+                onClick={() => goToPage(page - 1)}
+                disabled={page <= 1}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border bg-background hover:bg-muted disabled:opacity-50 disabled:pointer-events-none"
+              >
+                <ChevronLeft className="h-4 w-4" /> {t.news.prevPage}
+              </button>
+              <span className="text-sm text-muted-foreground">
+                {t.news.pageOf.replace("{page}", String(page)).replace("{total}", String(totalPages))}
+              </span>
+              <button
+                type="button"
+                onClick={() => goToPage(page + 1)}
+                disabled={page >= totalPages}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border bg-background hover:bg-muted disabled:opacity-50 disabled:pointer-events-none"
+              >
+                {t.news.nextPage} <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          </>
         ) : (
           <div className="text-center py-20 text-muted-foreground">
             <Newspaper className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />

@@ -10,6 +10,9 @@ function normaliseMock(item: any) {
     seller_name: item.sellerName ?? item.seller_name ?? "",
     seller_whatsapp: item.sellerWhatsapp ?? item.seller_whatsapp ?? "",
     created_at: item.createdAt ?? item.created_at ?? new Date().toISOString(),
+    area_en: item.area_en ?? item.areaEn,
+    condition_en: item.condition_en ?? item.conditionEn,
+    delivery_en: item.delivery_en ?? item.deliveryEn,
   };
 }
 

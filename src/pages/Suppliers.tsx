@@ -1,7 +1,7 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, SlidersHorizontal, X, LayoutGrid, List } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Layout from "@/components/Layout";
 import { SupplierCard } from "@/components/SupplierCard";
 import { useFetch } from "@/hooks/useSupabaseData";
@@ -11,15 +11,30 @@ import type { SupplierRow, CategoryRow } from "@/types/database";
 
 const Suppliers = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [query, setQuery] = useState(searchParams?.get("q") || "");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     searchParams?.get("category") ? [searchParams.get("category")!] : []
   );
+  const [selectedPlan, setSelectedPlan] = useState<string>(searchParams?.get("plan") || "");
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [tagFilters, setTagFilters] = useState({ smallLot: false, japanese: false, halal: false });
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const plan = searchParams?.get("plan") || "";
+    setSelectedPlan(plan);
+  }, [searchParams]);
+
+  const setPlanFilter = (plan: string) => {
+    setSelectedPlan(plan);
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (plan) params.set("plan", plan);
+    else params.delete("plan");
+    router.replace(`/suppliers?${params.toString()}`, { scroll: false });
+  };
 
   const { data: suppliers } = useFetch<SupplierRow[]>("/api/suppliers");
   const { data: categories } = useFetch<CategoryRow[]>("/api/categories?type=supplier");
@@ -40,6 +55,7 @@ const Suppliers = () => {
   const supplierCategories = (s: SupplierRow) => [s.category, s.category_2, s.category_3].filter(Boolean);
   const filtered = useMemo(() => {
     const base = (suppliers || []).filter((s) => {
+      if (selectedPlan && (s.plan || "basic") !== selectedPlan) return false;
       if (query) {
         const q = query.toLowerCase();
         const matchName = s.name_ja?.includes(query) || s.name?.toLowerCase().includes(q);
@@ -56,10 +72,26 @@ const Suppliers = () => {
     });
     // Sort by plan tier, shuffle within each tier with a daily seed
     return sortSuppliersByPlan(base);
-  }, [suppliers, query, selectedCategories, selectedAreas, tagFilters]);
+  }, [suppliers, query, selectedCategories, selectedAreas, selectedPlan, tagFilters]);
 
   const FilterPanel = () => (
     <div className="space-y-6">
+      <div>
+        <h3 className="font-bold text-sm mb-3">{t.suppliers.plan}</h3>
+        <div className="space-y-2.5">
+          {[
+            { value: "", label: t.common.all },
+            { value: "premium", label: t.suppliers.planPremium },
+            { value: "standard", label: t.suppliers.planStandard },
+            { value: "basic", label: t.suppliers.planBasic },
+          ].map(({ value, label }) => (
+            <label key={value || "all"} className="flex items-center gap-2.5 text-sm cursor-pointer hover:text-foreground transition-colors">
+              <input type="radio" name="plan" checked={selectedPlan === value} onChange={() => setPlanFilter(value)} className="rounded-full border-border accent-primary" />
+              {label}
+            </label>
+          ))}
+        </div>
+      </div>
       <div>
         <h3 className="font-bold text-sm mb-3">{t.suppliers.category}</h3>
         <div className="space-y-2.5">

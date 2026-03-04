@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/contexts/LanguageContext";
-import { Mail, RefreshCw } from "lucide-react";
+import { Mail, RefreshCw, UtensilsCrossed } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
 const Login = () => {
@@ -75,7 +75,7 @@ const Login = () => {
         <div className="bg-card border rounded-xl p-8">
           <div className="text-center mb-8">
             <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
-              <span className="text-primary-foreground font-bold">食</span>
+              <UtensilsCrossed className="h-6 w-6 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-bold">{t.login.title}</h1>
             <p className="text-sm text-muted-foreground mt-2">{t.login.subtitle}</p>

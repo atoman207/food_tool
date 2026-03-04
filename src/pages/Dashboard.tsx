@@ -15,6 +15,7 @@ import { useTranslation } from "@/contexts/LanguageContext";
 import { getSupabase } from "@/lib/supabase";
 import type { MarketplaceItemRow, SupplierRow } from "@/types/database";
 import { useFetch } from "@/hooks/useSupabaseData";
+import { getFavoriteIds, removeFavoriteById, syncFromStorage } from "@/lib/favorites";
 
 const Dashboard = () => {
   const { user, profile, loading: authLoading } = useRequireAuth();
@@ -448,22 +449,25 @@ const Dashboard = () => {
 };
 
 function FavoritesTab({ t, lang }: { t: any; lang: string }) {
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteIds());
   const { data: allSuppliers } = useFetch<SupplierRow[]>("/api/suppliers");
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("favorite_suppliers");
-      if (stored) setFavoriteIds(JSON.parse(stored));
-    } catch {}
+    const onUpdated = () => setFavoriteIds(getFavoriteIds());
+    const onStorage = () => { syncFromStorage(); setFavoriteIds(getFavoriteIds()); };
+    window.addEventListener("favorites-updated", onUpdated);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("favorites-updated", onUpdated);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
-  const favoriteSuppliers = (allSuppliers || []).filter((s) => favoriteIds.includes(s.id));
+  const favoriteSuppliers = (allSuppliers || []).filter((s) => favoriteIds.includes(String(s.id)));
 
   const removeFavorite = (id: string) => {
-    const next = favoriteIds.filter((f) => f !== id);
-    setFavoriteIds(next);
-    try { localStorage.setItem("favorite_suppliers", JSON.stringify(next)); } catch {}
+    removeFavoriteById(String(id));
+    // State update is handled by the "favorites-updated" event listener above
   };
 
   return (
@@ -504,7 +508,7 @@ function FavoritesTab({ t, lang }: { t: any; lang: string }) {
                     variant="outline"
                     size="sm"
                     className="rounded-xl text-destructive hover:bg-destructive/10 border-destructive/30"
-                    onClick={() => removeFavorite(s.id)}
+                    onClick={() => removeFavorite(String(s.id))}
                   >
                     <Heart className="h-3 w-3 mr-1 fill-red-400" /> {t.dashboard.removeFavorite}
                   </Button>

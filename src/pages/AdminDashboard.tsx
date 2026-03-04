@@ -2,8 +2,11 @@
 import { useState, useEffect } from "react";
 import {
   Store, ShoppingBag, CheckCircle, XCircle, Plus, Trash2, Edit2, Link2,
-  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink
+  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink, FileText
 } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell,
+} from "recharts";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
@@ -17,9 +20,11 @@ const AdminDashboard = () => {
   const adminTabs = [
     { id: "suppliers",  label: t.admin.tabSuppliers,  icon: Store },
     { id: "approvals",  label: t.admin.tabApprovals,  icon: CheckCircle },
+    { id: "marketplace", label: t.admin.tabMarketplace, icon: ShoppingBag },
     { id: "news",       label: t.admin.tabNews,       icon: Newspaper },
     { id: "links",      label: t.admin.tabLinks,      icon: Globe },
     { id: "categories", label: t.admin.tabCategories, icon: Tag },
+    { id: "about",      label: t.admin.tabAbout,     icon: FileText },
     { id: "terms",      label: t.admin.tabTerms,      icon: Shield },
     { id: "qr",         label: t.admin.tabQR,         icon: Link2 },
     { id: "reports",    label: t.admin.tabReports,    icon: AlertTriangle },
@@ -75,9 +80,11 @@ const AdminDashboard = () => {
 
             {activeTab === "suppliers" && <SupplierManager />}
             {activeTab === "approvals" && <ApprovalQueue />}
+            {activeTab === "marketplace" && <MarketplaceManager />}
             {activeTab === "news" && <NewsManager />}
             {activeTab === "links" && <LinksManager />}
             {activeTab === "categories" && <CategoryManager />}
+            {activeTab === "about" && <AboutSiteManager />}
             {activeTab === "terms" && <TermsManager />}
             {activeTab === "qr" && <QRManager />}
             {activeTab === "reports" && <ReportManager />}
@@ -131,12 +138,13 @@ function SupplierManager() {
 
   const handleEdit = (s: any) => {
     setForm({
-      name: s.name, name_ja: s.name_ja, slug: s.slug, category: s.category || "", category_ja: s.category_ja || "",
+      name: s.name || "", name_ja: s.name_ja || "", slug: s.slug, category: s.category || "", category_ja: s.category_ja || "",
       category_2: s.category_2 || "", category_2_ja: s.category_2_ja || "", category_3: s.category_3 || "", category_3_ja: s.category_3_ja || "",
-      area: s.area, area_ja: s.area_ja, tags: (s.tags || []).join(", "),
-      description: s.description, description_ja: s.description_ja, whatsapp: s.whatsapp || "",
+      area: s.area || "", area_ja: s.area_ja || "", tags: (s.tags || []).join(", "),
+      // Always fall back to "" so undefined values don't accidentally clear saved text on re-open
+      description: s.description ?? "", description_ja: s.description_ja ?? "", whatsapp: s.whatsapp || "",
       whatsapp_contact_name: s.whatsapp_contact_name || "", logo: s.logo || "", catalog_url: s.catalog_url || "", image_2: s.image_2 || "", image_3: s.image_3 || "",
-      certifications: (s.certifications || []).join(", "), about: s.about || "", about_ja: s.about_ja || "", featured: s.featured,
+      certifications: (s.certifications || []).join(", "), about: s.about ?? "", about_ja: s.about_ja ?? "", featured: !!s.featured,
       plan: s.plan || "basic",
     });
     setEditSlug(s.slug);
@@ -150,11 +158,21 @@ function SupplierManager() {
       certifications: form.certifications.split(",").map((c) => c.trim()).filter(Boolean),
     };
 
+    let res: Response;
     if (editSlug) {
-      await fetch(`/api/suppliers/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      res = await fetch(`/api/suppliers/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     } else {
-      await fetch("/api/suppliers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      res = await fetch("/api/suppliers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     }
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(lang === "ja"
+        ? `保存に失敗しました。\n${err?.error ?? res.statusText}`
+        : `Save failed.\n${err?.error ?? res.statusText}`);
+      return;
+    }
+
     setShowForm(false);
     resetForm();
     fetchSuppliers();
@@ -199,6 +217,14 @@ function SupplierManager() {
             <InputField label={t.admin.areaJa} value={form.area_ja} onChange={(v) => setForm((p) => ({ ...p, area_ja: v }))} />
           </div>
           <InputField label={t.admin.tags} value={form.tags} onChange={(v) => setForm((p) => ({ ...p, tags: v }))} />
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "説明（英語・カード用）" : "Description (EN, for cards)"}</label>
+            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" placeholder={lang === "ja" ? "カードに表示する短い説明" : "Short description for cards"} />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "説明（日本語・カード用）" : "Description (JA, for cards)"}</label>
+            <textarea value={form.description_ja} onChange={(e) => setForm((p) => ({ ...p, description_ja: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" placeholder={lang === "ja" ? "カードに表示する短い説明" : "Short description for cards"} />
+          </div>
           <InputField label="WhatsApp" value={form.whatsapp} onChange={(v) => setForm((p) => ({ ...p, whatsapp: v }))} />
           <InputField label={t.admin.contactNameWhatsApp} value={form.whatsapp_contact_name} onChange={(v) => setForm((p) => ({ ...p, whatsapp_contact_name: v }))} />
           <ImageField label={t.admin.image1} value={form.logo} onChange={(v) => setForm((p) => ({ ...p, logo: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
@@ -406,13 +432,205 @@ function ApprovalQueue() {
   );
 }
 
+function MarketplaceManager() {
+  const { t, lang } = useTranslation();
+  const [items, setItems] = useState<any[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editSlug, setEditSlug] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const EMPTY_FORM = {
+    title: "", title_en: "",
+    slug: "", price: "", image: "",
+    area: "", area_en: "",
+    condition: "", condition_en: "",
+    years_used: "0",
+    description: "", description_en: "",
+    category: "",
+    seller_name: "", seller_whatsapp: "",
+    delivery: "", delivery_en: "",
+    status: "approved" as "approved" | "pending" | "rejected",
+  };
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  useEffect(() => { fetchItems(); }, []);
+
+  const fetchItems = async () => {
+    const res = await fetch("/api/marketplace?all=true");
+    const data = await res.json();
+    setItems(Array.isArray(data) ? data : []);
+  };
+
+  const resetForm = () => { setForm(EMPTY_FORM); setEditSlug(null); };
+
+  const handleEdit = (item: any) => {
+    setForm({
+      title: item.title ?? "",
+      title_en: item.title_en ?? "",
+      slug: item.slug ?? "",
+      price: String(item.price ?? ""),
+      image: item.image ?? "",
+      area: item.area ?? "",
+      area_en: item.area_en ?? "",
+      condition: item.condition ?? "",
+      condition_en: item.condition_en ?? "",
+      years_used: String(item.years_used ?? 0),
+      description: item.description ?? "",
+      description_en: item.description_en ?? "",
+      category: item.category ?? "",
+      seller_name: item.seller_name ?? "",
+      seller_whatsapp: item.seller_whatsapp ?? "",
+      delivery: item.delivery ?? "",
+      delivery_en: item.delivery_en ?? "",
+      status: item.status ?? "pending",
+    });
+    setEditSlug(item.slug);
+    setShowForm(true);
+  };
+
+  const handleSave = async () => {
+    const body = { ...form, price: Number(form.price), years_used: Number(form.years_used) };
+    if (editSlug) {
+      await fetch(`/api/marketplace/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    } else {
+      await fetch("/api/marketplace", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    }
+    setShowForm(false);
+    resetForm();
+    fetchItems();
+  };
+
+  const handleDelete = async (slug: string) => {
+    if (!confirm(lang === "ja" ? `「${slug}」を削除しますか？` : `Delete "${slug}"?`)) return;
+    await fetch(`/api/marketplace/${slug}`, { method: "DELETE" });
+    fetchItems();
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("folder", "marketplace");
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const json = await res.json();
+    if (json.url) setForm((p) => ({ ...p, image: json.url }));
+    setImageUploading(false);
+  };
+
+  const label = (en: string, ja: string) => lang === "ja" ? ja : en;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">{t.admin.tabMarketplace}</h2>
+        <Button onClick={() => { resetForm(); setShowForm(!showForm); }} className="rounded-xl gap-2">
+          <Plus className="h-4 w-4" /> {showForm ? t.admin.close : t.admin.add}
+        </Button>
+      </div>
+
+      {showForm && (
+        <div className="bg-card border rounded-2xl p-6 mb-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={label("Title (JA)", "タイトル（日本語）")} value={form.title} onChange={(v) => setForm((p) => ({ ...p, title: v }))} />
+            <InputField label={label("Title (EN)", "タイトル（英語）")} value={form.title_en} onChange={(v) => setForm((p) => ({ ...p, title_en: v }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={label("Slug (URL key)", "スラッグ（URLキー）")} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} />
+            <InputField label={label("Price (SGD)", "価格（SGD）")} value={form.price} onChange={(v) => setForm((p) => ({ ...p, price: v }))} type="number" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={label("Area (JA)", "エリア（日本語）")} value={form.area} onChange={(v) => setForm((p) => ({ ...p, area: v }))} />
+            <InputField label={label("Area (EN)", "エリア（英語）")} value={form.area_en} onChange={(v) => setForm((p) => ({ ...p, area_en: v }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={label("Condition (JA)", "状態（日本語）")} value={form.condition} onChange={(v) => setForm((p) => ({ ...p, condition: v }))} />
+            <InputField label={label("Condition (EN)", "状態（英語）")} value={form.condition_en} onChange={(v) => setForm((p) => ({ ...p, condition_en: v }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={label("Delivery (JA)", "配送方法（日本語）")} value={form.delivery} onChange={(v) => setForm((p) => ({ ...p, delivery: v }))} />
+            <InputField label={label("Delivery (EN)", "配送方法（英語）")} value={form.delivery_en} onChange={(v) => setForm((p) => ({ ...p, delivery_en: v }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={label("Years Used", "使用年数")} value={form.years_used} onChange={(v) => setForm((p) => ({ ...p, years_used: v }))} type="number" />
+            <InputField label={label("Category", "カテゴリー")} value={form.category} onChange={(v) => setForm((p) => ({ ...p, category: v }))} />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{label("Description (JA)", "説明（日本語）")}</label>
+            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{label("Description (EN)", "説明（英語）")}</label>
+            <textarea value={form.description_en} onChange={(e) => setForm((p) => ({ ...p, description_en: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label={label("Seller Name", "出品者名")} value={form.seller_name} onChange={(v) => setForm((p) => ({ ...p, seller_name: v }))} />
+            <InputField label="WhatsApp" value={form.seller_whatsapp} onChange={(v) => setForm((p) => ({ ...p, seller_whatsapp: v }))} />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{label("Image", "画像")}</label>
+            <div className="flex gap-3 items-center">
+              <input type="file" accept="image/*" onChange={handleImageUpload} className="text-sm" />
+              {imageUploading && <span className="text-xs text-muted-foreground">{label("Uploading…", "アップロード中…")}</span>}
+            </div>
+            {form.image && <img src={form.image} alt="" className="mt-2 h-24 rounded-lg object-cover" />}
+            <InputField label={label("or Image URL", "または画像URL")} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{label("Status", "ステータス")}</label>
+            <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as any }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-full">
+              <option value="approved">{label("Approved", "承認済み")}</option>
+              <option value="pending">{label("Pending", "審査中")}</option>
+              <option value="rejected">{label("Rejected", "却下")}</option>
+            </select>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <Button onClick={handleSave} className="rounded-xl gap-2"><Save className="h-4 w-4" />{t.admin.save}</Button>
+            <Button variant="outline" onClick={() => { setShowForm(false); resetForm(); }} className="rounded-xl">{t.admin.close}</Button>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {items.length === 0 && (
+          <div className="text-center py-16 text-muted-foreground">
+            <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+            <p>{label("No items found.", "アイテムがありません。")}</p>
+          </div>
+        )}
+        {items.map((item: any) => (
+          <div key={item.id ?? item.slug} className="bg-card border rounded-2xl p-4 flex gap-4 items-center">
+            {item.image && <img src={item.image} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />}
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm truncate">{lang === "en" && item.title_en ? item.title_en : item.title}</p>
+              <p className="text-xs text-muted-foreground">S${Number(item.price).toLocaleString()} · {lang === "en" && item.area_en ? item.area_en : item.area} · {lang === "en" && item.condition_en ? item.condition_en : item.condition}</p>
+              <span className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-medium ${item.status === "approved" ? "bg-green-100 text-green-700" : item.status === "rejected" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>
+                {item.status === "approved" ? label("Approved", "承認済み") : item.status === "rejected" ? label("Rejected", "却下") : label("Pending", "審査中")}
+              </span>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button variant="outline" size="sm" className="rounded-xl gap-1" onClick={() => handleEdit(item)}>
+                <Edit2 className="h-3 w-3" /> {t.admin.edit}
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-xl gap-1 text-destructive" onClick={() => handleDelete(item.slug)}>
+                <Trash2 className="h-3 w-3" /> {t.admin.delete}
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function NewsManager() {
   const [articles, setArticles] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [form, setForm] = useState({
     title: "", title_ja: "", slug: "", excerpt: "", excerpt_ja: "", content: "", content_ja: "",
-    image: "", category: "industry", author: "", published: false,
+    image: "", category: "industry", author: "", published: false, published_at: "",
   });
 
   useEffect(() => { fetchArticles(); }, []);
@@ -423,15 +641,17 @@ function NewsManager() {
   };
 
   const resetForm = () => {
-    setForm({ title: "", title_ja: "", slug: "", excerpt: "", excerpt_ja: "", content: "", content_ja: "", image: "", category: "industry", author: "", published: false });
+    setForm({ title: "", title_ja: "", slug: "", excerpt: "", excerpt_ja: "", content: "", content_ja: "", image: "", category: "industry", author: "", published: false, published_at: "" });
     setEditSlug(null);
   };
 
   const handleSave = async () => {
+    const body: Record<string, unknown> = { ...form };
+    body.published_at = form.published_at ? new Date(form.published_at).toISOString() : null;
     if (editSlug) {
-      await fetch(`/api/news/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      await fetch(`/api/news/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     } else {
-      await fetch("/api/news", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      await fetch("/api/news", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     }
     setShowForm(false);
     resetForm();
@@ -439,18 +659,40 @@ function NewsManager() {
   };
 
   const handleEdit = (a: any) => {
+    const pub = a.published_at ? new Date(a.published_at).toISOString().slice(0, 16) : "";
     setForm({
       title: a.title, title_ja: a.title_ja, slug: a.slug, excerpt: a.excerpt, excerpt_ja: a.excerpt_ja,
       content: a.content, content_ja: a.content_ja, image: a.image, category: a.category, author: a.author, published: a.published,
+      published_at: pub,
     });
     setEditSlug(a.slug);
     setShowForm(true);
   };
 
   const handleDelete = async (slug: string) => {
-    if (!confirm("削除しますか？")) return;
+    if (!confirm(t.admin.deleteConfirm)) return;
     await fetch(`/api/news/${slug}`, { method: "DELETE" });
     fetchArticles();
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageUploading(true);
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      fd.set("folder", "news");
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) setForm((p) => ({ ...p, image: data.url }));
+      else throw new Error(data.error || "Upload failed");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setImageUploading(false);
+      e.target.value = "";
+    }
   };
 
   const { t, lang } = useTranslation();
@@ -487,7 +729,46 @@ function NewsManager() {
             <InputField label={lang === "ja" ? "抜粋（日本語）" : "Excerpt (Japanese)"} value={form.excerpt_ja} onChange={(v) => setForm((p) => ({ ...p, excerpt_ja: v }))} />
           </div>
           <InputField label={lang === "ja" ? "スラッグ（URL）" : "Slug (URL)"} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} placeholder="my-article-slug" />
-          <InputField label={lang === "ja" ? "画像URL" : "Image URL"} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} placeholder="https://..." />
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "画像" : "Image"}</label>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                id="news-image-upload"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  setImageUploading(true);
+                  try {
+                    const fd = new FormData();
+                    fd.set("file", f);
+                    fd.set("folder", "news");
+                    const res = await fetch("/api/upload", { method: "POST", body: fd });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Upload failed");
+                    setForm((p) => ({ ...p, image: data.url }));
+                  } catch (err) {
+                    console.error(err);
+                  } finally {
+                    setImageUploading(false);
+                    e.target.value = "";
+                  }
+                }}
+              />
+              <label htmlFor="news-image-upload">
+                <Button type="button" variant="outline" size="sm" className="rounded-xl gap-2 cursor-pointer" disabled={imageUploading} asChild>
+                  <span>
+                    <Image className="h-4 w-4" />
+                    {imageUploading ? (lang === "ja" ? "アップロード中..." : "Uploading...") : (lang === "ja" ? "画像をアップロード" : "Upload image")}
+                  </span>
+                </Button>
+              </label>
+              <span className="text-xs text-muted-foreground">{(lang === "ja" ? "または" : "or")}</span>
+            </div>
+            <InputField label={lang === "ja" ? "画像URL" : "Image URL"} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} placeholder="https://..." />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "カテゴリー" : "Category"}</label>
@@ -502,6 +783,18 @@ function NewsManager() {
               </select>
             </div>
             <InputField label={lang === "ja" ? "著者" : "Author"} value={form.author} onChange={(v) => setForm((p) => ({ ...p, author: v }))} />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "表示日付（管理者設定）" : "Display Date (admin override)"}</label>
+            <input
+              type="datetime-local"
+              value={form.published_at}
+              onChange={(e) => setForm((p) => ({ ...p, published_at: e.target.value }))}
+              className="w-full h-11 px-3 rounded-lg border bg-background text-sm"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {lang === "ja" ? "空欄の場合は作成日時を表示します。" : "Leave empty to use creation date."}
+            </p>
           </div>
           <div>
             <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "本文（英語）" : "Content (English)"}</label>
@@ -581,37 +874,40 @@ function CategoryManager() {
     fetchCategories();
   };
 
+  const { t } = useTranslation();
   const handleDelete = async (id: string) => {
-    if (!confirm("削除しますか？")) return;
+    if (!confirm(t.admin.deleteConfirm)) return;
     await fetch(`/api/categories?id=${id}`, { method: "DELETE" });
     fetchCategories();
   };
 
+  const typeLabels: Record<string, string> = { supplier: t.admin.typeSupplier, marketplace: t.admin.typeMarketplace, news: t.admin.typeNews };
+
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">カテゴリー管理</h2>
+      <h2 className="text-xl font-bold mb-6">{t.admin.categoryManagement}</h2>
       <div className="bg-card border rounded-2xl p-5 mb-6 flex flex-wrap gap-3 items-end">
         <div>
-          <label className="text-xs font-medium block mb-1">タイプ</label>
+          <label className="text-xs font-medium block mb-1">{t.admin.typeLabel}</label>
           <select value={newCat.type} onChange={(e) => setNewCat((p) => ({ ...p, type: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm">
-            <option value="supplier">サプライヤー</option>
-            <option value="marketplace">マーケットプレイス</option>
-            <option value="news">ニュース</option>
+            <option value="supplier">{t.admin.typeSupplier}</option>
+            <option value="marketplace">{t.admin.typeMarketplace}</option>
+            <option value="news">{t.admin.typeNews}</option>
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium block mb-1">値</label>
+          <label className="text-xs font-medium block mb-1">{t.admin.valueLabel}</label>
           <input value={newCat.value} onChange={(e) => setNewCat((p) => ({ ...p, value: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" />
         </div>
         <div>
-          <label className="text-xs font-medium block mb-1">ラベル</label>
+          <label className="text-xs font-medium block mb-1">{t.admin.labelLabel}</label>
           <input value={newCat.label} onChange={(e) => setNewCat((p) => ({ ...p, label: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" />
         </div>
         <Button onClick={handleAdd} size="sm" className="rounded-xl"><Plus className="h-4 w-4" /></Button>
       </div>
       {["supplier", "marketplace", "news"].map((type) => (
         <div key={type} className="mb-6">
-          <h3 className="font-bold text-sm mb-3 capitalize">{type === "supplier" ? "サプライヤー" : type === "marketplace" ? "マーケットプレイス" : "ニュース"}</h3>
+          <h3 className="font-bold text-sm mb-3 capitalize">{typeLabels[type] ?? type}</h3>
           <div className="flex flex-wrap gap-2">
             {categories.filter((c: any) => c.type === type).map((c: any) => (
               <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm">
@@ -622,6 +918,124 @@ function CategoryManager() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+export type AboutSiteContent = {
+  hero_title_en?: string;
+  hero_title_ja?: string;
+  hero_sub_en?: string;
+  hero_sub_ja?: string;
+  hero_image?: string;
+  intro_text_en?: string;
+  intro_text_ja?: string;
+  feature_image_1?: string;
+  feature_image_2?: string;
+  feature_image_3?: string;
+  feature_image_4?: string;
+};
+
+const DEFAULT_ABOUT: AboutSiteContent = {};
+
+function AboutSiteManager() {
+  const { t, lang } = useTranslation();
+  const [form, setForm] = useState<AboutSiteContent>(DEFAULT_ABOUT);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings?key=about_site")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.value) {
+          try {
+            const parsed = typeof d.value === "string" ? JSON.parse(d.value) : d.value;
+            setForm({ ...DEFAULT_ABOUT, ...parsed });
+          } catch {}
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await fetch("/api/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: "about_site", value: JSON.stringify(form) }),
+    });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold mb-6">{t.admin.tabAbout}</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        {lang === "ja"
+          ? "「このサイトについて」ページのヒーロー・紹介文・画像を編集できます。空欄の場合はデフォルトの表示になります。"
+          : "Edit the About page hero, introduction text, and images. Leave blank to use default content."}
+      </p>
+      <div className="bg-card border rounded-2xl p-6 max-w-2xl space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Hero title (EN)</label>
+            <input value={form.hero_title_en ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_title_en: e.target.value }))} placeholder={t.about.heroTitle} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Hero title (JA)</label>
+            <input value={form.hero_title_ja ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_title_ja: e.target.value }))} placeholder="つながる。取引する。成長する。" className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Hero subtitle (EN)</label>
+            <textarea value={form.hero_sub_en ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_sub_en: e.target.value }))} placeholder={t.about.heroSub} rows={2} className="w-full p-3 rounded-lg border bg-background text-sm resize-none" />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Hero subtitle (JA)</label>
+            <textarea value={form.hero_sub_ja ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_sub_ja: e.target.value }))} placeholder="シンガポールのF&B業界向け…" rows={2} className="w-full p-3 rounded-lg border bg-background text-sm resize-none" />
+          </div>
+        </div>
+        <div>
+          <label className="text-sm font-medium block mb-1.5">Hero image URL</label>
+          <input value={form.hero_image ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_image: e.target.value }))} placeholder="https://..." className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Intro paragraph (EN)</label>
+            <textarea value={form.intro_text_en ?? ""} onChange={(e) => setForm((p) => ({ ...p, intro_text_en: e.target.value }))} placeholder="Optional intro below hero" rows={3} className="w-full p-3 rounded-lg border bg-background text-sm resize-none" />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Intro paragraph (JA)</label>
+            <textarea value={form.intro_text_ja ?? ""} onChange={(e) => setForm((p) => ({ ...p, intro_text_ja: e.target.value }))} placeholder="任意の紹介文" rows={3} className="w-full p-3 rounded-lg border bg-background text-sm resize-none" />
+          </div>
+        </div>
+        <div>
+          <label className="text-sm font-medium block mb-1.5">Feature images (1–4)</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+            {([1, 2, 3, 4] as const).map((i) => (
+              <div key={i}>
+                <label className="text-xs text-muted-foreground block mb-1">Feature {i} image URL</label>
+                <input
+                  value={(form as Record<string, string>)[`feature_image_${i}`] ?? ""}
+                  onChange={(e) => setForm((p) => ({ ...p, [`feature_image_${i}`]: e.target.value }))}
+                  placeholder="https://..."
+                  className="w-full h-10 px-3 rounded-lg border bg-background text-sm"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}>
+            <Save className="h-4 w-4" /> {saving ? t.common.saving : t.common.save}
+          </Button>
+          {saved && <span className="text-sm text-emerald-600 font-medium">{lang === "ja" ? "保存しました" : "Saved"}</span>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -670,6 +1084,7 @@ function TermsManager() {
 function QRManager() {
   const [redirectUrl, setRedirectUrl] = useState("");
   const [saving, setSaving] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetch("/api/settings?key=qr_redirect_url").then((r) => r.json()).then((d) => setRedirectUrl(d?.value || "/suppliers"));
@@ -679,20 +1094,19 @@ function QRManager() {
     setSaving(true);
     await fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "qr_redirect_url", value: redirectUrl }) });
     setSaving(false);
-    alert("保存しました。");
+    alert(t.admin.qrSaved);
   };
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">QRリダイレクト管理</h2>
+      <h2 className="text-xl font-bold mb-6">{t.admin.qrTitle}</h2>
       <div className="bg-card border rounded-2xl p-6 max-w-lg">
         <p className="text-sm text-muted-foreground mb-4">
-          <code className="bg-muted px-2 py-0.5 rounded text-xs">yourdomain.com/go</code> にアクセスした際のリダイレクト先URLを設定します。
-          QRコードは常に /go を指すため、印刷の変更なしでリダイレクト先を変更できます。
+          {t.admin.qrDescription}
         </p>
-        <label className="text-sm font-medium block mb-1.5">リダイレクト先URL</label>
+        <label className="text-sm font-medium block mb-1.5">{t.admin.qrRedirectLabel}</label>
         <input value={redirectUrl} onChange={(e) => setRedirectUrl(e.target.value)} placeholder="/suppliers or https://..." className="w-full h-11 px-4 rounded-lg border bg-background text-sm mb-4" />
-        <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}><Save className="h-4 w-4" /> {saving ? "保存中..." : "保存"}</Button>
+        <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}><Save className="h-4 w-4" /> {saving ? t.admin.qrSaving : t.admin.qrSave}</Button>
       </div>
     </div>
   );
@@ -764,6 +1178,7 @@ function ReportManager() {
 }
 
 function AnalyticsPanel() {
+  const { t } = useTranslation();
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
 
@@ -774,25 +1189,26 @@ function AnalyticsPanel() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">統計スナップショット</h2>
+      <h2 className="text-xl font-bold mb-6">{t.admin.analytics.title}</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-card border rounded-2xl p-5 text-center">
           <p className="text-3xl font-black text-primary">{suppliers.length}</p>
-          <p className="text-xs text-muted-foreground mt-1">サプライヤー数</p>
+          <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.suppliersCount}</p>
         </div>
         <div className="bg-card border rounded-2xl p-5 text-center">
           <p className="text-3xl font-black text-accent">{items.length}</p>
-          <p className="text-xs text-muted-foreground mt-1">マーケット出品数</p>
+          <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.marketplaceCount}</p>
         </div>
         <div className="bg-card border rounded-2xl p-5 text-center">
           <p className="text-3xl font-black text-secondary">{suppliers.reduce((a: number, s: any) => a + (s.views || 0), 0)}</p>
-          <p className="text-xs text-muted-foreground mt-1">総閲覧数</p>
+          <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.totalViews}</p>
         </div>
         <div className="bg-card border rounded-2xl p-5 text-center">
           <p className="text-3xl font-black text-amber-500">{suppliers.filter((s: any) => s.plan === "premium").length}</p>
-          <p className="text-xs text-muted-foreground mt-1">Premiumサプライヤー</p>
+          <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.premiumSuppliers}</p>
         </div>
       </div>
+      <h3 className="font-bold text-sm mb-3">{t.admin.analytics.planBreakdown}</h3>
       <div className="grid grid-cols-3 gap-4 mb-8">
         {(["premium", "standard", "basic"] as const).map((plan) => (
           <div key={plan} className={`rounded-2xl p-4 text-center border ${PLAN_BADGE[plan]}`}>
@@ -801,13 +1217,53 @@ function AnalyticsPanel() {
           </div>
         ))}
       </div>
-      <h3 className="font-bold text-sm mb-3">閲覧数トップ</h3>
+      <div className="mb-8">
+        <div className="h-48 w-full max-w-md">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={[
+                { plan: PLAN_LABEL.premium, count: suppliers.filter((s: any) => (s.plan || "basic") === "premium").length, fill: "var(--color-amber-500)" },
+                { plan: PLAN_LABEL.standard, count: suppliers.filter((s: any) => (s.plan || "basic") === "standard").length, fill: "hsl(var(--primary))" },
+                { plan: PLAN_LABEL.basic, count: suppliers.filter((s: any) => (s.plan || "basic") === "basic").length, fill: "hsl(var(--muted-foreground))" },
+              ]}
+              margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
+            >
+              <XAxis dataKey="plan" tick={{ fontSize: 11 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+              <Tooltip formatter={(value: number) => [value, t.admin.analytics.suppliersCount]} />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                <Cell fill="var(--color-amber-500)" />
+                <Cell fill="hsl(var(--primary))" />
+                <Cell fill="hsl(var(--muted-foreground))" />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      <h3 className="font-bold text-sm mb-3">{t.admin.analytics.topByViews}</h3>
+      <div className="h-52 w-full max-w-xl mb-4">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            layout="vertical"
+            data={[...suppliers]
+              .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
+              .slice(0, 5)
+              .map((s: any) => ({ name: s.name_ja || s.name, views: s.views || 0 }))}
+            margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+          >
+            <XAxis type="number" tick={{ fontSize: 11 }} />
+            <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
+            <Tooltip formatter={(value: number) => [value, t.admin.analytics.viewsLabel]} />
+            <Bar dataKey="views" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
       <div className="space-y-2">
-        {suppliers.sort((a: any, b: any) => b.views - a.views).slice(0, 5).map((s: any) => (
+        {[...suppliers].sort((a: any, b: any) => (b.views || 0) - (a.views || 0)).slice(0, 5).map((s: any) => (
           <div key={s.id} className="flex items-center gap-3 bg-card border rounded-xl p-3">
             <img src={s.logo} alt="" className="w-10 h-10 rounded-lg object-cover" />
             <div className="flex-1"><p className="text-sm font-semibold">{s.name_ja}</p></div>
-            <p className="text-sm font-bold text-primary">{s.views} views</p>
+            <p className="text-sm font-bold text-primary">{s.views || 0} {t.admin.analytics.viewsLabel}</p>
           </div>
         ))}
       </div>
@@ -1030,11 +1486,11 @@ function ImageField({
   );
 }
 
-function InputField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+function InputField({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
     <div>
       <label className="text-sm font-medium block mb-1.5">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
     </div>
   );
 }

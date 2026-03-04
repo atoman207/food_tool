@@ -183,16 +183,15 @@ export function Header() {
     { label: t.nav.suppliers,   path: "/suppliers" },
     { label: t.nav.marketplace, path: "/marketplace" },
     { label: t.nav.news,        path: "/news" },
-    { label: t.nav.links,       path: "/links" },
     { label: t.nav.about,       path: "/about" },
     { label: t.nav.contact,     path: "/contact" },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-header">
+    <header className="sticky top-0 z-50 bg-white shadow-header border-b-2 border-primary">
       <div className="container flex h-20 md:h-[4.55rem] items-center gap-4 md:gap-6">
-        {/* Logo — left */}
-        <Link href="/" className="flex items-center flex-shrink-0 group">
+        {/* Logo — 背景を白で統一し浮きを防ぐ */}
+        <Link href="/" className="flex items-center flex-shrink-0 group bg-white rounded-r-lg pr-1 -ml-1">
           <Image
             src={logoImage}
             alt="F&B Portal - Singapore F&B Supplier & Chef Network"
@@ -292,7 +291,7 @@ export function Header() {
 export function Footer() {
   const { t } = useTranslation();
   return (
-    <footer className="border-t border-border bg-[#F8F9FA]">
+    <footer className="border-t-2 border-primary bg-primary/[0.06]">
       <div className="container py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
@@ -308,9 +307,10 @@ export function Footer() {
             <p className="text-sm text-muted-foreground leading-relaxed">{t.footer.tagline}</p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.services}</h4>
+            <h4 className="font-semibold mb-4 text-sm text-primary uppercase tracking-wider">{t.footer.services}</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li><Link href="/suppliers" className="hover:text-primary transition-colors duration-200">{t.footer.supplierSearch}</Link></li>
+              <li><Link href="/suppliers?plan=premium" className="hover:text-primary transition-colors duration-200">{t.footer.premiumListings}</Link></li>
               <li><Link href="/marketplace" className="hover:text-primary transition-colors duration-200">{t.footer.marketplace}</Link></li>
               <li><Link href="/news" className="hover:text-primary transition-colors duration-200">{t.footer.news}</Link></li>
               <li><Link href="/links" className="hover:text-primary transition-colors duration-200">{t.footer.links}</Link></li>

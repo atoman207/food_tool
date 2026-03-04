@@ -15,8 +15,9 @@ export async function POST(req: NextRequest) {
   if (!allowed.includes(file.type)) {
     return NextResponse.json({ error: "Only images (JPEG, PNG, WebP, GIF) are supported for logo. For PDF, please use an image export or paste a URL." }, { status: 400 });
   }
+  const folder = (formData.get("folder") as string) || "suppliers";
   const ext = file.name.split(".").pop() || "png";
-  const path = `suppliers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const buf = await file.arrayBuffer();
   const { error } = await supabase.storage.from("logos").upload(path, buf, {
     contentType: file.type,

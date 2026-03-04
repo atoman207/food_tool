@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { getPlanConfig } from "@/lib/plans";
+import { toggleFavorite, getFavoriteIds, syncFromStorage } from "@/lib/favorites";
 
 interface SupplierCardProps {
   supplier: {
@@ -53,31 +54,27 @@ function PlanBadge({ plan, lang }: { plan?: string | null; lang: string }) {
 }
 
 function useFavorites() {
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>(() => getFavoriteIds());
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("favorite_suppliers");
-      if (stored) setFavorites(JSON.parse(stored));
-    } catch {}
+    const onUpdated = () => setFavorites(getFavoriteIds());
+    const onStorage = () => { syncFromStorage(); setFavorites(getFavoriteIds()); };
+    window.addEventListener("favorites-updated", onUpdated);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("favorites-updated", onUpdated);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
-  const toggle = (id: string) => {
-    setFavorites((prev) => {
-      const next = prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id];
-      try { localStorage.setItem("favorite_suppliers", JSON.stringify(next)); } catch {}
-      return next;
-    });
-  };
-
-  return { favorites, toggle };
+  return { favorites, toggle: toggleFavorite };
 }
 
 export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardProps) {
   const { t, lang } = useTranslation();
   const cfg = getPlanConfig(supplier.plan);
   const { favorites, toggle } = useFavorites();
-  const isFav = favorites.includes(supplier.id);
+  const isFav = favorites.includes(String(supplier.id));
 
   const nameEn = supplier.name || supplier.name_ja || supplier.nameJa || "";
   const nameJa = supplier.name_ja || supplier.nameJa || supplier.name || "";
@@ -109,8 +106,8 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
   const wrapperClass = `${cfg.borderClass} ${cfg.cardWrapperClass}`;
 
   const cardContent = (
-    <div className={`p-3 ${isList ? "flex flex-row items-center gap-4 w-full" : ""}`}>
-      <div className={`flex items-start gap-3 ${isList ? "flex-1 min-w-0 flex-row" : "mb-3"}`}>
+    <div className={`p-3 flex flex-col h-full min-h-0 ${isList ? "flex-row items-center gap-4" : ""}`}>
+      <div className={`flex items-start gap-3 ${isList ? "flex-1 min-w-0 flex-row" : "mb-3 flex-shrink-0"}`}>
         <div className={`rounded-lg overflow-hidden flex-shrink-0 bg-muted ${imageSizeClass}`}>
           <img
             src={supplier.logo}
@@ -120,34 +117,32 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-1 mb-0.5">
-            <Link href={`/suppliers/${supplier.slug}`} className="hover:underline min-w-0">
-              <h3 className={`leading-snug line-clamp-2 ${isList ? "text-sm font-medium" : cfg.titleClass}`}>{displayName}</h3>
+            <Link href={`/suppliers/${supplier.slug}`} className="hover:underline min-w-0 flex-1">
+              <h3 className={`leading-snug line-clamp-2 ${isList ? "text-sm font-medium" : cfg.titleClass}`} title={displayName}>{displayName}</h3>
             </Link>
             <PlanBadge plan={supplier.plan} lang={lang} />
           </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
-            <MapPin className="h-3 w-3 flex-shrink-0" /> {areaLabel}
-            {contactName && (
-              <span className="truncate"> · {t.supplierCard.contactLabel}{contactName}</span>
-            )}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{areaLabel}{contactName ? ` · ${t.supplierCard.contactLabel}${contactName}` : ""}</span>
           </div>
         </div>
       </div>
       {!isList && (
-        <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{description}</p>
+        <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed flex-shrink-0" title={description}>{description}</p>
       )}
-      <div className={`flex flex-wrap gap-1.5 ${isList ? "order-last flex-shrink-0" : "mb-4"}`}>
+      <div className={`flex flex-wrap gap-1.5 overflow-hidden flex-shrink-0 min-h-[2.75rem] ${isList ? "order-last" : "mb-4"}`}>
         {categories.slice(0, 3).map((cat) => (
-          <span key={cat} className="tag-badge">{cat}</span>
+          <span key={cat} className="tag-badge tag-badge-fixed" title={cat}>{cat}</span>
         ))}
         {!isList && supplier.tags?.slice(0, 2).map((tag) => (
-          <span key={tag} className="tag-badge">{translateTag(tag)}</span>
+          <span key={tag} className="tag-badge tag-badge-fixed" title={translateTag(tag)}>{translateTag(tag)}</span>
         ))}
       </div>
-      <div className={`flex gap-2 ${isList ? "flex-shrink-0" : ""}`}>
-        <Link href={`/suppliers/${supplier.slug}`} className={isList ? "" : "flex-1"}>
-          <button className={`rounded-xl border transition-all duration-200 active:scale-[0.98] ${isList ? "h-8 px-3" : "w-full"} ${cfg.ctaClass}`}>
-            {t.supplierCard.viewDetail}
+      <div className={`flex gap-2 flex-shrink-0 flex-nowrap items-center ${isList ? "" : "mt-auto"}`}>
+        <Link href={`/suppliers/${supplier.slug}`} className={isList ? "" : "flex-1 min-w-0"}>
+          <button className={`btn-3d rounded-xl border transition-all duration-200 h-9 min-h-9 flex items-center justify-center ${isList ? "h-8 px-3" : "w-full min-w-[100px]"} ${cfg.ctaClass}`}>
+            <span className="truncate">{t.supplierCard.viewDetail}</span>
           </button>
         </Link>
         {cfg.showWhatsApp && (
@@ -155,24 +150,26 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
             phone={supplier.whatsapp}
             message={lang === "ja" ? `${displayName}${t.supplierCard.inquire}` : `I'd like to inquire about ${displayName}.`}
             size="sm"
+            className="!h-9 !min-h-9 flex-shrink-0 [&>span]:truncate"
           />
         )}
         <button
           type="button"
-          onClick={(e) => { e.preventDefault(); toggle(supplier.id); }}
+          onClick={(e) => { e.preventDefault(); toggle(String(supplier.id)); }}
           title={isFav ? (lang === "ja" ? "お気に入りから削除" : "Remove from favorites") : (lang === "ja" ? "お気に入りに追加" : "Add to favorites")}
-          className={`h-9 w-9 flex items-center justify-center rounded-xl border transition-colors flex-shrink-0 ${
+          aria-label={isFav ? (lang === "ja" ? "お気に入りから削除" : "Remove from favorites") : (lang === "ja" ? "お気に入りに追加" : "Add to favorites")}
+          className={`btn-3d h-9 min-h-9 w-9 min-w-9 flex items-center justify-center rounded-xl border transition-all flex-shrink-0 hover:scale-100 hover:translate-y-0 ${
             isFav ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100" : "border-border text-muted-foreground hover:text-red-400 hover:border-red-200"
           }`}
         >
-          <Heart className={`h-4 w-4 ${isFav ? "fill-red-500" : ""}`} />
+          <Heart className={`h-4 w-4 shrink-0 ${isFav ? "fill-red-500" : ""}`} />
         </button>
       </div>
     </div>
   );
 
   return (
-    <div className={`group bg-card rounded-xl overflow-hidden shadow-card card-hover border relative ${wrapperClass} ${isList ? "flex flex-row items-center" : ""}`}>
+    <div className={`group bg-card rounded-xl overflow-hidden shadow-card card-hover border relative flex flex-col h-full min-h-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
       {cfg.tier === "premium" && !isList && (
         <div className="h-1.5 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500" />
       )}

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
   if (!email || !password || !name || !username) {
     return NextResponse.json(
-      { error: "すべての必須フィールドを入力してください。" },
+      { error: "Please fill in all required fields." },
       { status: 400 },
     );
   }
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
   if (existingUsername) {
     return NextResponse.json(
-      { error: "このユーザー名はすでに使用されています。" },
+      { error: "This username is already taken." },
       { status: 400 },
     );
   }
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: isDuplicate
-          ? "このメールアドレスはすでに登録されています。"
+          ? "This email address is already registered."
           : authError.message,
       },
       { status: 400 },

@@ -37,13 +37,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(result);
   }
 
-  let query = supabase.from("news_articles").select("*").order("created_at", { ascending: false });
+  let query = supabase.from("news_articles").select("*");
   if (!all) query = query.eq("published", true);
   if (category) query = query.eq("category", category);
+  query = query.order("created_at", { ascending: false });
 
   const { data, error } = await query;
   if (error) return NextResponse.json([]);
-  return NextResponse.json(data);
+  const items = (data ?? []) as Array<{ published_at?: string | null; created_at: string }>;
+  items.sort((a, b) => new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime());
+  return NextResponse.json(items);
 }
 
 export async function POST(req: NextRequest) {

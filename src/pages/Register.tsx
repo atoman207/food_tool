@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/contexts/LanguageContext";
-import { Camera, User, Mail, CheckCircle2 } from "lucide-react";
+import { Camera, User, Mail, CheckCircle2, UtensilsCrossed } from "lucide-react";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -105,7 +105,7 @@ const Register = () => {
         <div className="bg-card border rounded-2xl p-8 shadow-sm">
           <div className="text-center mb-8">
             <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
-              <span className="text-primary-foreground font-bold">食</span>
+              <UtensilsCrossed className="h-6 w-6 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-bold">{t.register.title}</h1>
             <p className="text-sm text-muted-foreground mt-2">{t.register.subtitle}</p>

@@ -37,8 +37,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     weight: 3,
     labelEn: "Premium",
     labelJa: "プレミアム",
-    badgeLabelEn: "Most Popular",
-    badgeLabelJa: "人気No.1",
+    badgeLabelEn: "Trusted supplier",
+    badgeLabelJa: "信頼できるサプライヤー（Trusted supplier）",
     badgeClass:
       "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-2 border-amber-400 dark:border-amber-500 font-bold",
     borderClass: "border-2 border-amber-400 dark:border-amber-500",
@@ -122,10 +122,10 @@ export function seededShuffle<T>(arr: T[], seed: number): T[] {
 }
 
 /**
- * Sorts suppliers by plan tier (premium first) and shuffles within each tier
- * using today's date as seed for fair, daily-rotating exposure.
+ * Sorts suppliers by plan tier (premium first), featured first within each tier,
+ * then shuffles within featured and within non-featured using today's date as seed.
  */
-export function sortSuppliersByPlan<T extends { plan?: string | null }>(
+export function sortSuppliersByPlan<T extends { plan?: string | null; featured?: boolean }>(
   suppliers: T[]
 ): T[] {
   const premium = suppliers.filter((s) => s.plan === "premium");
@@ -133,9 +133,18 @@ export function sortSuppliersByPlan<T extends { plan?: string | null }>(
   const basic = suppliers.filter((s) => !s.plan || s.plan === "basic");
 
   const seed = dailySeed();
+  const sortTier = (tier: T[], baseSeed: number) => {
+    const featured = tier.filter((s) => s.featured);
+    const rest = tier.filter((s) => !s.featured);
+    return [
+      ...seededShuffle(featured, baseSeed),
+      ...seededShuffle(rest, baseSeed + 1),
+    ];
+  };
+
   return [
-    ...seededShuffle(premium, seed),
-    ...seededShuffle(standard, seed + 1),
-    ...seededShuffle(basic, seed + 2),
+    ...sortTier(premium, seed),
+    ...sortTier(standard, seed + 10),
+    ...sortTier(basic, seed + 20),
   ];
 }

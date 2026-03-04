@@ -100,23 +100,31 @@ CREATE TABLE IF NOT EXISTS public.marketplace_items (
   delivery         text        DEFAULT '',
   reject_reason    text
 );
+-- Bilingual columns for EN/JA display
+ALTER TABLE public.marketplace_items ADD COLUMN IF NOT EXISTS title_en       text DEFAULT '';
+ALTER TABLE public.marketplace_items ADD COLUMN IF NOT EXISTS area_en        text DEFAULT '';
+ALTER TABLE public.marketplace_items ADD COLUMN IF NOT EXISTS condition_en   text DEFAULT '';
+ALTER TABLE public.marketplace_items ADD COLUMN IF NOT EXISTS description_en text DEFAULT '';
+ALTER TABLE public.marketplace_items ADD COLUMN IF NOT EXISTS delivery_en    text DEFAULT '';
 
 -- News Articles
 CREATE TABLE IF NOT EXISTS public.news_articles (
-  id          uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
-  slug        text        UNIQUE NOT NULL,
-  title       text        NOT NULL,
-  title_ja    text        DEFAULT '',
-  excerpt     text        DEFAULT '',
-  excerpt_ja  text        DEFAULT '',
-  content     text        DEFAULT '',
-  content_ja  text        DEFAULT '',
-  image       text        DEFAULT '',
-  category    text        DEFAULT '',
-  author      text        DEFAULT '',
-  published   boolean     DEFAULT false,
-  created_at  timestamptz DEFAULT now()
+  id           uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
+  slug         text        UNIQUE NOT NULL,
+  title        text        NOT NULL,
+  title_ja     text        DEFAULT '',
+  excerpt      text        DEFAULT '',
+  excerpt_ja   text        DEFAULT '',
+  content      text        DEFAULT '',
+  content_ja   text        DEFAULT '',
+  image        text        DEFAULT '',
+  category     text        DEFAULT '',
+  author       text        DEFAULT '',
+  published    boolean     DEFAULT false,
+  published_at timestamptz,
+  created_at   timestamptz DEFAULT now()
 );
+ALTER TABLE public.news_articles ADD COLUMN IF NOT EXISTS published_at timestamptz;
 
 -- Categories
 CREATE TABLE IF NOT EXISTS public.categories (
@@ -454,60 +462,188 @@ WHERE NOT EXISTS (
 );
 
 -- ──────────────────────────────────────────────────────────────
--- 9. SEED — marketplace items
+-- 9. SEED — marketplace items (~30 items, bilingual EN/JA)
 -- ──────────────────────────────────────────────────────────────
 INSERT INTO public.marketplace_items
-  (slug, title, price, image, images, area, condition, years_used,
-   description, category, seller_id, seller_name, seller_whatsapp,
-   created_at, status, delivery)
+  (slug, title, title_en, price, image, images, area, area_en, condition, condition_en,
+   years_used, description, description_en, category, seller_id, seller_name, seller_whatsapp,
+   created_at, status, delivery, delivery_en)
 VALUES
-  ('commercial-oven-used',  '業務用コンベクションオーブン', 2500,
+  ('commercial-oven-used','業務用コンベクションオーブン','Commercial convection oven',2500,
    'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=600&h=450&fit=crop',
-   ARRAY['https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=800&h=600&fit=crop',
-         'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop'],
-   '中央エリア','良好',2,'閉店のため出品。まだまだ使えます。定期メンテナンス済み。即日引き取り可能。',
-   '厨房機器',NULL,'田中シェフ','6512345678','2024-01-15 00:00:00+00','approved','引き取りのみ'),
-
-  ('sushi-counter-set',     '寿司カウンターセット（檜製）', 4800,
+   ARRAY['https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=800&h=600&fit=crop','https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop'],
+   '中央エリア','Central','良好','Good',2,'閉店のため出品。まだまだ使えます。定期メンテナンス済み。即日引き取り可能。','Listed due to store closure. Still in great working condition. Regularly maintained. Available for immediate pickup.',
+   '厨房機器',NULL,'田中シェフ','6512345678','2024-01-15 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('sushi-counter-set','寿司カウンターセット（檜製）','Sushi counter set (cypress wood)',4800,
    'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&h=450&fit=crop',
    ARRAY['https://images.unsplash.com/photo-1553621042-f6e147245754?w=800&h=600&fit=crop'],
-   '東部エリア','良好',3,'檜の寿司カウンター。8席分。移転のためお譲りします。',
-   '厨房機器',NULL,'佐藤','6523456789','2024-01-12 00:00:00+00','approved','配送可能'),
-
-  ('ramen-bowls-set',       'ラーメン丼セット（50個）', 350,
+   '東部エリア','East','良好','Good',3,'檜の寿司カウンター。8席分。移転のためお譲りします。','Hinoki cypress sushi counter seating 8 guests. Selling due to relocation.',
+   '厨房機器',NULL,'佐藤','6523456789','2024-01-12 00:00:00+00','approved','配送可能','Delivery available'),
+  ('ramen-bowls-set','ラーメン丼セット（50個）','Ramen bowl set (50 pcs)',350,
    'https://images.unsplash.com/photo-1557872943-16a5ac26437e?w=600&h=450&fit=crop',
    ARRAY['https://images.unsplash.com/photo-1557872943-16a5ac26437e?w=800&h=600&fit=crop'],
-   '西部エリア','新品同様',0,'未使用のラーメン丼50個セット。メニュー変更のため出品。',
-   '食器・備品',NULL,'鈴木','6534567890','2024-01-10 00:00:00+00','approved','引き取り・配送可'),
-
-  ('ice-cream-machine',     '業務用アイスクリームマシン', 1800,
+   '西部エリア','West','新品同様','Like new',0,'未使用のラーメン丼50個セット。メニュー変更のため出品。','Set of 50 unused ramen bowls. Listed due to menu change.',
+   '食器・備品',NULL,'鈴木','6534567890','2024-01-10 00:00:00+00','approved','引き取り・配送可','Pickup or delivery'),
+  ('ice-cream-machine','業務用アイスクリームマシン','Commercial ice cream machine',1800,
    'https://images.unsplash.com/photo-1567206563064-6f60f40a2b57?w=600&h=450&fit=crop',
    ARRAY['https://images.unsplash.com/photo-1567206563064-6f60f40a2b57?w=800&h=600&fit=crop'],
-   '北部エリア','使用感あり',4,'まだ動作します。メンテナンス記録あり。',
-   '厨房機器',NULL,'山田','6545678901','2024-01-08 00:00:00+00','approved','引き取りのみ'),
-
-  ('chef-knives-set',       '包丁セット（堺製）5本', 890,
+   '北部エリア','North','使用感あり','Used',4,'まだ動作します。メンテナンス記録あり。','Still functional. Maintenance records available.',
+   '厨房機器',NULL,'山田','6545678901','2024-01-08 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('chef-knives-set','包丁セット（堺製）5本','Chef knife set (Sakai) 5 pcs',890,
    'https://images.unsplash.com/photo-1593618998160-e34014e67546?w=600&h=450&fit=crop',
    ARRAY['https://images.unsplash.com/photo-1593618998160-e34014e67546?w=800&h=600&fit=crop'],
-   '中央エリア','良好',1,'堺の職人が作った和包丁5本セット。出刃、柳刃、薄刃、菜切、牛刀。',
-   '調理器具',NULL,'高橋シェフ','6556789012','2024-01-05 00:00:00+00','approved','配送可能'),
-
-  ('restaurant-tables',     'レストランテーブル4台セット', 600,
+   '中央エリア','Central','良好','Good',1,'堺の職人が作った和包丁5本セット。出刃、柳刃、薄刃、菜切、牛刀。','Set of 5 Japanese knives handcrafted in Sakai. Includes deba, yanagiba, usuba, nakiri, and gyuto.',
+   '調理器具',NULL,'高橋シェフ','6556789012','2024-01-05 00:00:00+00','approved','配送可能','Delivery available'),
+  ('restaurant-tables','レストランテーブル4台セット','Restaurant table set (4 tables)',600,
    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=450&fit=crop',
    ARRAY['https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'],
-   '南部エリア','良好',2,'4人掛けテーブル4台。木製天板、鉄脚。店舗改装のため出品。',
-   '家具',NULL,'中村','6567890123','2024-01-03 00:00:00+00','approved','引き取りのみ')
-
+   '南部エリア','South','良好','Good',2,'4人掛けテーブル4台。木製天板、鉄脚。店舗改装のため出品。','Set of 4 four-person dining tables. Wooden tops, iron legs. Selling due to store renovation.',
+   '家具',NULL,'中村','6567890123','2024-01-03 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('gooseneck-kettle','グースネック電気ケトル','Gooseneck electric kettle',45,
+   'https://images.unsplash.com/photo-1556679343-c7306c7916f2?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1556679343-c7306c7916f2?w=800&h=600&fit=crop'],
+   '中央エリア','Central','使用感あり','Used',1,'おしゃれカフェ用。温度調節付き。引き取りのみ。','Used for specialty café. Temperature control included. Pickup only.',
+   '調理器具',NULL,'小林','6578901234','2024-02-01 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('cast-iron-dutch-oven','鋳物製ダッチオーブン（オレンジ）','Cast iron Dutch oven (orange)',120,
+   'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&h=600&fit=crop'],
+   '東部エリア','East','新品同様','Like new',0,'5.5L、未使用。店舗開業キャンセルのため出品。','5.5L capacity, unused. Listed due to cancelled store opening.',
+   '調理器具',NULL,'伊藤','6589012345','2024-02-02 00:00:00+00','approved','引き取り・配送可','Pickup or delivery'),
+  ('commercial-refrigerator','業務用冷蔵庫（2ドア）','Commercial refrigerator (2-door)',1500,
+   'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=800&h=600&fit=crop'],
+   '西部エリア','West','使用感あり','Used',5,'生鮮・冷凍食材用。動作良好。自取のみ。','For fresh and frozen produce. Good working order. Pickup only.',
+   '厨房機器',NULL,'渡辺','6590123456','2024-02-03 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('display-refrigerator','デザート・ケーキ用ショーケース','Display refrigerator for desserts & cakes',2200,
+   'https://images.unsplash.com/photo-1559847844-531f7766403e?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1559847844-531f7766403e?w=800&h=600&fit=crop'],
+   '北部エリア','North','良好','Good',2,'パティスリー閉店のため。LEDライト付き、ガラス扉。','From closed patisserie. LED lighting, glass doors.',
+   '厨房機器',NULL,'加藤','6501234567','2024-02-05 00:00:00+00','approved','配送可能','Delivery available'),
+  ('commercial-espresso-machine','業務用エスプレッソマシン（2グループ）','Commercial espresso machine (2-group)',3200,
+   'https://images.unsplash.com/photo-1495474473077-e9738a2e46e9?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1495474473077-e9738a2e46e9?w=800&h=600&fit=crop'],
+   '中央エリア','Central','良好','Good',3,'イタリア製。定期メンテナンス済み。即日引き取り可能。','Italian-made. Regularly serviced. Available for immediate pickup.',
+   '厨房機器',NULL,'田中シェフ','6512345678','2024-02-06 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('commercial-blender','業務用ミキサー（2L）','Commercial blender (2L)',280,
+   'https://images.unsplash.com/photo-1570222098062-7d247613b7c6?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1570222098062-7d247613b7c6?w=800&h=600&fit=crop'],
+   '南部エリア','South','新品同様','Like new',0,'スムージー・ジュース用。試し切りで出品。','For smoothies and juices. Selling after trial use.',
+   '厨房機器',NULL,'佐藤','6523456789','2024-02-08 00:00:00+00','approved','引き取り・配送可','Pickup or delivery'),
+  ('large-rice-cooker','炊飯器（30合・業務用）','Large rice cooker (30-cup, commercial)',450,
+   'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&h=600&fit=crop'],
+   '東部エリア','East','良好','Good',2,'日本製。炊き上がりタイマー付き。和食店閉店に伴い出品。','Japanese-made. Cooked rice timer included. Selling due to Japanese restaurant closure.',
+   '厨房機器',NULL,'鈴木','6534567890','2024-02-10 00:00:00+00','approved','配送可能','Delivery available'),
+  ('commercial-wok','中華鍋（業務用・直径60cm）','Commercial wok (60cm diameter)',180,
+   'https://images.unsplash.com/photo-1534939561126-855b8675edd7?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1534939561126-855b8675edd7?w=800&h=600&fit=crop'],
+   '西部エリア','West','使用感あり','Used',4,'炭火・ガス兼用。チャーハン・炒め物に最適。','Charcoal and gas compatible. Ideal for fried rice and stir-fries.',
+   '調理器具',NULL,'山田','6545678901','2024-02-12 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('prep-table-stainless','ステンレス調理台（作業台）','Stainless steel prep table',350,
+   'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&h=600&fit=crop'],
+   '北部エリア','North','良好','Good',1,'180cm×60cm。棚付き。清掃済み。','180cm × 60cm. With shelves. Thoroughly cleaned.',
+   '厨房機器',NULL,'高橋シェフ','6556789012','2024-02-14 00:00:00+00','approved','配送可能','Delivery available'),
+  ('bar-stools-set','バースツール4脚セット','Bar stools set (4 pcs)',320,
+   'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&h=600&fit=crop'],
+   '中央エリア','Central','新品同様','Like new',0,'金属フレーム、木製座面。カフェ・バー用。','Metal frame, wooden seats. For café or bar.',
+   '家具',NULL,'中村','6567890123','2024-02-16 00:00:00+00','approved','引き取り・配送可','Pickup or delivery'),
+  ('wine-cooler','ワインクーラー（業務用）','Wine cooler (commercial)',780,
+   'https://images.unsplash.com/photo-1510812431401-41d2e9c25b2e?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1510812431401-41d2e9c25b2e?w=800&h=600&fit=crop'],
+   '東部エリア','East','良好','Good',2,'約50本収納。温度調節可能。居酒屋閉店のため。','Holds ~50 bottles. Adjustable temperature. From closed izakaya.',
+   '厨房機器',NULL,'小林','6578901234','2024-02-18 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('commercial-dishwasher','業務用食洗機（パススルー型）','Commercial dishwasher (pass-through)',2800,
+   'https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=800&h=600&fit=crop'],
+   '西部エリア','West','使用感あり','Used',6,'高さ調節ラック付き。動作良好。自取限定。','Adjustable height racks. Good working order. Pickup only.',
+   '厨房機器',NULL,'伊藤','6589012345','2024-02-20 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('stand-mixer','業務用スタンドミキサー（20L）','Stand mixer (20L, commercial)',650,
+   'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&h=600&fit=crop'],
+   '南部エリア','South','新品同様','Like new',0,'パン・生地用。附屬ボウル・フック付き。','For bread and dough. Includes bowl and hook attachments.',
+   '厨房機器',NULL,'渡辺','6590123456','2024-02-22 00:00:00+00','approved','配送可能','Delivery available'),
+  ('chafing-dishes-set','シーフィングディッシュセット（6個）','Chafing dishes set (6 pcs)',220,
+   'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1544025162-d76694265947?w=800&h=600&fit=crop'],
+   '北部エリア','North','良好','Good',1,'ビュッフェ・宴会用。燃料皿・蓋付き。','For buffet and events. Includes fuel trays and lids.',
+   '食器・備品',NULL,'加藤','6501234567','2024-02-24 00:00:00+00','approved','引き取り・配送可','Pickup or delivery'),
+  ('commercial-fryer','業務用フライヤー（2槽）','Commercial fryer (2-basket)',950,
+   'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop'],
+   '中央エリア','Central','使用感あり','Used',3,'温度調節付き。油交換済み。引き取りのみ。','Temperature control. Oil recently changed. Pickup only.',
+   '厨房機器',NULL,'田中シェフ','6512345678','2024-02-26 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('pizza-oven','ピザ窯（石窯タイプ）','Pizza oven (stone type)',1200,
+   'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&h=600&fit=crop'],
+   '東部エリア','East','良好','Good',2,'窯内温度400℃対応。移動可能。ピザ店閉店のため。','Up to 400°C. Portable. From closed pizza shop.',
+   '厨房機器',NULL,'佐藤','6523456789','2024-02-28 00:00:00+00','approved','配送可能','Delivery available'),
+  ('chopping-boards-set','まな板セット（業務用・5枚）','Cutting board set (commercial, 5 pcs)',85,
+   'https://images.unsplash.com/photo-1594221708779-94832f4320d1?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1594221708779-94832f4320d1?w=800&h=600&fit=crop'],
+   '西部エリア','West','新品同様','Like new',0,'プラスチック製、色分け済み。衛生管理に最適。','Plastic, colour-coded. Ideal for food safety compliance.',
+   '調理器具',NULL,'鈴木','6534567890','2024-03-01 00:00:00+00','approved','引き取り・配送可','Pickup or delivery'),
+  ('bento-boxes-bulk','弁当容器・蓋付き（100個）','Bento boxes with lids (100 pcs)',75,
+   'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&h=600&fit=crop'],
+   '北部エリア','North','新品','New',0,'耐熱・電子レンジ対応。テイクアウト店用。','Heat-resistant, microwave-safe. For takeaway shops.',
+   '包装・容器',NULL,'山田','6545678901','2024-03-02 00:00:00+00','approved','配送可能','Delivery available'),
+  ('sushi-plates-set','寿司皿セット（檜風・30枚）','Sushi plate set (30 pcs, wood-style)',180,
+   'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&h=600&fit=crop'],
+   '南部エリア','South','良好','Good',1,'和風デザイン。洗いやすい素材。','Japanese-style design. Easy to wash.',
+   '食器・備品',NULL,'高橋シェフ','6556789012','2024-03-03 00:00:00+00','approved','配送可能','Delivery available'),
+  ('serving-trays-metal','メタルサーブトレイ（大・10枚）','Metal serving trays (large, 10 pcs)',95,
+   'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop'],
+   '中央エリア','Central','使用感あり','Used',2,'ステンレス製。ホテル・レストラン用。','Stainless steel. For hotels and restaurants.',
+   '食器・備品',NULL,'中村','6567890123','2024-03-04 00:00:00+00','approved','引き取り・配送可','Pickup or delivery'),
+  ('exhaust-hood','厨房用排煙フード','Commercial exhaust hood',1500,
+   'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&h=600&fit=crop'],
+   '東部エリア','East','使用感あり','Used',5,'幅2m。フィルター清掃済み。設置サポート別途相談可。','2m width. Filters cleaned. Installation support available on request.',
+   '厨房機器',NULL,'小林','6578901234','2024-03-05 00:00:00+00','approved','引き取りのみ','Pickup only'),
+  ('small-kettle','ケトル（小型・シンプル）','Kettle (small, simple)',15,
+   'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800&h=600&fit=crop'],
+   '西部エリア','West','使用感あり','Used',2,'スタッフ休憩室用。1.5L。即納可。','For staff break room. 1.5L. Ready for immediate pickup.',
+   '調理器具',NULL,'伊藤','6589012345','2024-03-06 00:00:00+00','approved','引き取り・配送可','Pickup or delivery'),
+  ('outdoor-dining-set','屋外用ダイニングセット（4人用）','Outdoor dining set (4-person)',480,
+   'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop'],
+   '北部エリア','North','良好','Good',1,'テーブル＋椅子4脚。アルミフレーム、耐候性あり。','Table and 4 chairs. Aluminium frame, weather-resistant.',
+   '家具',NULL,'渡辺','6590123456','2024-03-07 00:00:00+00','approved','配送可能','Delivery available'),
+  ('soup-pots-set','業務用スープ鍋セット（3個）','Commercial soup pot set (3 pcs)',150,
+   'https://images.unsplash.com/photo-1548688977-3e38ddc590f6?w=600&h=450&fit=crop',
+   ARRAY['https://images.unsplash.com/photo-1548688977-3e38ddc590f6?w=800&h=600&fit=crop'],
+   '南部エリア','South','良好','Good',1,'12L・8L・5L。ステンレス製。ラーメン・カレー用。','12L, 8L, 5L. Stainless steel. For ramen and curry.',
+   '調理器具',NULL,'加藤','6501234567','2024-03-08 00:00:00+00','approved','引き取り・配送可','Pickup or delivery')
 ON CONFLICT (slug) DO UPDATE SET
-  status = EXCLUDED.status,
-  price  = EXCLUDED.price;
+  title=EXCLUDED.title, title_en=EXCLUDED.title_en,
+  area=EXCLUDED.area, area_en=EXCLUDED.area_en,
+  condition=EXCLUDED.condition, condition_en=EXCLUDED.condition_en,
+  description=EXCLUDED.description, description_en=EXCLUDED.description_en,
+  delivery=EXCLUDED.delivery, delivery_en=EXCLUDED.delivery_en,
+  status=EXCLUDED.status, price=EXCLUDED.price, image=EXCLUDED.image, images=EXCLUDED.images;
+
+-- Force-overwrite all English fields with correct translations (runs unconditionally)
+UPDATE public.marketplace_items SET area_en = CASE area
+  WHEN '中央エリア' THEN 'Central' WHEN '東部エリア' THEN 'East' WHEN '西部エリア' THEN 'West'
+  WHEN '北部エリア' THEN 'North' WHEN '南部エリア' THEN 'South' ELSE area_en END;
+UPDATE public.marketplace_items SET condition_en = CASE condition
+  WHEN '新品同様' THEN 'Like New' WHEN '新品' THEN 'New' WHEN '良好' THEN 'Good'
+  WHEN '使用感あり' THEN 'Used' WHEN '要修理' THEN 'Needs Repair' ELSE condition_en END;
+UPDATE public.marketplace_items SET delivery_en = CASE delivery
+  WHEN '引き取りのみ' THEN 'Pickup only' WHEN '配送可能' THEN 'Delivery available'
+  WHEN '引き取り・配送可' THEN 'Pickup or delivery' ELSE delivery_en END;
 
 -- ──────────────────────────────────────────────────────────────
--- 10. SEED — news articles
+-- 10. SEED — news articles (10 items)
 -- ──────────────────────────────────────────────────────────────
 INSERT INTO public.news_articles
   (slug, title, title_ja, excerpt, excerpt_ja, content, content_ja,
-   image, category, author, published)
+   image, category, author, published, published_at)
 VALUES
   (
     'singapore-fb-trends-2024',
@@ -518,7 +654,7 @@ VALUES
     'The Singapore F&B industry continues to evolve rapidly. Plant-based foods and sustainable sourcing are gaining traction across restaurants and cafes.',
     'シンガポールのF&B業界は急速に進化を続けています。日本料理の需要が高まる中、高品質な食材の安定供給が業界全体の課題となっています。特に2024年は植物性食品と持続可能な調達への関心が高まっています。',
     'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=450&fit=crop',
-    'industry', '編集部', true
+    'industry', '編集部', true, '2026-03-01 08:00:00+00'
   ),
   (
     'halal-certification-guide',
@@ -529,7 +665,7 @@ VALUES
     'Halal certification is essential for reaching Muslim consumers in Singapore. MUIS oversees halal certification and suppliers must meet specific standards.',
     'ハラール認証は、シンガポールのムスリム消費者にリーチするために不可欠です。シンガポールではMUISがハラール認証を管轄しており、取得には一定の基準を満たす必要があります。',
     'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=450&fit=crop',
-    'regulation', '編集部', true
+    'regulation', '編集部', true, '2026-03-01 09:00:00+00'
   ),
   (
     'japanese-cuisine-demand-surge',
@@ -540,9 +676,97 @@ VALUES
     'Demand for authentic Japanese cuisine is growing significantly. The first half of 2024 saw record new openings of Japanese restaurants.',
     'シンガポールでの本格的な日本料理への需要が急増しています。2024年上半期の日本料理レストランの新規開業数は過去最高を記録。和食食材の安定調達を求めるレストランオーナーからの問い合わせも増加しています。',
     'https://images.unsplash.com/photo-1553621042-f6e147245754?w=800&h=450&fit=crop',
-    'trend', '編集部', true
+    'trend', '編集部', true, '2026-03-01 10:00:00+00'
+  ),
+  (
+    'plant-based-food-trend-singapore-2025',
+    'Plant-Based Food Market Surges in Singapore',
+    'シンガポールでプラントベース食品市場が急成長',
+    'Singapore''s plant-based food sector is seeing record growth, with new local brands and international players entering the market.',
+    'シンガポールのプラントベース食品セクターは記録的な成長を見せています。',
+    'Singapore''s plant-based food sector is seeing record growth. New local brands and international players are entering the market.',
+    'シンガポールのプラントベース食品セクターは記録的な成長を見せており、新しいローカルブランドや国際的な企業が市場に参入しています。',
+    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=450&fit=crop',
+    'trend', '編集部', true, '2026-02-28 09:00:00+00'
+  ),
+  (
+    'sfa-food-safety-regulations-2025',
+    'Singapore Introduces Stricter Food Safety Regulations for 2025',
+    'シンガポール、2025年に向けて食品安全規制を強化',
+    'The Singapore Food Agency (SFA) has announced a new set of food safety regulations set to take effect in Q2 2025.',
+    'シンガポール食品庁（SFA）は2025年第2四半期から施行される新たな食品安全規制を発表しました。',
+    'The SFA has announced new food safety regulations impacting all F&B establishments.',
+    'シンガポール食品庁は全F&B施設に影響する新たな食品安全規制を発表しました。',
+    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=450&fit=crop',
+    'regulation', '編集部', true, '2026-02-25 08:00:00+00'
+  ),
+  (
+    'restaurant-association-gala-2025',
+    'RAS Annual Gala 2025: Celebrating Singapore''s F&B Industry',
+    'RAS年次ガラ2025：シンガポールF&B業界を祝う',
+    'The Restaurant Association of Singapore is hosting its annual gala dinner on March 15, recognising outstanding contributions.',
+    'シンガポール・レストラン協会は3月15日に年次ガラディナーを開催します。',
+    'The Restaurant Association of Singapore recognises outstanding contributions to the industry at its annual gala.',
+    'シンガポール・レストラン協会は年次ガラで業界への優れた貢献を表彰します。',
+    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=450&fit=crop',
+    'event', '編集部', true, '2026-02-22 10:00:00+00'
+  ),
+  (
+    'seafood-supply-chain-sustainability',
+    'Singapore''s Seafood Suppliers Embrace Sustainability Standards',
+    'シンガポールの水産業者が持続可能性基準を採用',
+    'Major seafood suppliers in Singapore are adopting new sustainability certifications.',
+    'シンガポールの主要水産業者は新しい持続可能性認証を取得しています。',
+    'Major seafood suppliers are adopting sustainability certifications as consumer demand for responsible sourcing grows.',
+    '消費者の責任ある調達への需要の高まりに応え、主要水産業者が持続可能性認証を取得しています。',
+    'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&h=450&fit=crop',
+    'industry', '編集部', true, '2026-02-20 09:00:00+00'
+  ),
+  (
+    'food-delivery-platform-changes-2025',
+    'Food Delivery Platforms Update Commission Structures in Singapore',
+    'フードデリバリープラットフォームがシンガポールの手数料体系を更新',
+    'Major food delivery platforms have announced revised commission structures, affecting thousands of F&B businesses.',
+    '主要フードデリバリープラットフォームが手数料体系の見直しを発表しました。',
+    'Food delivery platforms have announced revised commission structures affecting thousands of F&B businesses.',
+    'フードデリバリープラットフォームが数千のF&Bビジネスに影響を与える手数料体系の見直しを発表しました。',
+    'https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800&h=450&fit=crop',
+    'industry', '編集部', true, '2026-02-18 08:00:00+00'
+  ),
+  (
+    'singapore-food-festival-2025',
+    'Singapore Food Festival 2025 Programme Unveiled',
+    'シンガポール・フードフェスティバル2025のプログラムが発表',
+    'The Singapore Tourism Board has unveiled the programme for Singapore Food Festival 2025, featuring over 50 events.',
+    'シンガポール観光局がシンガポール・フードフェスティバル2025のプログラムを発表しました。',
+    'The Singapore Tourism Board has unveiled the programme featuring over 50 events across the island.',
+    'シンガポール観光局が島全体で50以上のイベントを予定するプログラムを発表しました。',
+    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=450&fit=crop',
+    'event', '編集部', true, '2026-02-15 10:00:00+00'
+  ),
+  (
+    'organic-produce-demand-restaurants',
+    'Organic Produce Demand Rising Among Singapore Fine Dining Restaurants',
+    'シンガポールの高級レストランでオーガニック食材の需要が上昇',
+    'Fine dining establishments in Singapore are increasingly sourcing organic produce.',
+    'シンガポールの高級飲食店がオーガニック食材の調達を増やしています。',
+    'Fine dining establishments are increasingly sourcing organic produce, driving new supplier relationships.',
+    '高級飲食店がオーガニック食材の調達を増やし、新たなサプライヤーとの関係を築いています。',
+    'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&h=450&fit=crop',
+    'trend', '編集部', true, '2026-02-12 09:00:00+00'
   )
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET
+  published_at = EXCLUDED.published_at,
+  title = EXCLUDED.title,
+  title_ja = EXCLUDED.title_ja,
+  excerpt = EXCLUDED.excerpt,
+  excerpt_ja = EXCLUDED.excerpt_ja,
+  content = EXCLUDED.content,
+  content_ja = EXCLUDED.content_ja,
+  image = EXCLUDED.image,
+  category = EXCLUDED.category,
+  author = EXCLUDED.author,
+  published = EXCLUDED.published;
 
 -- ──────────────────────────────────────────────────────────────
 -- 11. ADMIN USER SETUP

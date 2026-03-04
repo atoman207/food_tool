@@ -83,6 +83,7 @@ export interface SupplierRow {
   views: number;
   certifications: string[];
   about: string;
+  about_ja: string;
   featured: boolean;
   plan: "basic" | "standard" | "premium";
   plan_expires_at: string | null;
@@ -101,13 +102,17 @@ export interface MarketplaceItemRow {
   id: string;
   slug: string;
   title: string;
+  title_en?: string;
   price: number;
   image: string;
   images: string[];
   area: string;
+  area_en?: string;
   condition: string;
+  condition_en?: string;
   years_used: number;
   description: string;
+  description_en?: string;
   category: string;
   seller_id: string;
   seller_name: string;
@@ -115,6 +120,7 @@ export interface MarketplaceItemRow {
   created_at: string;
   status: "approved" | "pending" | "rejected";
   delivery: string;
+  delivery_en?: string;
   reject_reason: string | null;
 }
 
@@ -131,6 +137,7 @@ export interface NewsArticleRow {
   category: string;
   author: string;
   published: boolean;
+  published_at?: string | null;
   created_at: string;
 }
 
