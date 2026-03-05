@@ -373,7 +373,7 @@ function PageViewTracker() {
       body: JSON.stringify({ path }),
     }).catch(() => {});
   }, []);
-  useEffect(() => { record(pathname); }, [pathname, record]);
+  useEffect(() => { record(pathname ?? "/"); }, [pathname, record]);
   return null;
 }
 
