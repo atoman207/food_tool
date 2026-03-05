@@ -355,6 +355,7 @@ const en = {
     tabReports: "Reports",
     tabAnalytics: "Analytics",
     tabTerms: "Terms",
+    tabAppearance: "Appearance",
     analytics: {
       title: "Analytics snapshot",
       suppliersCount: "Suppliers",

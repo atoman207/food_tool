@@ -2,8 +2,9 @@
 import { useState, useEffect } from "react";
 import {
   Store, ShoppingBag, CheckCircle, XCircle, Plus, Trash2, Edit2, Link2,
-  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink, FileText
+  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink, FileText, Palette
 } from "lucide-react";
+import { FONT_OPTIONS, COLOR_OPTIONS, applyTheme } from "@/components/ThemeProvider";
 import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell,
   LineChart, Line, CartesianGrid, Legend,
@@ -30,6 +31,7 @@ const AdminDashboard = () => {
     { id: "qr",         label: t.admin.tabQR,         icon: Link2 },
     { id: "reports",    label: t.admin.tabReports,    icon: AlertTriangle },
     { id: "analytics",  label: t.admin.tabAnalytics,  icon: BarChart3 },
+    { id: "appearance", label: t.admin.tabAppearance,  icon: Palette },
   ];
 
   if (authLoading || !user || profile?.role !== "admin") {
@@ -90,6 +92,7 @@ const AdminDashboard = () => {
             {activeTab === "qr" && <QRManager />}
             {activeTab === "reports" && <ReportManager />}
             {activeTab === "analytics" && <AnalyticsPanel />}
+            {activeTab === "appearance" && <AppearanceManager />}
           </div>
         </div>
       </div>
@@ -110,8 +113,11 @@ function SupplierManager() {
   const [showForm, setShowForm] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
   const [productSlug, setProductSlug] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState<any[]>([]);
+  const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [form, setForm] = useState({
-    name: "", name_ja: "", slug: "", category: "seafood", category_ja: "海鮮・鮮魚",
+    name: "", name_ja: "", slug: "", category: "", category_ja: "",
     category_2: "", category_2_ja: "", category_3: "", category_3_ja: "",
     area: "central", area_ja: "中央エリア", tags: "", description: "", description_ja: "",
     whatsapp: "", whatsapp_contact_name: "", logo: "", catalog_url: "", image_2: "", image_3: "",
@@ -120,15 +126,34 @@ function SupplierManager() {
   });
 
   useEffect(() => { fetchSuppliers(); }, []);
+  useEffect(() => {
+    fetch("/api/categories?type=supplier").then((r) => r.json()).then(setAvailableCategories).catch(() => {});
+    fetch("/api/categories?type=tag").then((r) => r.json()).then(setAvailableTags).catch(() => {});
+  }, []);
 
   const fetchSuppliers = async () => {
     const res = await fetch("/api/suppliers");
     setSuppliers(await res.json());
   };
 
+  /** Select a category from the dropdown and auto-fill the matching label_ja */
+  const handleCategorySelect = (slot: 1 | 2 | 3, value: string) => {
+    const cat = availableCategories.find((c: any) => c.value === value);
+    const enKey = slot === 1 ? "category" : slot === 2 ? "category_2" : "category_3";
+    const jaKey = slot === 1 ? "category_ja" : slot === 2 ? "category_2_ja" : "category_3_ja";
+    setForm((p) => ({ ...p, [enKey]: value, [jaKey]: cat?.label_ja || p[jaKey as keyof typeof p] }));
+  };
+
+  /** Toggle a tag checkbox */
+  const toggleTag = (tagValue: string) => {
+    const current = new Set(form.tags.split(",").map((s) => s.trim()).filter(Boolean));
+    if (current.has(tagValue)) current.delete(tagValue); else current.add(tagValue);
+    setForm((p) => ({ ...p, tags: Array.from(current).join(", ") }));
+  };
+
   const resetForm = () => {
     setForm({
-      name: "", name_ja: "", slug: "", category: "seafood", category_ja: "海鮮・鮮魚",
+      name: "", name_ja: "", slug: "", category: "", category_ja: "",
       category_2: "", category_2_ja: "", category_3: "", category_3_ja: "",
       area: "central", area_ja: "中央エリア", tags: "", description: "", description_ja: "",
       whatsapp: "", whatsapp_contact_name: "", logo: "", catalog_url: "", image_2: "", image_3: "",
@@ -153,30 +178,35 @@ function SupplierManager() {
   };
 
   const handleSave = async () => {
-    const body = {
-      ...form,
-      tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
-      certifications: form.certifications.split(",").map((c) => c.trim()).filter(Boolean),
-    };
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const body = {
+        ...form,
+        tags: form.tags.split(",").map((tt) => tt.trim()).filter(Boolean),
+        certifications: form.certifications.split(",").map((c) => c.trim()).filter(Boolean),
+      };
 
-    let res: Response;
-    if (editSlug) {
-      res = await fetch(`/api/suppliers/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    } else {
-      res = await fetch("/api/suppliers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const res = editSlug
+        ? await fetch(`/api/suppliers/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+        : await fetch("/api/suppliers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(lang === "ja"
+          ? `保存に失敗しました。\n${err?.error ?? res.statusText}`
+          : `Save failed.\n${err?.error ?? res.statusText}`);
+        return;
+      }
+
+      setShowForm(false);
+      resetForm();
+      fetchSuppliers();
+    } catch (e) {
+      alert(lang === "ja" ? "ネットワークエラーが発生しました。" : "Network error. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      alert(lang === "ja"
-        ? `保存に失敗しました。\n${err?.error ?? res.statusText}`
-        : `Save failed.\n${err?.error ?? res.statusText}`);
-      return;
-    }
-
-    setShowForm(false);
-    resetForm();
-    fetchSuppliers();
   };
 
   const handleDelete = async (slug: string) => {
@@ -201,23 +231,72 @@ function SupplierManager() {
             <InputField label={t.admin.nameJa} value={form.name_ja} onChange={(v) => setForm((p) => ({ ...p, name_ja: v }))} />
           </div>
           <InputField label={t.admin.slug} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} />
+          {/* Category 1 — select from CategoryManager */}
           <div className="grid grid-cols-2 gap-4">
-            <InputField label={t.admin.category1} value={form.category} onChange={(v) => setForm((p) => ({ ...p, category: v }))} />
-            <InputField label={t.admin.category1Ja} value={form.category_ja} onChange={(v) => setForm((p) => ({ ...p, category_ja: v }))} />
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{t.admin.category1}</label>
+              <select value={form.category} onChange={(e) => handleCategorySelect(1, e.target.value)} className="h-11 px-4 rounded-lg border bg-background text-sm w-full">
+                <option value="">—</option>
+                {availableCategories.map((c: any) => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{t.admin.category1Ja}</label>
+              <input value={form.category_ja} onChange={(e) => setForm((p) => ({ ...p, category_ja: e.target.value }))} placeholder={availableCategories.find((c: any) => c.value === form.category)?.label_ja ?? ""} className="h-11 px-4 rounded-lg border bg-background text-sm w-full" />
+            </div>
           </div>
+          {/* Category 2 */}
           <div className="grid grid-cols-2 gap-4">
-            <InputField label={t.admin.category2} value={form.category_2} onChange={(v) => setForm((p) => ({ ...p, category_2: v }))} />
-            <InputField label={t.admin.category2Ja} value={form.category_2_ja} onChange={(v) => setForm((p) => ({ ...p, category_2_ja: v }))} />
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{t.admin.category2}</label>
+              <select value={form.category_2} onChange={(e) => handleCategorySelect(2, e.target.value)} className="h-11 px-4 rounded-lg border bg-background text-sm w-full">
+                <option value="">—</option>
+                {availableCategories.map((c: any) => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{t.admin.category2Ja}</label>
+              <input value={form.category_2_ja} onChange={(e) => setForm((p) => ({ ...p, category_2_ja: e.target.value }))} placeholder={availableCategories.find((c: any) => c.value === form.category_2)?.label_ja ?? ""} className="h-11 px-4 rounded-lg border bg-background text-sm w-full" />
+            </div>
           </div>
+          {/* Category 3 */}
           <div className="grid grid-cols-2 gap-4">
-            <InputField label={t.admin.category3} value={form.category_3} onChange={(v) => setForm((p) => ({ ...p, category_3: v }))} />
-            <InputField label={t.admin.category3Ja} value={form.category_3_ja} onChange={(v) => setForm((p) => ({ ...p, category_3_ja: v }))} />
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{t.admin.category3}</label>
+              <select value={form.category_3} onChange={(e) => handleCategorySelect(3, e.target.value)} className="h-11 px-4 rounded-lg border bg-background text-sm w-full">
+                <option value="">—</option>
+                {availableCategories.map((c: any) => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{t.admin.category3Ja}</label>
+              <input value={form.category_3_ja} onChange={(e) => setForm((p) => ({ ...p, category_3_ja: e.target.value }))} placeholder={availableCategories.find((c: any) => c.value === form.category_3)?.label_ja ?? ""} className="h-11 px-4 rounded-lg border bg-background text-sm w-full" />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <InputField label={t.admin.area} value={form.area} onChange={(v) => setForm((p) => ({ ...p, area: v }))} />
             <InputField label={t.admin.areaJa} value={form.area_ja} onChange={(v) => setForm((p) => ({ ...p, area_ja: v }))} />
           </div>
-          <InputField label={t.admin.tags} value={form.tags} onChange={(v) => setForm((p) => ({ ...p, tags: v }))} />
+          {/* Tags — multi-select from category management (type=tag) */}
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{t.admin.tags}</label>
+            {availableTags.length > 0 ? (
+              <div className="flex flex-wrap gap-2 p-3 rounded-lg border bg-background">
+                {availableTags.map((tag: any) => {
+                  const selected = form.tags.split(",").map((s) => s.trim()).includes(tag.value);
+                  return (
+                    <button key={tag.value} type="button" onClick={() => toggleTag(tag.value)}
+                      className={`px-3 py-1 rounded-full text-xs border transition-colors ${selected ? "bg-primary text-white border-primary" : "bg-muted border-border text-muted-foreground hover:border-primary hover:text-primary"}`}>
+                      {lang === "ja" ? (tag.label_ja || tag.label) : tag.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <InputField label="" value={form.tags} onChange={(v) => setForm((p) => ({ ...p, tags: v }))} />
+            )}
+            {form.tags && <p className="text-xs text-muted-foreground mt-1">{form.tags}</p>}
+          </div>
           <div>
             <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "説明（英語・カード用）" : "Description (EN, for cards)"}</label>
             <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" placeholder={lang === "ja" ? "カードに表示する短い説明" : "Short description for cards"} />
@@ -253,34 +332,40 @@ function SupplierManager() {
               <option value="premium">{t.admin.planPremium}</option>
             </select>
           </div>
-          <Button onClick={handleSave} className="rounded-xl gap-2"><Save className="h-4 w-4" /> {editSlug ? t.admin.update : t.admin.create}</Button>
+          <Button onClick={handleSave} disabled={isSaving} className="rounded-xl gap-2">
+            <Save className="h-4 w-4" /> {isSaving ? (lang === "ja" ? "保存中…" : "Saving…") : (editSlug ? t.admin.update : t.admin.create)}
+          </Button>
         </div>
       )}
 
       <div className="space-y-3">
         {suppliers.map((s: any) => (
           <div key={s.id}>
-            <div className="bg-card border rounded-2xl p-4 flex items-center gap-4">
-              <img src={s.logo} alt="" className="w-12 h-12 rounded-xl object-cover" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <p className="font-bold text-sm truncate">{lang === "ja" ? s.name_ja : s.name}</p>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${PLAN_BADGE[s.plan || "basic"]}`}>
-                    {PLAN_LABEL[s.plan || "basic"]}
-                  </span>
+            <div className="bg-card border rounded-2xl p-4 space-y-3">
+              {/* Row 1: image + text */}
+              <div className="flex items-start gap-3 min-w-0">
+                <img src={s.logo} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <p className="font-bold text-sm break-words">{lang === "ja" ? s.name_ja : s.name}</p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${PLAN_BADGE[s.plan || "basic"]}`}>
+                      {PLAN_LABEL[s.plan || "basic"]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground break-words">{
+                    (lang === "ja"
+                      ? [s.category_ja, s.category_2_ja, s.category_3_ja]
+                      : [
+                          (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category] ?? s.category,
+                          (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category_2] ?? s.category_2,
+                          (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category_3] ?? s.category_3,
+                        ]
+                    ).filter(Boolean).join(" · ") || "—"
+                  } · {lang === "ja" ? s.area_ja : ((t.suppliers as { areas?: Record<string, string> }).areas?.[s.area] ?? s.area)} · {s.views} views</p>
                 </div>
-                <p className="text-xs text-muted-foreground">{
-                  (lang === "ja"
-                    ? [s.category_ja, s.category_2_ja, s.category_3_ja]
-                    : [
-                        (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category] ?? s.category,
-                        (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category_2] ?? s.category_2,
-                        (t.suppliers as { categories?: Record<string, string> }).categories?.[s.category_3] ?? s.category_3,
-                      ]
-                  ).filter(Boolean).join(" · ") || "—"
-                } · {lang === "ja" ? s.area_ja : ((t.suppliers as { areas?: Record<string, string> }).areas?.[s.area] ?? s.area)} · {s.views} views</p>
               </div>
-              <div className="flex gap-2">
+              {/* Row 2: action buttons */}
+              <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setProductSlug(productSlug === s.slug ? null : s.slug)}>
                   <ShoppingBag className="h-3 w-3 mr-1" /> {t.admin.manageProducts}
                 </Button>
@@ -561,8 +646,22 @@ function MarketplaceManager() {
             <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" />
           </div>
           <div>
-            <label className="text-sm font-medium block mb-1.5">{label("Description (EN)", "説明（英語）")}</label>
-            <textarea value={form.description_en} onChange={(e) => setForm((p) => ({ ...p, description_en: e.target.value }))} className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none" />
+            <label className="text-sm font-medium block mb-1.5">
+              {label("Description (EN)", "説明（英語）")}
+              <span className="ml-2 text-[10px] font-normal text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                {label("English only", "英語のみ入力")}
+              </span>
+            </label>
+            <textarea
+              value={form.description_en}
+              onChange={(e) => {
+                // Strip any non-Latin characters (CJK, Arabic, etc.) in real time
+                const filtered = e.target.value.replace(/[\u3000-\u9FFF\uF900-\uFAFF\uAC00-\uD7AF\u0400-\u04FF\u0600-\u06FF]/g, "");
+                setForm((p) => ({ ...p, description_en: filtered }));
+              }}
+              placeholder="Describe the item in English…"
+              className="w-full h-20 p-3 rounded-lg border bg-background text-sm resize-none"
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <InputField label={label("Seller Name", "出品者名")} value={form.seller_name} onChange={(v) => setForm((p) => ({ ...p, seller_name: v }))} />
@@ -858,8 +957,9 @@ function NewsManager() {
 }
 
 function CategoryManager() {
+  const { t, lang } = useTranslation();
   const [categories, setCategories] = useState<any[]>([]);
-  const [newCat, setNewCat] = useState({ type: "supplier", value: "", label: "", sort_order: 0 });
+  const [newCat, setNewCat] = useState({ type: "supplier", value: "", label: "", label_ja: "", sort_order: 0 });
 
   useEffect(() => { fetchCategories(); }, []);
 
@@ -871,18 +971,22 @@ function CategoryManager() {
   const handleAdd = async () => {
     if (!newCat.value || !newCat.label) return;
     await fetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newCat) });
-    setNewCat({ type: "supplier", value: "", label: "", sort_order: 0 });
+    setNewCat({ type: "supplier", value: "", label: "", label_ja: "", sort_order: 0 });
     fetchCategories();
   };
 
-  const { t } = useTranslation();
   const handleDelete = async (id: string) => {
     if (!confirm(t.admin.deleteConfirm)) return;
     await fetch(`/api/categories?id=${id}`, { method: "DELETE" });
     fetchCategories();
   };
 
-  const typeLabels: Record<string, string> = { supplier: t.admin.typeSupplier, marketplace: t.admin.typeMarketplace, news: t.admin.typeNews };
+  const typeLabels: Record<string, string> = {
+    supplier: t.admin.typeSupplier,
+    marketplace: t.admin.typeMarketplace,
+    news: t.admin.typeNews,
+    tag: lang === "ja" ? "タグ（サプライヤー用）" : "Tags (for suppliers)",
+  };
 
   return (
     <div>
@@ -894,26 +998,33 @@ function CategoryManager() {
             <option value="supplier">{t.admin.typeSupplier}</option>
             <option value="marketplace">{t.admin.typeMarketplace}</option>
             <option value="news">{t.admin.typeNews}</option>
+            <option value="tag">{lang === "ja" ? "タグ" : "Tag"}</option>
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium block mb-1">{t.admin.valueLabel}</label>
-          <input value={newCat.value} onChange={(e) => setNewCat((p) => ({ ...p, value: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" />
+          <label className="text-xs font-medium block mb-1">{t.admin.valueLabel} (EN key)</label>
+          <input value={newCat.value} onChange={(e) => setNewCat((p) => ({ ...p, value: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" placeholder="e.g. halal" />
         </div>
         <div>
-          <label className="text-xs font-medium block mb-1">{t.admin.labelLabel}</label>
-          <input value={newCat.label} onChange={(e) => setNewCat((p) => ({ ...p, label: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" />
+          <label className="text-xs font-medium block mb-1">{t.admin.labelLabel} (EN)</label>
+          <input value={newCat.label} onChange={(e) => setNewCat((p) => ({ ...p, label: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-36" placeholder="English label" />
+        </div>
+        <div>
+          <label className="text-xs font-medium block mb-1">{lang === "ja" ? "ラベル（日本語）" : "Label (JA)"}</label>
+          <input value={newCat.label_ja} onChange={(e) => setNewCat((p) => ({ ...p, label_ja: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-36" placeholder="日本語ラベル" />
         </div>
         <Button onClick={handleAdd} size="sm" className="rounded-xl"><Plus className="h-4 w-4" /></Button>
       </div>
-      {["supplier", "marketplace", "news"].map((type) => (
+      {["supplier", "tag", "marketplace", "news"].map((type) => (
         <div key={type} className="mb-6">
-          <h3 className="font-bold text-sm mb-3 capitalize">{typeLabels[type] ?? type}</h3>
+          <h3 className="font-bold text-sm mb-3">{typeLabels[type] ?? type}</h3>
           <div className="flex flex-wrap gap-2">
             {categories.filter((c: any) => c.type === type).map((c: any) => (
               <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm">
-                {c.label}
-                <button onClick={() => handleDelete(c.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3 w-3" /></button>
+                <span className="font-medium">{c.label}</span>
+                {c.label_ja && <span className="text-muted-foreground text-xs">/ {c.label_ja}</span>}
+                <span className="text-xs text-muted-foreground">({c.value})</span>
+                <button onClick={() => handleDelete(c.id)} className="text-muted-foreground hover:text-destructive ml-1"><Trash2 className="h-3 w-3" /></button>
               </div>
             ))}
           </div>
@@ -1350,6 +1461,164 @@ function AnalyticsPanel() {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function AppearanceManager() {
+  const { t, lang } = useTranslation();
+  const [fontKey, setFontKey]   = useState("inter");
+  const [colorKey, setColorKey] = useState("red");
+  const [saving, setSaving]     = useState(false);
+  const [saved, setSaved]       = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((rows: { key: string; value: string }[]) => {
+        const f = rows.find((r) => r.key === "site_font");
+        const c = rows.find((r) => r.key === "site_color");
+        if (f?.value) setFontKey(f.value);
+        if (c?.value) setColorKey(c.value);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaved(false);
+    try {
+      await Promise.all([
+        fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "site_font",  value: fontKey  }) }),
+        fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "site_color", value: colorKey }) }),
+      ]);
+      applyTheme(fontKey, colorKey);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const selectedColor = COLOR_OPTIONS.find((c) => c.key === colorKey) ?? COLOR_OPTIONS[0];
+
+  return (
+    <div className="space-y-8">
+      <h2 className="text-xl font-bold">{t.admin.tabAppearance}</h2>
+
+      {/* ── Font picker ── */}
+      <div className="bg-card border rounded-2xl p-6">
+        <h3 className="font-bold mb-4 flex items-center gap-2">
+          <span className="text-lg">🔤</span>
+          {lang === "ja" ? "フォント設定" : "Font Settings"}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-5">
+          {lang === "ja"
+            ? "サイト全体に適用されるフォントを選択してください。"
+            : "Choose the font applied across the whole site."}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {FONT_OPTIONS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFontKey(f.key)}
+              className={`text-left p-4 rounded-xl border-2 transition-all ${
+                fontKey === f.key
+                  ? "border-primary bg-primary/5"
+                  : "border-border bg-background hover:border-primary/40 hover:bg-muted/50"
+              }`}
+            >
+              <p className="font-semibold text-sm" style={{ fontFamily: f.css }}>
+                {lang === "ja" ? f.labelJa : f.labelEn}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5" style={{ fontFamily: f.css }}>
+                {lang === "ja" ? "あいうえお ABCdef 123" : "ABCdef 123 — The quick brown fox"}
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Color picker ── */}
+      <div className="bg-card border rounded-2xl p-6">
+        <h3 className="font-bold mb-4 flex items-center gap-2">
+          <span className="text-lg">🎨</span>
+          {lang === "ja" ? "メインカラー設定" : "Primary Color Settings"}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-5">
+          {lang === "ja"
+            ? "ヘッダー・ボタン・アクセントカラーとして使われる色を選択してください。"
+            : "Choose the accent color used for the header, buttons, and highlights."}
+        </p>
+        <div className="flex flex-wrap gap-4">
+          {COLOR_OPTIONS.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => setColorKey(c.key)}
+              title={lang === "ja" ? c.labelJa : c.labelEn}
+              className={`relative w-14 h-14 rounded-2xl border-4 transition-all hover:scale-105 ${
+                colorKey === c.key ? "border-foreground scale-110 shadow-lg" : "border-transparent"
+              }`}
+              style={{ backgroundColor: c.hex }}
+            >
+              {colorKey === c.key && (
+                <span className="absolute inset-0 flex items-center justify-center text-white font-black text-lg">✓</span>
+              )}
+            </button>
+          ))}
+        </div>
+        <p className="text-sm text-muted-foreground mt-4">
+          {lang === "ja" ? `選択中: ${selectedColor.labelJa}` : `Selected: ${selectedColor.labelEn}`}
+        </p>
+      </div>
+
+      {/* ── Live preview ── */}
+      <div className="bg-card border rounded-2xl p-6">
+        <h3 className="font-bold mb-4">
+          {lang === "ja" ? "プレビュー" : "Preview"}
+        </h3>
+        <div
+          style={{
+            fontFamily: FONT_OPTIONS.find((f) => f.key === fontKey)?.css,
+            "--preview-color": selectedColor.hex,
+          } as React.CSSProperties}
+          className="space-y-3 p-4 rounded-xl border bg-background"
+        >
+          <p className="text-2xl font-bold" style={{ color: selectedColor.hex }}>
+            {lang === "ja" ? "F&Bポータル・シンガポール" : "F&B Portal Singapore"}
+          </p>
+          <p className="text-base">
+            {lang === "ja"
+              ? "信頼できるサプライヤーを見つけ、すぐにつながり、スマートに取引しましょう。"
+              : "Find trusted suppliers, connect instantly, trade smart."}
+          </p>
+          <div className="flex gap-3">
+            <span className="px-4 py-2 rounded-xl text-white text-sm font-semibold" style={{ backgroundColor: selectedColor.hex }}>
+              {lang === "ja" ? "詳細を見る" : "View Details"}
+            </span>
+            <span className="px-4 py-2 rounded-xl text-sm font-semibold border-2" style={{ borderColor: selectedColor.hex, color: selectedColor.hex }}>
+              {lang === "ja" ? "お問い合わせ" : "Contact"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Save button ── */}
+      <div className="flex items-center gap-4">
+        <Button onClick={handleSave} disabled={saving} className="rounded-xl gap-2 px-6">
+          <Save className="h-4 w-4" />
+          {saving
+            ? (lang === "ja" ? "保存中…" : "Saving…")
+            : (lang === "ja" ? "設定を保存" : "Save Settings")}
+        </Button>
+        {saved && (
+          <p className="text-sm text-green-600 font-medium">
+            {lang === "ja" ? "保存しました ✓ — 変更はすぐに反映されます。" : "Saved ✓ — Changes applied immediately."}
+          </p>
+        )}
       </div>
     </div>
   );

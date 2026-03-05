@@ -129,11 +129,16 @@ ALTER TABLE public.news_articles ADD COLUMN IF NOT EXISTS published_at timestamp
 -- Categories
 CREATE TABLE IF NOT EXISTS public.categories (
   id         uuid    DEFAULT gen_random_uuid() PRIMARY KEY,
-  type       text    NOT NULL CHECK (type IN ('supplier','marketplace','news')),
+  type       text    NOT NULL DEFAULT 'supplier',
   value      text    NOT NULL,
   label      text    NOT NULL,
+  label_ja   text    DEFAULT '',
   sort_order integer DEFAULT 0
 );
+-- Allow tag type alongside existing types
+ALTER TABLE public.categories DROP CONSTRAINT IF EXISTS categories_type_check;
+-- Add label_ja if the table already exists without it
+ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS label_ja text DEFAULT '';
 
 -- Site Settings (key-value store)
 CREATE TABLE IF NOT EXISTS public.site_settings (

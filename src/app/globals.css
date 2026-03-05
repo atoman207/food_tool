@@ -63,7 +63,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* var(--site-font) is injected by ThemeProvider; falls back to system stack */
+    font-family: var(--site-font, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
     font-weight: 400;
     line-height: 1.5;
     letter-spacing: -0.01em;
@@ -71,12 +72,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Yu Mincho for Japanese text */
+  /* Yu Mincho for Japanese text — overridden when admin picks a JP font */
   :lang(ja),
   [lang="ja"],
   .lang-ja {
-    font-family: "Yu Mincho", "游明朝", "YuMincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN",
-                 "HG明朝E", "MS P明朝", "MS PMincho", serif;
+    font-family: var(--site-font-ja, "Yu Mincho", "游明朝", "YuMincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN",
+                 "HG明朝E", "MS P明朝", "MS PMincho", serif);
   }
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;

@@ -190,14 +190,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-header border-b-2 border-primary">
       <div className="container flex h-20 md:h-[4.55rem] items-center gap-4 md:gap-6">
-        {/* Logo — 背景を白で統一し浮きを防ぐ */}
-        <Link href="/" className="flex items-center flex-shrink-0 group bg-white rounded-r-lg pr-1 -ml-1">
+        {/* Logo — no border, no white background */}
+        <Link href="/" className="flex items-center flex-shrink-0 group bg-transparent border-0 shadow-none rounded-none p-0">
           <Image
             src={logoImage}
             alt="F&B Portal - Singapore F&B Supplier & Chef Network"
-            height={40}
-            width={200}
-            className="h-10 w-auto object-contain transition-transform duration-200 ease-smooth group-hover:-translate-y-0.5"
+            height={56}
+            width={220}
+            className="h-12 md:h-14 w-auto object-contain transition-transform duration-200 ease-smooth group-hover:-translate-y-0.5 [background:transparent]"
             priority
           />
         </Link>
@@ -296,13 +296,16 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <Link href="/" className="inline-block mb-4">
-              <Image
-                src={logoImage}
-                alt="F&B Portal - Singapore F&B Supplier & Chef Network"
-                height={36}
-                width={180}
-                className="h-9 w-auto object-contain"
-              />
+              
+                <Image
+                  src={logoImage}
+                  alt="F&B Portal - Singapore F&B Supplier & Chef Network"
+                  height={36}
+                  width={180}
+                  className="h-9 w-auto object-contain"
+                  style={{ mixBlendMode: "multiply" }}
+                />
+              
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">{t.footer.tagline}</p>
           </div>

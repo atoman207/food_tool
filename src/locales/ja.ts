@@ -356,6 +356,7 @@ const ja: Translations = {
     tabReports: "レポート",
     tabAnalytics: "統計",
     tabTerms: "利用規約",
+    tabAppearance: "外観設定",
     analytics: {
       title: "統計スナップショット",
       suppliersCount: "サプライヤー数",

@@ -38,7 +38,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     labelEn: "Premium",
     labelJa: "プレミアム",
     badgeLabelEn: "Trusted supplier",
-    badgeLabelJa: "信頼できるサプライヤー（Trusted supplier）",
+    badgeLabelJa: "信頼できるサプライヤー",
     badgeClass:
       "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-2 border-amber-400 dark:border-amber-500 font-bold",
     borderClass: "border-2 border-amber-400 dark:border-amber-500",
