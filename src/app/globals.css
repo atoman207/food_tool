@@ -184,3 +184,76 @@
 .backdrop-blur-md {
   -webkit-backdrop-filter: blur(12px);
 }
+
+/* ── Site-wide: prevent text distortion and breakage ──────────────────────── */
+.text-balance {
+  text-wrap: balance;
+}
+.break-words-safe {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+.truncate-safe {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* ── Auth / Fashion-style animations ──────────────────────────────────────── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes shimmer-line {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes input-glow {
+  0%, 100% { box-shadow: 0 0 0 1px hsl(var(--border)); }
+  50% { box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4); }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.animate-fade-in-scale {
+  animation: fade-in-scale 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.animate-float-subtle {
+  animation: float-subtle 4s ease-in-out infinite;
+}
+.animate-stagger-1 { animation-delay: 0.05s; }
+.animate-stagger-2 { animation-delay: 0.1s; }
+.animate-stagger-3 { animation-delay: 0.15s; }
+.animate-stagger-4 { animation-delay: 0.2s; }
+.animate-stagger-5 { animation-delay: 0.25s; }
+.animate-stagger-6 { animation-delay: 0.3s; }
+.animate-stagger-7 { animation-delay: 0.35s; }
+.animate-stagger-8 { animation-delay: 0.4s; }
+.animate-stagger-9 { animation-delay: 0.45s; }
+.animate-stagger-10 { animation-delay: 0.5s; }
+.opacity-0-init {
+  opacity: 0;
+}

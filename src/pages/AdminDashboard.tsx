@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell,
+  LineChart, Line, CartesianGrid, Legend,
 } from "recharts";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -1178,19 +1179,41 @@ function ReportManager() {
 }
 
 function AnalyticsPanel() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
+  const [monthlyVisits, setMonthlyVisits] = useState<{ month: string; visits: number }[]>([]);
+  const [monthlySupplierViews, setMonthlySupplierViews] = useState<{ month: string; views: number }[]>([]);
+  const [pvMonths, setPvMonths] = useState(6);
+  const [svMonths, setSvMonths] = useState(6);
 
   useEffect(() => {
-    fetch("/api/suppliers").then((r) => r.json()).then(setSuppliers);
-    fetch("/api/marketplace?status=approved").then((r) => r.json()).then(setItems);
+    fetch("/api/suppliers").then((r) => r.json()).then(setSuppliers).catch(() => {});
+    fetch("/api/marketplace?status=approved").then((r) => r.json()).then(setItems).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    fetch(`/api/analytics/pageview?months=${pvMonths}`)
+      .then((r) => r.json()).then(setMonthlyVisits).catch(() => {});
+  }, [pvMonths]);
+
+  useEffect(() => {
+    fetch(`/api/analytics/supplier-views?months=${svMonths}`)
+      .then((r) => r.json()).then(setMonthlySupplierViews).catch(() => {});
+  }, [svMonths]);
+
+  const monthOptions = [3, 6, 12];
+  const formatMonth = (key: string) => {
+    const [y, m] = key.split("-");
+    return lang === "ja" ? `${y}年${parseInt(m)}月` : new Date(parseInt(y), parseInt(m) - 1).toLocaleString("en", { month: "short", year: "2-digit" });
+  };
+
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-6">{t.admin.analytics.title}</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div className="space-y-10">
+      <h2 className="text-xl font-bold">{t.admin.analytics.title}</h2>
+
+      {/* ── KPI cards ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-card border rounded-2xl p-5 text-center">
           <p className="text-3xl font-black text-primary">{suppliers.length}</p>
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.suppliersCount}</p>
@@ -1200,7 +1223,7 @@ function AnalyticsPanel() {
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.marketplaceCount}</p>
         </div>
         <div className="bg-card border rounded-2xl p-5 text-center">
-          <p className="text-3xl font-black text-secondary">{suppliers.reduce((a: number, s: any) => a + (s.views || 0), 0)}</p>
+          <p className="text-3xl font-black text-secondary">{suppliers.reduce((a: number, s: any) => a + (s.views || 0), 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.totalViews}</p>
         </div>
         <div className="bg-card border rounded-2xl p-5 text-center">
@@ -1208,23 +1231,79 @@ function AnalyticsPanel() {
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.premiumSuppliers}</p>
         </div>
       </div>
-      <h3 className="font-bold text-sm mb-3">{t.admin.analytics.planBreakdown}</h3>
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {(["premium", "standard", "basic"] as const).map((plan) => (
-          <div key={plan} className={`rounded-2xl p-4 text-center border ${PLAN_BADGE[plan]}`}>
-            <p className="text-2xl font-black">{suppliers.filter((s: any) => (s.plan || "basic") === plan).length}</p>
-            <p className="text-xs font-semibold mt-1">{PLAN_LABEL[plan]}</p>
+
+      {/* ── Monthly site visits chart ── */}
+      <div className="bg-card border rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-sm">{t.admin.analytics.monthlyVisits}</h3>
+          <div className="flex gap-1">
+            {monthOptions.map((m) => (
+              <button key={m} onClick={() => setPvMonths(m)}
+                className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${pvMonths === m ? "bg-primary text-white border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>
+                {m}{lang === "ja" ? "ヶ月" : "mo"}
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
+        <div className="h-52">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={monthlyVisits.map((d) => ({ ...d, month: formatMonth(d.month) }))} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(v: number) => [v.toLocaleString(), t.admin.analytics.visitsLabel]} />
+              <Line type="monotone" dataKey="visits" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">{t.admin.analytics.monthlyVisitsNote}</p>
       </div>
-      <div className="mb-8">
-        <div className="h-48 w-full max-w-md">
+
+      {/* ── Monthly supplier views chart ── */}
+      <div className="bg-card border rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-sm">{t.admin.analytics.monthlySupplierViews}</h3>
+          <div className="flex gap-1">
+            {monthOptions.map((m) => (
+              <button key={m} onClick={() => setSvMonths(m)}
+                className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${svMonths === m ? "bg-primary text-white border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>
+                {m}{lang === "ja" ? "ヶ月" : "mo"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="h-52">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={monthlySupplierViews.map((d) => ({ ...d, month: formatMonth(d.month) }))} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(v: number) => [v.toLocaleString(), t.admin.analytics.viewsLabel]} />
+              <Line type="monotone" dataKey="views" stroke="hsl(var(--secondary))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">{t.admin.analytics.monthlySupplierViewsNote}</p>
+      </div>
+
+      {/* ── Plan breakdown ── */}
+      <div>
+        <h3 className="font-bold text-sm mb-3">{t.admin.analytics.planBreakdown}</h3>
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          {(["premium", "standard", "basic"] as const).map((plan) => (
+            <div key={plan} className={`rounded-2xl p-4 text-center border ${PLAN_BADGE[plan]}`}>
+              <p className="text-2xl font-black">{suppliers.filter((s: any) => (s.plan || "basic") === plan).length}</p>
+              <p className="text-xs font-semibold mt-1">{PLAN_LABEL[plan]}</p>
+            </div>
+          ))}
+        </div>
+        <div className="h-44 w-full max-w-md">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={[
-                { plan: PLAN_LABEL.premium, count: suppliers.filter((s: any) => (s.plan || "basic") === "premium").length, fill: "var(--color-amber-500)" },
-                { plan: PLAN_LABEL.standard, count: suppliers.filter((s: any) => (s.plan || "basic") === "standard").length, fill: "hsl(var(--primary))" },
-                { plan: PLAN_LABEL.basic, count: suppliers.filter((s: any) => (s.plan || "basic") === "basic").length, fill: "hsl(var(--muted-foreground))" },
+                { plan: PLAN_LABEL.premium, count: suppliers.filter((s: any) => (s.plan || "basic") === "premium").length },
+                { plan: PLAN_LABEL.standard, count: suppliers.filter((s: any) => (s.plan || "basic") === "standard").length },
+                { plan: PLAN_LABEL.basic, count: suppliers.filter((s: any) => (s.plan || "basic") === "basic").length },
               ]}
               margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
             >
@@ -1232,7 +1311,7 @@ function AnalyticsPanel() {
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
               <Tooltip formatter={(value: number) => [value, t.admin.analytics.suppliersCount]} />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                <Cell fill="var(--color-amber-500)" />
+                <Cell fill="#f59e0b" />
                 <Cell fill="hsl(var(--primary))" />
                 <Cell fill="hsl(var(--muted-foreground))" />
               </Bar>
@@ -1240,32 +1319,37 @@ function AnalyticsPanel() {
           </ResponsiveContainer>
         </div>
       </div>
-      <h3 className="font-bold text-sm mb-3">{t.admin.analytics.topByViews}</h3>
-      <div className="h-52 w-full max-w-xl mb-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            layout="vertical"
-            data={[...suppliers]
-              .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
-              .slice(0, 5)
-              .map((s: any) => ({ name: s.name_ja || s.name, views: s.views || 0 }))}
-            margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
-          >
-            <XAxis type="number" tick={{ fontSize: 11 }} />
-            <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
-            <Tooltip formatter={(value: number) => [value, t.admin.analytics.viewsLabel]} />
-            <Bar dataKey="views" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="space-y-2">
-        {[...suppliers].sort((a: any, b: any) => (b.views || 0) - (a.views || 0)).slice(0, 5).map((s: any) => (
-          <div key={s.id} className="flex items-center gap-3 bg-card border rounded-xl p-3">
-            <img src={s.logo} alt="" className="w-10 h-10 rounded-lg object-cover" />
-            <div className="flex-1"><p className="text-sm font-semibold">{s.name_ja}</p></div>
-            <p className="text-sm font-bold text-primary">{s.views || 0} {t.admin.analytics.viewsLabel}</p>
-          </div>
-        ))}
+
+      {/* ── Top suppliers by cumulative views ── */}
+      <div>
+        <h3 className="font-bold text-sm mb-1">{t.admin.analytics.topByViews}</h3>
+        <p className="text-xs text-muted-foreground mb-3">{t.admin.analytics.cumulativeNote}</p>
+        <div className="h-52 w-full max-w-xl mb-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              layout="vertical"
+              data={[...suppliers]
+                .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
+                .slice(0, 5)
+                .map((s: any) => ({ name: lang === "ja" ? (s.name_ja || s.name) : (s.name || s.name_ja), views: s.views || 0 }))}
+              margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+            >
+              <XAxis type="number" tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(value: number) => [value.toLocaleString(), t.admin.analytics.viewsLabel]} />
+              <Bar dataKey="views" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="space-y-2">
+          {[...suppliers].sort((a: any, b: any) => (b.views || 0) - (a.views || 0)).slice(0, 5).map((s: any) => (
+            <div key={s.id} className="flex items-center gap-3 bg-card border rounded-xl p-3">
+              <img src={s.logo} alt="" className="w-10 h-10 rounded-lg object-cover" />
+              <div className="flex-1"><p className="text-sm font-semibold">{lang === "ja" ? (s.name_ja || s.name) : (s.name || s.name_ja)}</p></div>
+              <p className="text-sm font-bold text-primary">{(s.views || 0).toLocaleString()} {t.admin.analytics.viewsLabel}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

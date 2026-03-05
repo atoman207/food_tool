@@ -34,10 +34,13 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
     return NextResponse.json(normaliseMock(mock));
   }
 
-  // Increment view count using admin client (bypasses RLS for update)
+  // Increment view count and log a timestamped row for monthly stats
   const admin = createAdminSupabaseClient();
   if (admin) {
-    await admin.from("suppliers").update({ views: (supplier.views ?? 0) + 1 }).eq("id", supplier.id);
+    await Promise.all([
+      admin.from("suppliers").update({ views: (supplier.views ?? 0) + 1 }).eq("id", supplier.id),
+      admin.from("supplier_view_logs").insert({ supplier_id: supplier.id }),
+    ]);
   }
 
   const { data: products } = await supabase

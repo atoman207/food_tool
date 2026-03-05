@@ -152,11 +152,32 @@ CREATE TABLE IF NOT EXISTS public.reports (
   created_at  timestamptz DEFAULT now()
 );
 
+-- ── Page Views (site-wide monthly traffic) ─────────────────────
+-- Each row = one page load. Aggregate by month in queries.
+CREATE TABLE IF NOT EXISTS public.page_views (
+  id         bigserial   PRIMARY KEY,
+  path       text        NOT NULL DEFAULT '/',
+  visited_at timestamptz DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS page_views_visited_at_idx ON public.page_views (visited_at);
+
+-- ── Supplier View Logs (monthly per-supplier stats) ─────────────
+-- Logged alongside the existing suppliers.views counter.
+CREATE TABLE IF NOT EXISTS public.supplier_view_logs (
+  id          bigserial   PRIMARY KEY,
+  supplier_id uuid        REFERENCES public.suppliers(id) ON DELETE CASCADE NOT NULL,
+  viewed_at   timestamptz DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS supplier_view_logs_supplier_id_idx  ON public.supplier_view_logs (supplier_id);
+CREATE INDEX IF NOT EXISTS supplier_view_logs_viewed_at_idx    ON public.supplier_view_logs (viewed_at);
+
 -- ──────────────────────────────────────────────────────────────
 -- 2. ROW LEVEL SECURITY — enable on every table
 -- ──────────────────────────────────────────────────────────────
 ALTER TABLE public.profiles          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.suppliers         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.page_views           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.supplier_view_logs   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.supplier_products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.marketplace_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.news_articles     ENABLE ROW LEVEL SECURITY;
@@ -248,6 +269,22 @@ CREATE POLICY "Admin read"   ON public.reports FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
 CREATE POLICY "Admin update" ON public.reports FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
+
+-- page_views: anyone can insert (anon hits count), only admin can read
+DROP POLICY IF EXISTS "Anon insert" ON public.page_views;
+DROP POLICY IF EXISTS "Admin read"  ON public.page_views;
+CREATE POLICY "Anon insert" ON public.page_views FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin read"  ON public.page_views FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
+
+-- supplier_view_logs: anyone can insert, only admin can read
+DROP POLICY IF EXISTS "Anon insert" ON public.supplier_view_logs;
+DROP POLICY IF EXISTS "Admin read"  ON public.supplier_view_logs;
+CREATE POLICY "Anon insert" ON public.supplier_view_logs FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin read"  ON public.supplier_view_logs FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
 

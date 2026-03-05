@@ -7,7 +7,7 @@ import {
   Menu, X, ChevronRight, ChevronDown,
   User, LogOut, LayoutDashboard, ShieldCheck, Settings, Globe, ChevronUp, Heart,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/contexts/LanguageContext";
@@ -364,9 +364,23 @@ function BackToTop() {
   );
 }
 
+function PageViewTracker() {
+  const pathname = usePathname();
+  const record = useCallback((path: string) => {
+    fetch("/api/analytics/pageview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path }),
+    }).catch(() => {});
+  }, []);
+  useEffect(() => { record(pathname); }, [pathname, record]);
+  return null;
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
+      <PageViewTracker />
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
