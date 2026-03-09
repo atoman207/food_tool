@@ -389,8 +389,13 @@ function ProductManager({ slug }: { slug: string }) {
   useEffect(() => { fetchProducts(); }, [slug]);
 
   const fetchProducts = async () => {
-    const res = await fetch(`/api/suppliers/${slug}/products`);
-    setProducts(await res.json());
+    try {
+      const res = await fetch(`/api/suppliers/${slug}/products`);
+      const data = await res.json();
+      setProducts(Array.isArray(data) ? data : []);
+    } catch {
+      setProducts([]);
+    }
   };
 
   const handleAdd = async () => {
@@ -426,7 +431,7 @@ function ProductManager({ slug }: { slug: string }) {
       <Button size="sm" className="rounded-xl gap-1" onClick={handleAdd}>
         <Plus className="h-3 w-3" /> {t.admin.addProduct}
       </Button>
-      {products.length === 0 ? (
+      {!Array.isArray(products) || products.length === 0 ? (
         <p className="text-xs text-muted-foreground">{t.admin.noProducts}</p>
       ) : (
         <div className="space-y-2">

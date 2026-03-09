@@ -23,18 +23,18 @@ const LanguageContext = createContext<LanguageState>({
 
 const STORAGE_KEY = "fb-portal-lang";
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+function getStoredLang(): Lang {
+  if (typeof window === "undefined") return "en";
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
+    return saved === "en" || saved === "ja" ? saved : "en";
+  } catch {
+    return "en";
+  }
+}
 
-  // Restore saved preference on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
-      if (saved === "en" || saved === "ja") setLangState(saved);
-    } catch {
-      // localStorage may not be available in SSR
-    }
-  }, []);
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [lang, setLangState] = useState<Lang>(getStoredLang);
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
