@@ -74,7 +74,7 @@ const News = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginated.map((article) => (
               <Link key={article.id} href={`/news/${article.slug}`} className="group">
-                <div className="bg-card border rounded-2xl overflow-hidden card-hover">
+                <div className="bg-card border overflow-hidden card-hover">
                   <div className="aspect-[16/9] overflow-hidden">
                     <img
                       src={article.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=340&fit=crop"}

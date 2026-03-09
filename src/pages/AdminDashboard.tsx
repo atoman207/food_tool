@@ -225,7 +225,7 @@ function SupplierManager() {
       </div>
 
       {showForm && (
-        <div className="bg-card border rounded-2xl p-6 mb-6 space-y-4">
+        <div className="bg-card border p-6 mb-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <InputField label={t.admin.nameEn} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
             <InputField label={t.admin.nameJa} value={form.name_ja} onChange={(v) => setForm((p) => ({ ...p, name_ja: v }))} />
@@ -341,7 +341,7 @@ function SupplierManager() {
       <div className="space-y-3">
         {suppliers.map((s: any) => (
           <div key={s.id}>
-            <div className="bg-card border rounded-2xl p-4 space-y-3">
+            <div className="bg-card border p-4 space-y-3">
               {/* Row 1: image + text */}
               <div className="flex items-start gap-3 min-w-0">
                 <img src={s.logo} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
@@ -384,7 +384,11 @@ function SupplierManager() {
 function ProductManager({ slug }: { slug: string }) {
   const { t } = useTranslation();
   const [products, setProducts] = useState<any[]>([]);
-  const [form, setForm] = useState({ name: "", name_en: "", image: "", moq: "" });
+  const [form, setForm] = useState({
+    name: "", name_en: "", image: "",
+    country_of_origin: "", weight: "", quantity: "",
+    storage_condition: "", temperature: "",
+  });
 
   useEffect(() => { fetchProducts(); }, [slug]);
 
@@ -405,7 +409,7 @@ function ProductManager({ slug }: { slug: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
-    setForm({ name: "", name_en: "", image: "", moq: "" });
+    setForm({ name: "", name_en: "", image: "", country_of_origin: "", weight: "", quantity: "", storage_condition: "", temperature: "" });
     fetchProducts();
   };
 
@@ -420,13 +424,29 @@ function ProductManager({ slug }: { slug: string }) {
   };
 
   return (
-    <div className="ml-4 mt-2 bg-muted/50 border rounded-xl p-4 space-y-4">
+    <div className="ml-4 mt-2 bg-muted/50 border p-4 space-y-4">
       <h3 className="text-sm font-bold">{t.admin.productManagement}</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <InputField label={t.admin.productName} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
         <InputField label={t.admin.productNameEn} value={form.name_en} onChange={(v) => setForm((p) => ({ ...p, name_en: v }))} />
         <InputField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} placeholder="https://..." />
-        <InputField label={t.admin.productMoq} value={form.moq} onChange={(v) => setForm((p) => ({ ...p, moq: v }))} />
+        <InputField label={t.admin.productCountryOfOrigin} value={form.country_of_origin} onChange={(v) => setForm((p) => ({ ...p, country_of_origin: v }))} />
+        <InputField label={t.admin.productWeight} value={form.weight} onChange={(v) => setForm((p) => ({ ...p, weight: v }))} />
+        <InputField label={t.admin.productQuantity} value={form.quantity} onChange={(v) => setForm((p) => ({ ...p, quantity: v }))} />
+        <InputField label={t.admin.productStorageCondition} value={form.storage_condition} onChange={(v) => setForm((p) => ({ ...p, storage_condition: v }))} />
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium">{t.admin.productTemperature}</label>
+          <select
+            value={form.temperature}
+            onChange={(e) => setForm((p) => ({ ...p, temperature: e.target.value }))}
+            className="h-10 px-3 rounded-lg border bg-background text-sm"
+          >
+            <option value="">—</option>
+            <option value="Frozen">{t.admin.productTemperatureFrozen}</option>
+            <option value="Chilled">{t.admin.productTemperatureChilled}</option>
+            <option value="Fresh">{t.admin.productTemperatureFresh}</option>
+          </select>
+        </div>
       </div>
       <Button size="sm" className="rounded-xl gap-1" onClick={handleAdd}>
         <Plus className="h-3 w-3" /> {t.admin.addProduct}
@@ -436,12 +456,18 @@ function ProductManager({ slug }: { slug: string }) {
       ) : (
         <div className="space-y-2">
           {products.map((p: any) => (
-            <div key={p.id} className="flex items-center gap-3 bg-card border rounded-lg p-2">
+            <div key={p.id} className="flex items-center gap-3 bg-card border p-2">
               {p.image && <img src={p.image} alt="" className="w-10 h-10 rounded object-cover" />}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{p.name}</p>
                 {p.name_en && <p className="text-xs text-muted-foreground">{p.name_en}</p>}
-                {p.moq && <p className="text-xs text-muted-foreground">MOQ: {p.moq}</p>}
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                  {p.country_of_origin && <p className="text-xs text-muted-foreground">{t.admin.productCountryOfOrigin}: {p.country_of_origin}</p>}
+                  {p.weight && <p className="text-xs text-muted-foreground">{t.admin.productWeight}: {p.weight}</p>}
+                  {p.quantity && <p className="text-xs text-muted-foreground">{t.admin.productQuantity}: {p.quantity}</p>}
+                  {p.storage_condition && <p className="text-xs text-muted-foreground">{t.admin.productStorageCondition}: {p.storage_condition}</p>}
+                  {p.temperature && <p className="text-xs text-muted-foreground">{t.admin.productTemperature}: {p.temperature}</p>}
+                </div>
               </div>
               <Button variant="outline" size="sm" className="rounded-lg text-destructive" onClick={() => handleDelete(p.id)}>
                 <Trash2 className="h-3 w-3" />
@@ -491,7 +517,7 @@ function ApprovalQueue() {
       ) : (
         <div className="space-y-4">
           {items.map((item: any) => (
-            <div key={item.id} className="bg-card border rounded-2xl p-5">
+            <div key={item.id} className="bg-card border p-5">
               <div className="flex gap-4">
                 <img src={item.image} alt="" className="w-20 h-20 rounded-xl object-cover" />
                 <div className="flex-1 min-w-0">
@@ -621,7 +647,7 @@ function MarketplaceManager() {
       </div>
 
       {showForm && (
-        <div className="bg-card border rounded-2xl p-6 mb-6 space-y-4">
+        <div className="bg-card border p-6 mb-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <InputField label={label("Title (JA)", "タイトル（日本語）")} value={form.title} onChange={(v) => setForm((p) => ({ ...p, title: v }))} />
             <InputField label={label("Title (EN)", "タイトル（英語）")} value={form.title_en} onChange={(v) => setForm((p) => ({ ...p, title_en: v }))} />
@@ -704,7 +730,7 @@ function MarketplaceManager() {
           </div>
         )}
         {items.map((item: any) => (
-          <div key={item.id ?? item.slug} className="bg-card border rounded-2xl p-4 flex gap-4 items-center">
+          <div key={item.id ?? item.slug} className="bg-card border p-4 flex gap-4 items-center">
             {item.image && <img src={item.image} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="font-bold text-sm truncate">{lang === "en" && item.title_en ? item.title_en : item.title}</p>
@@ -821,7 +847,7 @@ function NewsManager() {
         </Button>
       </div>
       {showForm && (
-        <div className="bg-card border rounded-2xl p-6 mb-6 space-y-4">
+        <div className="bg-card border p-6 mb-6 space-y-4">
           <h3 className="font-semibold text-sm text-muted-foreground mb-2">
             {editSlug ? (lang === "ja" ? "記事を編集" : "Edit Article") : (lang === "ja" ? "新規記事を追加" : "Add New Article")}
           </h3>
@@ -931,7 +957,7 @@ function NewsManager() {
       ) : (
         <div className="space-y-3">
           {articles.map((a: any) => (
-            <div key={a.id} className="bg-card border rounded-2xl p-4 flex items-center gap-4">
+            <div key={a.id} className="bg-card border p-4 flex items-center gap-4">
               {a.image && (
                 <img src={a.image} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0 hidden sm:block" />
               )}
@@ -996,7 +1022,7 @@ function CategoryManager() {
   return (
     <div>
       <h2 className="text-xl font-bold mb-6">{t.admin.categoryManagement}</h2>
-      <div className="bg-card border rounded-2xl p-5 mb-6 flex flex-wrap gap-3 items-end">
+      <div className="bg-card border p-5 mb-6 flex flex-wrap gap-3 items-end">
         <div>
           <label className="text-xs font-medium block mb-1">{t.admin.typeLabel}</label>
           <select value={newCat.type} onChange={(e) => setNewCat((p) => ({ ...p, type: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm">
@@ -1095,7 +1121,7 @@ function AboutSiteManager() {
           ? "「このサイトについて」ページのヒーロー・紹介文・画像を編集できます。空欄の場合はデフォルトの表示になります。"
           : "Edit the About page hero, introduction text, and images. Leave blank to use default content."}
       </p>
-      <div className="bg-card border rounded-2xl p-6 max-w-2xl space-y-6">
+      <div className="bg-card border p-6 max-w-2xl space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium block mb-1.5">Hero title (EN)</label>
@@ -1178,7 +1204,7 @@ function TermsManager() {
   return (
     <div>
       <h2 className="text-xl font-bold mb-6">{t.admin.tabTerms}</h2>
-      <div className="bg-card border rounded-2xl p-6 max-w-2xl">
+      <div className="bg-card border p-6 max-w-2xl">
         <label className="text-sm font-medium block mb-1.5">{t.admin.termsLabel}</label>
         <textarea
           value={termsText}
@@ -1217,7 +1243,7 @@ function QRManager() {
   return (
     <div>
       <h2 className="text-xl font-bold mb-6">{t.admin.qrTitle}</h2>
-      <div className="bg-card border rounded-2xl p-6 max-w-lg">
+      <div className="bg-card border p-6 max-w-lg">
         <p className="text-sm text-muted-foreground mb-4">
           {t.admin.qrDescription}
         </p>
@@ -1268,7 +1294,7 @@ function ReportManager() {
       ) : (
         <div className="space-y-3">
           {reports.map((r: any) => (
-            <div key={r.id} className="bg-card border rounded-2xl p-4">
+            <div key={r.id} className="bg-card border p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">{r.item_type} · {new Date(r.created_at).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG")}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.status === "pending" ? "bg-yellow-100 text-yellow-700" : r.status === "reviewed" ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>{r.status}</span>
@@ -1330,26 +1356,26 @@ function AnalyticsPanel() {
 
       {/* ── KPI cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-card border rounded-2xl p-5 text-center">
+        <div className="bg-card border p-5 text-center">
           <p className="text-3xl font-black text-primary">{suppliers.length}</p>
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.suppliersCount}</p>
         </div>
-        <div className="bg-card border rounded-2xl p-5 text-center">
+        <div className="bg-card border p-5 text-center">
           <p className="text-3xl font-black text-accent">{items.length}</p>
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.marketplaceCount}</p>
         </div>
-        <div className="bg-card border rounded-2xl p-5 text-center">
+        <div className="bg-card border p-5 text-center">
           <p className="text-3xl font-black text-secondary">{suppliers.reduce((a: number, s: any) => a + (s.views || 0), 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.totalViews}</p>
         </div>
-        <div className="bg-card border rounded-2xl p-5 text-center">
+        <div className="bg-card border p-5 text-center">
           <p className="text-3xl font-black text-primary">{suppliers.filter((s: any) => s.plan === "premium").length}</p>
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.premiumSuppliers}</p>
         </div>
       </div>
 
       {/* ── Monthly site visits chart ── */}
-      <div className="bg-card border rounded-2xl p-5">
+      <div className="bg-card border p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-sm">{t.admin.analytics.monthlyVisits}</h3>
           <div className="flex gap-1">
@@ -1376,7 +1402,7 @@ function AnalyticsPanel() {
       </div>
 
       {/* ── Monthly supplier views chart ── */}
-      <div className="bg-card border rounded-2xl p-5">
+      <div className="bg-card border p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-sm">{t.admin.analytics.monthlySupplierViews}</h3>
           <div className="flex gap-1">
@@ -1459,7 +1485,7 @@ function AnalyticsPanel() {
         </div>
         <div className="space-y-2">
           {[...suppliers].sort((a: any, b: any) => (b.views || 0) - (a.views || 0)).slice(0, 5).map((s: any) => (
-            <div key={s.id} className="flex items-center gap-3 bg-card border rounded-xl p-3">
+            <div key={s.id} className="flex items-center gap-3 bg-card border p-3">
               <img src={s.logo} alt="" className="w-10 h-10 rounded-lg object-cover" />
               <div className="flex-1"><p className="text-sm font-semibold">{lang === "ja" ? (s.name_ja || s.name) : (s.name || s.name_ja)}</p></div>
               <p className="text-sm font-bold text-primary">{(s.views || 0).toLocaleString()} {t.admin.analytics.viewsLabel}</p>
@@ -1513,7 +1539,7 @@ function AppearanceManager() {
       <h2 className="text-xl font-bold">{t.admin.tabAppearance}</h2>
 
       {/* ── Font picker ── */}
-      <div className="bg-card border rounded-2xl p-6">
+      <div className="bg-card border p-6">
         <h3 className="font-bold mb-4 flex items-center gap-2">
           <span className="text-lg">🔤</span>
           {lang === "ja" ? "フォント設定" : "Font Settings"}
@@ -1547,7 +1573,7 @@ function AppearanceManager() {
       </div>
 
       {/* ── Color picker ── */}
-      <div className="bg-card border rounded-2xl p-6">
+      <div className="bg-card border p-6">
         <h3 className="font-bold mb-4 flex items-center gap-2">
           <span className="text-lg">🎨</span>
           {lang === "ja" ? "メインカラー設定" : "Primary Color Settings"}
@@ -1581,7 +1607,7 @@ function AppearanceManager() {
       </div>
 
       {/* ── Live preview ── */}
-      <div className="bg-card border rounded-2xl p-6">
+      <div className="bg-card border p-6">
         <h3 className="font-bold mb-4">
           {lang === "ja" ? "プレビュー" : "Preview"}
         </h3>
@@ -1698,7 +1724,7 @@ function LinksManager() {
       </div>
 
       {showForm && (
-        <div className="bg-card border rounded-2xl p-6 mb-6 space-y-4">
+        <div className="bg-card border p-6 mb-6 space-y-4">
           <h3 className="font-semibold text-sm text-muted-foreground">
             {editId ? (lang === "ja" ? "リンクを編集" : "Edit Link") : (lang === "ja" ? "新規リンクを追加" : "Add New Link")}
           </h3>
@@ -1765,7 +1791,7 @@ function LinksManager() {
       ) : (
         <div className="space-y-3">
           {links.map((l: any) => (
-            <div key={l.id} className="bg-card border rounded-2xl p-4 flex items-center gap-4">
+            <div key={l.id} className="bg-card border p-4 flex items-center gap-4">
               {l.bg_image || l.bgImage ? (
                 <img src={l.bg_image || l.bgImage} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
               ) : (

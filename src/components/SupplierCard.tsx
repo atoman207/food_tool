@@ -108,13 +108,13 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
   const cardContent = (
     <div className={`p-3 flex flex-col h-full min-h-0 ${isList ? "flex-row items-center gap-4" : ""}`}>
       <div className={`flex items-start gap-3 ${isList ? "flex-1 min-w-0 flex-row" : "mb-3 flex-shrink-0"}`}>
-        <div className={`rounded-lg overflow-hidden flex-shrink-0 bg-muted ${imageSizeClass}`}>
+        <Link href={`/suppliers/${supplier.slug}`} className={`overflow-hidden flex-shrink-0 bg-muted block ${imageSizeClass}`} tabIndex={-1} aria-hidden="true">
           <img
             src={supplier.logo}
             alt={displayName}
             className="w-full h-full object-cover transition-transform duration-300 ease-smooth group-hover:scale-[1.03]"
           />
-        </div>
+        </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-1 mb-0.5">
             <Link href={`/suppliers/${supplier.slug}`} className="hover:underline min-w-0 flex-1">
@@ -169,7 +169,7 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
   );
 
   return (
-    <div className={`group bg-card rounded-xl overflow-hidden shadow-card card-hover border relative flex flex-col h-full min-h-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
+    <div className={`group bg-card overflow-hidden shadow-card card-hover border relative flex flex-col h-full min-h-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
       {cfg.tier === "premium" && !isList && (
         <div className="h-1.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90" />
       )}

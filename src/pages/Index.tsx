@@ -14,7 +14,7 @@ import type { SupplierRow, MarketplaceItemRow, CategoryRow, NewsArticleRow } fro
 
 function SupplierSkeleton() {
   return (
-    <div className="bg-card border rounded-2xl p-5 animate-pulse">
+    <div className="bg-card border p-5 animate-pulse">
       <div className="flex items-start gap-3 mb-3">
         <div className="w-14 h-14 rounded-xl bg-muted flex-shrink-0" />
         <div className="flex-1 space-y-2 pt-1">
@@ -46,7 +46,7 @@ const Index = () => {
   const { data: newsArticles } = useFetch<NewsArticleRow[]>("/api/news");
 
   const sortedSuppliers = useMemo(() => sortSuppliersByPlan(suppliers || []), [suppliers]);
-  const popularSuppliers = sortedSuppliers.slice(0, 3);
+  const popularSuppliers = sortedSuppliers.slice(0, 6);
   const recentItems = (marketplaceItems || []).slice(0, 6);
   const latestNews = useMemo(
     () =>
@@ -146,7 +146,7 @@ const Index = () => {
                 <span className="text-center leading-tight">{t.home.card3Title}</span>
               </Link>
             </div>
-            <div className="mt-6 bg-white rounded-2xl p-4 md:p-5 shadow-card-hover animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <div className="mt-6 bg-white p-4 md:p-5 shadow-card-hover animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <div className="flex flex-col sm:flex-row gap-3">
                 <select
                   value={selectedCategory}
@@ -185,7 +185,7 @@ const Index = () => {
         <div className="container">
           <div className="grid grid-cols-3 gap-2 sm:gap-5">
             <Link href="/suppliers" className="group block">
-              <div className="bg-card border border-border rounded-xl p-3 sm:p-6 shadow-card card-hover text-center h-full">
+              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-hover text-center h-full">
                 <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
                   <Search className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                 </div>
@@ -194,7 +194,7 @@ const Index = () => {
               </div>
             </Link>
             <Link href="/suppliers" className="group block">
-              <div className="bg-card border border-border rounded-xl p-3 sm:p-6 shadow-card card-hover text-center h-full">
+              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-hover text-center h-full">
                 <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
                   <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                 </div>
@@ -203,7 +203,7 @@ const Index = () => {
               </div>
             </Link>
             <Link href="/marketplace" className="group block">
-              <div className="bg-card border border-border rounded-xl p-3 sm:p-6 shadow-card card-hover text-center h-full">
+              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-hover text-center h-full">
                 <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
                   <ShoppingBag className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                 </div>
@@ -227,9 +227,9 @@ const Index = () => {
             </Link>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {suppliersLoading
-            ? Array.from({ length: 3 }).map((_, i) => <SupplierSkeleton key={i} />)
+            ? Array.from({ length: 6 }).map((_, i) => <SupplierSkeleton key={i} />)
             : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
           }
         </div>
@@ -246,7 +246,7 @@ const Index = () => {
               {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 items-stretch">
             {recentItems.map((item) => <MarketplaceCard key={item.id} item={item} />)}
           </div>
         </div>
@@ -264,7 +264,7 @@ const Index = () => {
               {t.news.viewAllNews} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
-          <div className="bg-card rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-card overflow-hidden shadow-sm">
             <div className="max-h-64 overflow-y-auto">
               {latestNews.map((article, index) => {
                 const isCurrent = index === 0;
@@ -366,7 +366,7 @@ const Index = () => {
                       href={link.url}
                       target={link.url.startsWith("http") ? "_blank" : "_self"}
                       rel="noopener noreferrer"
-                      className="group relative block w-full aspect-[208/144] rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300"
+                      className="group relative block w-full aspect-[208/144] overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300"
                     >
                       <img
                         src={link.bg_image || link.bgImage}

@@ -53,7 +53,7 @@ const Contact = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Contact info sidebar */}
           <div className="space-y-6">
-            <div className="bg-card border rounded-2xl p-5 space-y-4">
+            <div className="bg-card border p-5 space-y-4">
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Mail className="h-4 w-4 text-primary" />
@@ -87,7 +87,7 @@ const Contact = () => {
                 </Button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="bg-card border rounded-2xl p-6 space-y-5">
+              <form onSubmit={handleSubmit} className="bg-card border p-6 space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium block mb-1.5">{t.contact.name} *</label>

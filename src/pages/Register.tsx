@@ -86,7 +86,7 @@ const Register = () => {
               mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            <div className="bg-card/95 backdrop-blur-md border border-border/60 rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-xl shadow-black/5 text-center space-y-6">
+            <div className="bg-card/95 backdrop-blur-md border border-border/60 p-6 sm:p-10 shadow-xl shadow-black/5 text-center space-y-6">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto animate-float-subtle">
                 <Mail className="h-8 w-8 text-primary" />
               </div>
@@ -133,7 +133,7 @@ const Register = () => {
         <div className="w-full max-w-[26rem] sm:max-w-md">
           {/* Card */}
           <div
-            className={`bg-card/95 backdrop-blur-md border border-border/60 rounded-2xl sm:rounded-3xl shadow-xl shadow-black/5 overflow-hidden transition-all duration-500 ${
+            className={`bg-card/95 backdrop-blur-md border border-border/60 shadow-xl shadow-black/5 overflow-hidden transition-all duration-500 ${
               mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >

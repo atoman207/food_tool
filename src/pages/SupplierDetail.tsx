@@ -40,8 +40,9 @@ const SupplierDetail = () => {
   const contactMsg = lang === "ja"
     ? `${displayName}について問い合わせです。`
     : `I'd like to inquire about ${displayName}.`;
-  const moqLabel = lang === "ja" ? "最小注文: " : "MOQ: ";
-  const moqDetailLabel = lang === "ja" ? "最小注文数量: " : "Minimum order: ";
+  const labels = lang === "ja"
+    ? { origin: "原産国", weight: "重量", quantity: "入数", storage: "保存方法", temp: "温度帯" }
+    : { origin: "Country of Origin", weight: "Weight", quantity: "Quantity", storage: "Storage Condition", temp: "Temperature" };
 
   if (loading) {
     return <Layout><div className="container py-16 text-center text-muted-foreground">{t.common.loading}</div></Layout>;
@@ -67,7 +68,7 @@ const SupplierDetail = () => {
         <Link href="/suppliers" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 font-medium">
           <ArrowLeft className="h-4 w-4" /> {t.supplierDetail.backToList}
         </Link>
-        <div className="bg-card rounded-2xl p-6 sm:p-8">
+        <div className="bg-card p-6 sm:p-8">
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Gallery */}
             {galleryImages.length > 0 && (
@@ -177,11 +178,15 @@ const SupplierDetail = () => {
               )}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {products.map((p: any) => (
-                  <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border rounded-2xl overflow-hidden text-left card-hover">
-                    <div className="aspect-[4/3] overflow-hidden"><img src={p.image} alt={p.name} className="w-full h-full object-cover" /></div>
+                  <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border overflow-hidden text-left card-hover">
+                    {p.image && <div className="aspect-[4/3] overflow-hidden"><img src={p.image} alt={p.name} className="w-full h-full object-cover" /></div>}
                     <div className="p-4">
                       <p className="text-sm font-semibold">{p.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{moqLabel}{p.moq}</p>
+                      {p.country_of_origin && <p className="text-xs text-muted-foreground mt-1">{labels.origin}: {p.country_of_origin}</p>}
+                      {p.weight && <p className="text-xs text-muted-foreground">{labels.weight}: {p.weight}</p>}
+                      {p.quantity && <p className="text-xs text-muted-foreground">{labels.quantity}: {p.quantity}</p>}
+                      {p.storage_condition && <p className="text-xs text-muted-foreground">{labels.storage}: {p.storage_condition}</p>}
+                      {p.temperature && <p className="text-xs text-muted-foreground">{labels.temp}: {p.temperature}</p>}
                     </div>
                   </button>
                 ))}
@@ -191,7 +196,7 @@ const SupplierDetail = () => {
           {activeTab === "certifications" && (
             <div className="space-y-3 max-w-md">
               {(supplier.certifications || []).map((cert: string) => (
-                <div key={cert} className="flex items-center gap-3 p-4 bg-card border rounded-2xl">
+                <div key={cert} className="flex items-center gap-3 p-4 bg-card border">
                   <Award className="h-5 w-5 text-secondary" /><span className="text-sm font-semibold">{cert}</span>
                 </div>
               ))}
@@ -199,7 +204,7 @@ const SupplierDetail = () => {
           )}
           {activeTab === "contact" && (
             <div className="max-w-md space-y-4">
-              <div className="flex items-center gap-3 p-5 bg-card border rounded-2xl">
+              <div className="flex items-center gap-3 p-5 bg-card border">
                 <Phone className="h-5 w-5 text-muted-foreground" />
                 <div>
                   {contactName && <p className="text-xs text-muted-foreground">{t.supplierDetail.contactLabel}</p>}
@@ -217,10 +222,16 @@ const SupplierDetail = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setSelectedProduct(null)} />
             <div className="relative bg-background rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-fade-in">
-              <img src={product.image} alt={product.name} className="w-full aspect-video object-cover" />
+              {product.image && <img src={product.image} alt={product.name} className="w-full aspect-video object-cover" />}
               <div className="p-6">
                 <h3 className="text-lg font-bold">{product.name}</h3>
-                <p className="text-sm text-muted-foreground mt-2">{moqDetailLabel}{product.moq}</p>
+                <div className="mt-2 space-y-1">
+                  {product.country_of_origin && <p className="text-sm text-muted-foreground">{labels.origin}: <span className="font-medium text-foreground">{product.country_of_origin}</span></p>}
+                  {product.weight && <p className="text-sm text-muted-foreground">{labels.weight}: <span className="font-medium text-foreground">{product.weight}</span></p>}
+                  {product.quantity && <p className="text-sm text-muted-foreground">{labels.quantity}: <span className="font-medium text-foreground">{product.quantity}</span></p>}
+                  {product.storage_condition && <p className="text-sm text-muted-foreground">{labels.storage}: <span className="font-medium text-foreground">{product.storage_condition}</span></p>}
+                  {product.temperature && <p className="text-sm text-muted-foreground">{labels.temp}: <span className="font-medium text-foreground">{product.temperature}</span></p>}
+                </div>
                 <div className="mt-5">
                   <WhatsAppButton phone={supplier.whatsapp} message={lang === "ja" ? `${product.name}について問い合わせです。` : `I'd like to inquire about ${product.name}.`} fullWidth />
                 </div>

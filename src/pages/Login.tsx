@@ -72,7 +72,7 @@ const Login = () => {
   return (
     <Layout>
       <div className="container max-w-md py-16">
-        <div className="bg-card border rounded-xl p-8">
+        <div className="bg-card border p-8">
           <div className="text-center mb-8">
             <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
               <UtensilsCrossed className="h-6 w-6 text-primary-foreground" />

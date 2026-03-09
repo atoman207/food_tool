@@ -153,7 +153,7 @@ const Suppliers = () => {
         </div>
         <div className="flex gap-8">
           <aside className="hidden md:block w-56 flex-shrink-0">
-            <div className="sticky top-24 bg-card border rounded-2xl p-5">
+            <div className="sticky top-24 bg-card border p-5">
               <FilterPanel />
             </div>
           </aside>

@@ -93,11 +93,11 @@ const MarketplaceItemPage = () => {
               <div className="flex items-center gap-3 text-sm"><MapPin className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.area}: <strong>{displayArea}</strong></span></div>
               <div className="flex items-center gap-3 text-sm"><Truck className="h-4 w-4 text-muted-foreground" /><span>{t.marketplaceItem.delivery}: <strong>{displayDelivery}</strong></span></div>
             </div>
-            <div className="mt-6 p-5 bg-card border rounded-2xl">
+            <div className="mt-6 p-5 bg-card border">
               <h3 className="font-bold text-sm mb-2">{t.marketplaceItem.description}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{displayDescription}</p>
             </div>
-            <div className="mt-6 p-5 bg-card border rounded-2xl">
+            <div className="mt-6 p-5 bg-card border">
               <h3 className="font-bold text-sm mb-2">{t.marketplaceItem.seller}</h3>
               <p className="text-sm font-semibold">{item.seller_name}</p>
             </div>

@@ -263,7 +263,7 @@ const Links = () => {
                     href={link.url}
                     target={link.url.startsWith("http") ? "_blank" : "_self"}
                     rel="noopener noreferrer"
-                    className="group bg-card border border-border rounded-2xl p-5 card-hover flex flex-col gap-3 hover:border-primary/40 transition-colors"
+                    className="group bg-card border border-border p-5 card-hover flex flex-col gap-3 hover:border-primary/40 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-2xl leading-none">{link.icon}</span>

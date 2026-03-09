@@ -31,21 +31,21 @@ export function MarketplaceCard({ item }: MarketplaceCardProps) {
     : (mkt.conditionDisplay?.[item.condition] ?? item.condition);
 
   return (
-    <Link href={`/marketplace/${item.slug}`} className="group block">
-      <div className="bg-card rounded-xl overflow-hidden shadow-card card-hover border border-border">
-        <div className="aspect-square overflow-hidden bg-muted">
+    <Link href={`/marketplace/${item.slug}`} className="group block h-full">
+      <div className="bg-card overflow-hidden shadow-card card-hover border border-border h-full flex flex-col">
+        <div className="aspect-square overflow-hidden bg-muted flex-shrink-0">
           <img
             src={item.image}
             alt={displayTitle}
             className="w-full h-full object-cover transition-transform duration-300 ease-smooth group-hover:scale-[1.03]"
           />
         </div>
-        <div className="p-3">
-          <p className="font-bold text-sm sm:text-base text-primary">S${item.price.toLocaleString()}</p>
-          <p className="text-xs sm:text-[15px] font-medium text-foreground line-clamp-2 mt-1 leading-snug">{displayTitle}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-[10px] sm:text-xs text-muted-foreground">{displayArea}</span>
-            <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{displayCondition}</span>
+        <div className="p-3 flex flex-col flex-1 min-h-0">
+          <p className="font-bold text-sm sm:text-base text-primary flex-shrink-0">S${item.price.toLocaleString()}</p>
+          <p className="text-xs sm:text-[15px] font-medium text-foreground truncate mt-1 leading-snug" title={displayTitle}>{displayTitle}</p>
+          <div className="flex items-center gap-2 mt-2 flex-shrink-0">
+            <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{displayArea}</span>
+            <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground flex-shrink-0">{displayCondition}</span>
           </div>
         </div>
       </div>

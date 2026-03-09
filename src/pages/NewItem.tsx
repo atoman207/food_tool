@@ -150,7 +150,7 @@ const NewItem = () => {
         </Link>
         <h1 className="text-3xl font-black tracking-tight mb-8">{t.newItem.title}</h1>
 
-        <form onSubmit={handleSubmit} className="bg-card border rounded-2xl p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="bg-card border p-6 space-y-5">
           {/* Title */}
           <div>
             <label className="text-sm font-medium block mb-1.5">{t.newItem.fieldTitle}</label>
