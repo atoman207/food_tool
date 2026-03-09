@@ -32,7 +32,7 @@ export function MarketplaceCard({ item }: MarketplaceCardProps) {
 
   return (
     <Link href={`/marketplace/${item.slug}`} className="group block h-full">
-      <div className="bg-card overflow-hidden shadow-card card-hover border border-border h-full flex flex-col">
+      <div className="bg-card overflow-hidden shadow-card card-hover card-lift border border-border h-full flex flex-col">
         <div className="aspect-square overflow-hidden bg-muted flex-shrink-0">
           <img
             src={item.image}

@@ -141,12 +141,12 @@ const Suppliers = () => {
           <h1 className="text-3xl font-black tracking-tight">{t.suppliers.title}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t.suppliers.subtitle}</p>
         </div>
-        <div className="flex gap-3 mb-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input type="text" placeholder={t.suppliers.searchPlaceholder} value={query} onChange={(e) => setQuery(e.target.value)} className="w-full h-12 pl-10 pr-4 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="flex-1 min-w-0 relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <input type="text" placeholder={t.suppliers.searchPlaceholder} value={query} onChange={(e) => setQuery(e.target.value)} className="w-full min-h-[44px] h-12 pl-10 pr-4 rounded-xl border bg-background text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
-          <button onClick={() => setShowFilters(!showFilters)} className="md:hidden h-12 px-4 rounded-xl border bg-background flex items-center gap-2 text-sm font-medium">
+          <button onClick={() => setShowFilters(!showFilters)} className="md:hidden min-h-[44px] h-12 px-4 rounded-xl border bg-background flex items-center justify-center gap-2 text-sm font-medium flex-shrink-0">
             <SlidersHorizontal className="h-4 w-4" />
             {t.common.filter}
           </button>
@@ -160,7 +160,7 @@ const Suppliers = () => {
           {showFilters && (
             <div className="fixed inset-0 z-50 md:hidden">
               <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={() => setShowFilters(false)} />
-              <div className="absolute right-0 top-0 bottom-0 w-80 bg-background p-6 overflow-y-auto shadow-2xl animate-slide-in">
+              <div className="absolute right-0 top-0 bottom-0 w-[min(20rem,100vw)] max-w-[85vw] bg-background p-4 sm:p-6 overflow-y-auto shadow-2xl animate-slide-in">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="font-bold text-lg">{t.common.filters}</h2>
                   <button onClick={() => setShowFilters(false)} className="p-1.5 rounded-lg hover:bg-muted"><X className="h-5 w-5" /></button>
@@ -176,7 +176,7 @@ const Suppliers = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`p-2.5 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                  className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
                   title={t.suppliers.viewGrid}
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -184,7 +184,7 @@ const Suppliers = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`p-2.5 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                  className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
                   title={t.suppliers.viewList}
                 >
                   <List className="h-4 w-4" />

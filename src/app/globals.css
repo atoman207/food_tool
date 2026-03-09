@@ -61,8 +61,14 @@
   * {
     @apply border-border;
   }
+  html {
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
     /* var(--site-font) is injected by ThemeProvider; falls back to system stack */
     font-family: var(--site-font, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
     font-weight: 400;
@@ -71,7 +77,23 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
+  /* Responsive container padding for mobile (avoid 2rem on narrow screens) */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
   /* Yu Mincho for Japanese text — overridden when admin picks a JP font */
   :lang(ja),
   [lang="ja"],
@@ -112,11 +134,42 @@
   }
 
   .card-hover {
-    @apply transition-all duration-fast ease-smooth;
-    transition-property: box-shadow;
+    @apply transition-all duration-300 ease-smooth;
+    transition-property: box-shadow, transform;
   }
   .card-hover:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Shokuzai-pro style: card lift on hover (subtle translateY + shadow) */
+  .card-lift {
+    @apply transition-all duration-300 ease-smooth;
+    transition-property: box-shadow, transform;
+  }
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  }
+
+  /* Section title with left accent (B2B portal style, like shokuzai-pro.com) */
+  .section-title {
+    @apply text-foreground font-bold tracking-tight;
+    border-left: 4px solid hsl(var(--primary));
+    padding-left: 1rem;
+  }
+
+  /* "View all" / もっと見る link: arrow slides right on hover */
+  .link-more {
+    @apply inline-flex items-center gap-1.5 font-semibold text-primary transition-all duration-300 ease-smooth;
+  }
+  .link-more:hover {
+    @apply text-primary/90;
+  }
+  .link-more .link-more-arrow {
+    @apply transition-transform duration-300 ease-smooth;
+  }
+  .link-more:hover .link-more-arrow {
+    transform: translateX(4px);
   }
 
   .tag-badge {
@@ -136,6 +189,17 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  /* Smooth horizontal scroll on iOS */
+  .touch-pan-x {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Safe area for notched devices (e.g. iPhone) */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom, 0);
   }
 }
 
@@ -171,8 +235,9 @@
 }
 
 /* Smoother hover (no card scale to avoid blurriness; image scale is on the image only) */
-.card-hover {
-  will-change: box-shadow;
+.card-hover,
+.card-lift {
+  will-change: box-shadow, transform;
 }
 
 /* -webkit-backdrop-filter for Safari */
@@ -236,9 +301,25 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+.animate-fade-in-up-slow {
+  animation: fade-in-up 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
 .animate-fade-in-scale {
   animation: fade-in-scale 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+/* Stagger delays for section/card reveal (shokuzai-pro style) */
+.reveal-stagger-0 { animation-delay: 0ms; }
+.reveal-stagger-1 { animation-delay: 80ms; }
+.reveal-stagger-2 { animation-delay: 160ms; }
+.reveal-stagger-3 { animation-delay: 240ms; }
+.reveal-stagger-4 { animation-delay: 320ms; }
+.reveal-stagger-5 { animation-delay: 400ms; }
+.reveal-stagger-6 { animation-delay: 480ms; }
+.reveal-stagger-7 { animation-delay: 560ms; }
+.reveal-stagger-8 { animation-delay: 640ms; }
+.reveal-stagger-9 { animation-delay: 720ms; }
+.reveal-stagger-10 { animation-delay: 800ms; }
+
 .animate-float-subtle {
   animation: float-subtle 4s ease-in-out infinite;
 }

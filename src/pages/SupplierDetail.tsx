@@ -64,7 +64,7 @@ const SupplierDetail = () => {
 
   return (
     <Layout>
-      <div className="container py-6">
+      <div className="container py-4 sm:py-6 overflow-x-hidden">
         <Link href="/suppliers" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 font-medium">
           <ArrowLeft className="h-4 w-4" /> {t.supplierDetail.backToList}
         </Link>
@@ -149,10 +149,10 @@ const SupplierDetail = () => {
           </div>
         </div>
 
-        <div className="mt-8 border-b">
-          <div className="flex gap-0 overflow-x-auto">
+        <div className="mt-8 border-b overflow-hidden">
+          <div className="flex gap-0 overflow-x-auto scrollbar-hide touch-pan-x">
             {tabs.map((tab) => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-shrink-0 min-h-[48px] px-4 sm:px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
                 {tab.label}
               </button>
             ))}
@@ -219,7 +219,7 @@ const SupplierDetail = () => {
         </div>
 
         {selectedProduct && product && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
             <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setSelectedProduct(null)} />
             <div className="relative bg-background rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-fade-in">
               {product.image && <img src={product.image} alt={product.name} className="w-full aspect-video object-cover" />}

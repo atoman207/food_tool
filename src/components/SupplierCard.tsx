@@ -169,7 +169,7 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
   );
 
   return (
-    <div className={`group bg-card overflow-hidden shadow-card card-hover border relative flex flex-col h-full min-h-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
+    <div className={`group bg-card overflow-hidden shadow-card card-hover card-lift border relative flex flex-col h-full min-h-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
       {cfg.tier === "premium" && !isList && (
         <div className="h-1.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90" />
       )}

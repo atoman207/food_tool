@@ -40,7 +40,7 @@ const Contact = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl py-10 md:py-14">
+      <div className="container max-w-4xl py-8 sm:py-10 md:py-14">
         <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 font-medium">
           <ArrowLeft className="h-4 w-4" /> {t.contact.backHome}
         </Link>
@@ -95,7 +95,7 @@ const Contact = () => {
                       type="text"
                       value={form.name}
                       onChange={(e) => handleChange("name", e.target.value)}
-                      className="w-full h-11 px-4 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full min-h-[44px] h-11 px-4 rounded-lg border bg-background text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                       required
                     />
                   </div>
@@ -105,7 +105,7 @@ const Contact = () => {
                       type="email"
                       value={form.email}
                       onChange={(e) => handleChange("email", e.target.value)}
-                      className="w-full h-11 px-4 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full min-h-[44px] h-11 px-4 rounded-lg border bg-background text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                       required
                     />
                   </div>
@@ -116,7 +116,7 @@ const Contact = () => {
                     type="text"
                     value={form.subject}
                     onChange={(e) => handleChange("subject", e.target.value)}
-                    className="w-full h-11 px-4 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="w-full min-h-[44px] h-11 px-4 rounded-lg border bg-background text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                     required
                   />
                 </div>
@@ -126,7 +126,7 @@ const Contact = () => {
                     value={form.message}
                     onChange={(e) => handleChange("message", e.target.value)}
                     rows={6}
-                    className="w-full p-4 rounded-lg border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="w-full min-h-[120px] p-4 rounded-lg border bg-background text-base sm:text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
                     required
                   />
                 </div>

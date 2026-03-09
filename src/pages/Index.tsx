@@ -108,7 +108,7 @@ const Index = () => {
           <img src="/hero-bg.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
         </div>
-        <div className="container relative z-10 py-16 md:py-20">
+        <div className="container relative z-10 py-10 sm:py-14 md:py-20">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium mb-6 animate-fade-in">
               <Sparkles className="h-3.5 w-3.5" />
@@ -180,31 +180,31 @@ const Index = () => {
         </div>
       </section>
 
-      {/* 1. 3 main menu cards: カテゴリー / 人気サプライヤー / Buy & Sell */}
+      {/* 1. 3 main menu cards: カテゴリー / 人気サプライヤー / Buy & Sell (shokuzai-pro style: card-lift + stagger) */}
       <section className="bg-muted py-10 md:py-12">
         <div className="container">
           <div className="grid grid-cols-3 gap-2 sm:gap-5">
-            <Link href="/suppliers" className="group block">
-              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-hover text-center h-full">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+            <Link href="/suppliers" className="group block opacity-0-init animate-fade-in-up reveal-stagger-0">
+              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-lift text-center h-full">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <Search className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                 </div>
                 <h3 className="font-bold text-foreground text-xs sm:text-base leading-tight">{t.home.card1Title}</h3>
                 <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-2">{t.home.card1Sub}</p>
               </div>
             </Link>
-            <Link href="/suppliers" className="group block">
-              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-hover text-center h-full">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+            <Link href="/suppliers" className="group block opacity-0-init animate-fade-in-up reveal-stagger-1">
+              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-lift text-center h-full">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                 </div>
                 <h3 className="font-bold text-foreground text-xs sm:text-base leading-tight">{t.home.popularSuppliers}</h3>
                 <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-2">{t.home.card2Sub}</p>
               </div>
             </Link>
-            <Link href="/marketplace" className="group block">
-              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-hover text-center h-full">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-200">
+            <Link href="/marketplace" className="group block opacity-0-init animate-fade-in-up reveal-stagger-2">
+              <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-lift text-center h-full">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <ShoppingBag className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                 </div>
                 <h3 className="font-bold text-foreground text-xs sm:text-base leading-tight">{t.home.card3Title}</h3>
@@ -215,17 +215,15 @@ const Index = () => {
         </div>
       </section>
 
-      {/* 2. Popular Suppliers */}
-      <section className="container py-10 md:py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" /> {t.home.popularSuppliers}
+      {/* 2. Popular Suppliers (section-title + link-more style) */}
+      <section className="container py-10 md:py-12 opacity-0-init animate-fade-in-up reveal-stagger-2">
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <h2 className="section-title text-xl md:text-2xl flex items-center gap-2 min-w-0">
+            <TrendingUp className="h-5 w-5 text-primary flex-shrink-0" /> <span className="truncate">{t.home.popularSuppliers}</span>
           </h2>
-          <div className="flex items-center gap-3">
-            <Link href="/suppliers" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors duration-200 group">
-              {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
-            </Link>
-          </div>
+          <Link href="/suppliers" className="link-more flex-shrink-0 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 hover:text-white">
+            {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 link-more-arrow" />
+          </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {suppliersLoading
@@ -236,14 +234,14 @@ const Index = () => {
       </section>
 
       {/* 3. Buy & Sell (Recent marketplace) */}
-      <section className="bg-muted py-10 md:py-14">
+      <section className="bg-muted py-10 md:py-14 opacity-0-init animate-fade-in-up reveal-stagger-3">
         <div className="container">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-primary" /> {t.home.recentMarketplace}
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <h2 className="section-title text-xl md:text-2xl flex items-center gap-2 min-w-0">
+              <ShoppingBag className="h-5 w-5 text-primary flex-shrink-0" /> <span className="truncate">{t.home.recentMarketplace}</span>
             </h2>
-            <Link href="/marketplace" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors duration-200 group">
-              {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+            <Link href="/marketplace" className="link-more flex-shrink-0 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 hover:text-white">
+              {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 link-more-arrow" />
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 items-stretch">
@@ -254,14 +252,14 @@ const Index = () => {
 
       {/* 4. Latest News */}
       {latestNews.length > 0 && (
-        <section className="container py-10 md:py-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-              <Newspaper className="h-5 w-5 text-primary" />
-              {t.news.homeSection}
+        <section className="container py-10 md:py-12 opacity-0-init animate-fade-in-up reveal-stagger-4">
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <h2 className="section-title text-xl md:text-2xl flex items-center gap-2 min-w-0">
+              <Newspaper className="h-5 w-5 text-primary flex-shrink-0" />
+              <span className="truncate">{t.news.homeSection}</span>
             </h2>
-            <Link href="/news" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors duration-200 group">
-              {t.news.viewAllNews} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+            <Link href="/news" className="link-more flex-shrink-0 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 hover:text-white">
+              {t.news.viewAllNews} <ArrowRight className="h-3.5 w-3.5 link-more-arrow" />
             </Link>
           </div>
           <div className="bg-card overflow-hidden shadow-sm">
@@ -277,7 +275,7 @@ const Index = () => {
                   <Link
                     key={article.id}
                     href={`/news/${article.slug}`}
-                    className={`flex items-center gap-4 px-6 py-4 hover:bg-muted/40 transition-colors group ${index % 2 === 1 ? "bg-muted/20" : "bg-transparent"}`}
+                    className={`flex items-center gap-4 px-6 py-4 hover:bg-muted/50 transition-colors duration-300 group ${index % 2 === 1 ? "bg-muted/20" : "bg-transparent"}`}
                   >
                     <span className={`text-sm tabular-nums flex-shrink-0 w-24 ${isCurrent ? "font-bold text-primary" : "font-medium text-muted-foreground"}`}>
                       {dateStr}
@@ -298,15 +296,15 @@ const Index = () => {
 
       {/* 5. Links (リンク集) */}
       {featuredLinks.length > 0 && (
-        <section className="bg-muted py-10 md:py-12 w-full overflow-hidden">
+        <section className="bg-muted py-10 md:py-12 w-full overflow-hidden opacity-0-init animate-fade-in-up reveal-stagger-5">
           <div className="container">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-                <Globe className="h-5 w-5 text-primary" />
-                {t.links.homeSectionTitle}
+            <div className="flex items-center justify-between mb-2 gap-4">
+              <h2 className="section-title text-xl md:text-2xl flex items-center gap-2 min-w-0">
+                <Globe className="h-5 w-5 text-primary flex-shrink-0" />
+                <span className="truncate">{t.links.homeSectionTitle}</span>
               </h2>
-              <Link href="/links" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors duration-200 group">
-                {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+              <Link href="/links" className="link-more flex-shrink-0 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 hover:text-white">
+                {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 link-more-arrow" />
               </Link>
             </div>
             <p className="text-sm text-muted-foreground mb-6">
@@ -337,7 +335,7 @@ const Index = () => {
             </button>
 
             {/* Viewport — on mobile: 1 card at 60vw; on desktop: 3 cards */}
-            <div className="overflow-hidden px-14 md:px-16">
+            <div className="overflow-hidden px-12 sm:px-14 md:px-16">
               <div
                 className="flex flex-nowrap transition-transform duration-500 ease-out"
                 style={
@@ -366,7 +364,7 @@ const Index = () => {
                       href={link.url}
                       target={link.url.startsWith("http") ? "_blank" : "_self"}
                       rel="noopener noreferrer"
-                      className="group relative block w-full aspect-[208/144] overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300"
+                      className="group relative block w-full aspect-[208/144] overflow-hidden shadow-card card-lift"
                     >
                       <img
                         src={link.bg_image || link.bgImage}

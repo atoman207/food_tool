@@ -67,16 +67,16 @@ const AdminDashboard = () => {
           </aside>
 
           <div className="flex-1 min-w-0">
-            <div className="lg:hidden flex gap-2 overflow-x-auto pb-4 mb-6">
+            <div className="lg:hidden flex gap-2 overflow-x-auto scrollbar-hide pb-4 mb-6 -mx-1 px-1">
               {adminTabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap ${
+                  className={`flex-shrink-0 flex items-center gap-1.5 min-h-[44px] px-4 py-2.5 rounded-full text-xs font-medium whitespace-nowrap ${
                     activeTab === tab.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  <tab.icon className="h-3 w-3" /> {tab.label}
+                  <tab.icon className="h-3.5 w-3.5" /> {tab.label}
                 </button>
               ))}
             </div>
@@ -1326,8 +1326,11 @@ function AnalyticsPanel() {
   const [items, setItems] = useState<any[]>([]);
   const [monthlyVisits, setMonthlyVisits] = useState<{ month: string; visits: number }[]>([]);
   const [monthlySupplierViews, setMonthlySupplierViews] = useState<{ month: string; views: number }[]>([]);
+  const [monthlyMarketplaceViews, setMonthlyMarketplaceViews] = useState<{ month: string; views: number }[]>([]);
+  const [topMarketplaceItems, setTopMarketplaceItems] = useState<{ slug: string; views: number }[]>([]);
   const [pvMonths, setPvMonths] = useState(6);
   const [svMonths, setSvMonths] = useState(6);
+  const [mvMonths, setMvMonths] = useState(6);
 
   useEffect(() => {
     fetch("/api/suppliers").then((r) => r.json()).then(setSuppliers).catch(() => {});
@@ -1343,6 +1346,16 @@ function AnalyticsPanel() {
     fetch(`/api/analytics/supplier-views?months=${svMonths}`)
       .then((r) => r.json()).then(setMonthlySupplierViews).catch(() => {});
   }, [svMonths]);
+
+  useEffect(() => {
+    fetch(`/api/analytics/marketplace-views?months=${mvMonths}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setMonthlyMarketplaceViews(d.monthly ?? []);
+        setTopMarketplaceItems(d.topItems ?? []);
+      })
+      .catch(() => {});
+  }, [mvMonths]);
 
   const monthOptions = [3, 6, 12];
   const formatMonth = (key: string) => {
@@ -1369,8 +1382,8 @@ function AnalyticsPanel() {
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.totalViews}</p>
         </div>
         <div className="bg-card border p-5 text-center">
-          <p className="text-3xl font-black text-primary">{suppliers.filter((s: any) => s.plan === "premium").length}</p>
-          <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.premiumSuppliers}</p>
+          <p className="text-3xl font-black text-primary">{monthlyMarketplaceViews.reduce((a, d) => a + d.views, 0).toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.totalMarketplaceViews}</p>
         </div>
       </div>
 
@@ -1426,6 +1439,75 @@ function AnalyticsPanel() {
           </ResponsiveContainer>
         </div>
         <p className="text-xs text-muted-foreground mt-2">{t.admin.analytics.monthlySupplierViewsNote}</p>
+      </div>
+
+      {/* ── Monthly marketplace item views chart ── */}
+      <div className="bg-card border p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-sm">{t.admin.analytics.monthlyMarketplaceViews}</h3>
+          <div className="flex gap-1">
+            {monthOptions.map((m) => (
+              <button key={m} onClick={() => setMvMonths(m)}
+                className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${mvMonths === m ? "bg-primary text-white border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>
+                {m}{lang === "ja" ? "ヶ月" : "mo"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="h-52">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={monthlyMarketplaceViews.map((d) => ({ ...d, month: formatMonth(d.month) }))} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(v: number) => [v.toLocaleString(), t.admin.analytics.viewsLabel]} />
+              <Line type="monotone" dataKey="views" stroke="hsl(var(--accent))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">{t.admin.analytics.monthlyMarketplaceViewsNote}</p>
+      </div>
+
+      {/* ── Top marketplace items by views ── */}
+      <div>
+        <h3 className="font-bold text-sm mb-1">{t.admin.analytics.topMarketplaceItems}</h3>
+        <p className="text-xs text-muted-foreground mb-3">{t.admin.analytics.marketplaceCumulativeNote}</p>
+        {topMarketplaceItems.length === 0 ? (
+          <p className="text-xs text-muted-foreground">{t.admin.noProducts}</p>
+        ) : (
+          <>
+            <div className="h-52 w-full max-w-xl mb-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  layout="vertical"
+                  data={topMarketplaceItems.slice(0, 5).map((i) => {
+                    const item = items.find((it: any) => it.slug === i.slug);
+                    return { name: item ? (lang === "ja" ? (item.title_ja || item.title) : (item.title || item.title_ja)) : i.slug, views: i.views };
+                  })}
+                  margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+                >
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 10 }} />
+                  <Tooltip formatter={(value: number) => [value.toLocaleString(), t.admin.analytics.viewsLabel]} />
+                  <Bar dataKey="views" fill="hsl(var(--accent))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-2">
+              {topMarketplaceItems.slice(0, 5).map((i) => {
+                const item = items.find((it: any) => it.slug === i.slug);
+                const displayTitle = item ? (lang === "ja" ? (item.title_ja || item.title) : (item.title || item.title_ja)) : i.slug;
+                return (
+                  <div key={i.slug} className="flex items-center gap-3 bg-card border p-3">
+                    {item?.image && <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover" />}
+                    <div className="flex-1 min-w-0"><p className="text-sm font-semibold truncate">{displayTitle}</p></div>
+                    <p className="text-sm font-bold text-accent">{i.views.toLocaleString()} {t.admin.analytics.viewsLabel}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       {/* ── Plan breakdown ── */}

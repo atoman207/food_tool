@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import logoImage from "@/assets/logo.png";
 import {
   Menu, X, ChevronRight, ChevronDown,
-  User, LogOut, LayoutDashboard, ShieldCheck, Settings, Globe, ChevronUp, Heart,
+  User, LogOut, LayoutDashboard, ShieldCheck, Settings, Globe, ChevronUp, Heart, UserPlus, LogIn,
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ function LangToggle({ compact: _compact = false }: { compact?: boolean }) {
     <button
       type="button"
       onClick={() => setLang(lang === "en" ? "ja" : "en")}
-      className="relative p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex-shrink-0"
+      className="relative p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
       aria-label={lang === "en" ? "Switch to 日本語" : "Switch to English"}
     >
       <Globe className="h-5 w-5" />
@@ -99,7 +99,7 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-60 bg-white border border-border rounded-xl shadow-card-hover z-50 animate-dropdown-open origin-top">
+        <div className="absolute right-0 top-full mt-1 w-60 max-w-[calc(100vw-2rem)] bg-white border border-border rounded-xl shadow-card-hover z-50 animate-dropdown-open origin-top">
           {/* User info header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 border-b border-border rounded-t-xl">
             <AvatarBadge src={avatarSrc} alt={displayName} size={52} />
@@ -188,16 +188,16 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-header border-b-2 border-primary">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-header border-b-2 border-primary">
       <div className="container flex h-20 md:h-[4.55rem] items-center gap-4 md:gap-6">
         {/* Logo — no border, no white background */}
-        <Link href="/" className="flex items-center flex-shrink-0 group bg-transparent border-0 shadow-none rounded-none p-0">
+        <Link href="/" className="flex items-center flex-shrink-0 min-w-0 max-w-[60vw] sm:max-w-none group bg-transparent border-0 shadow-none rounded-none p-0">
           <Image
             src={logoImage}
             alt="F&B Portal - Singapore F&B Supplier & Chef Network"
             height={56}
             width={220}
-            className="h-12 md:h-14 w-auto object-contain transition-transform duration-200 ease-smooth group-hover:-translate-y-0.5 [background:transparent]"
+            className="h-10 sm:h-12 md:h-14 w-auto object-contain object-left transition-transform duration-200 ease-smooth group-hover:-translate-y-0.5 [background:transparent]"
             priority
           />
         </Link>
@@ -254,7 +254,7 @@ export function Header() {
           )}
           <button
             type="button"
-            className="p-2 rounded-lg text-foreground hover:bg-muted transition-colors"
+            className="p-2 rounded-lg text-foreground hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-label="Toggle menu"
@@ -267,20 +267,43 @@ export function Header() {
       {/* Mobile menu — header menu only (Suppliers, Marketplace, News) */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-white animate-fade-in">
-          <nav className="container py-4 space-y-0.5">
+          <nav className="container py-4 space-y-0.5 overflow-y-auto max-h-[70vh]">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center justify-between px-4 py-3.5 text-sm font-medium transition-colors hover:bg-muted ${
+                className={`flex items-center justify-between min-h-[48px] px-4 py-3.5 text-sm font-medium transition-colors hover:bg-muted ${
                   (pathname ?? "").startsWith(item.path) ? "bg-primary/8 text-primary border-l-4 border-primary" : ""
                 }`}
               >
                 {item.label}
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               </Link>
             ))}
+            {!user && (
+              <>
+                <div className="my-2 border-t border-border" />
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 min-h-[48px] px-4 py-3.5 text-sm font-medium transition-colors hover:bg-muted text-muted-foreground hover:text-foreground"
+                >
+                  <LogIn className="h-4 w-4 flex-shrink-0" />
+                  {t.nav.login}
+                  <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground" />
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 min-h-[48px] px-4 py-3.5 text-sm font-semibold transition-colors bg-primary/5 hover:bg-primary/10 text-primary border-l-4 border-primary"
+                >
+                  <UserPlus className="h-4 w-4 flex-shrink-0" />
+                  {t.nav.createAccount}
+                  <ChevronRight className="h-4 w-4 ml-auto" />
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       )}
@@ -292,8 +315,8 @@ export function Footer() {
   const { t } = useTranslation();
   return (
     <footer className="border-t-2 border-primary bg-primary/[0.06]">
-      <div className="container py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="container py-8 sm:py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           <div>
             <Link href="/" className="inline-block mb-4">
               
@@ -311,27 +334,27 @@ export function Footer() {
           </div>
           <div>
             <h4 className="font-semibold mb-4 text-sm text-primary uppercase tracking-wider">{t.footer.services}</h4>
-            <ul className="space-y-2.5 text-sm text-muted-foreground">
-              <li><Link href="/suppliers" className="hover:text-primary transition-colors duration-200">{t.footer.supplierSearch}</Link></li>
-              <li><Link href="/suppliers?plan=premium" className="hover:text-primary transition-colors duration-200">{t.footer.premiumListings}</Link></li>
-              <li><Link href="/marketplace" className="hover:text-primary transition-colors duration-200">{t.footer.marketplace}</Link></li>
-              <li><Link href="/news" className="hover:text-primary transition-colors duration-200">{t.footer.news}</Link></li>
-              <li><Link href="/links" className="hover:text-primary transition-colors duration-200">{t.footer.links}</Link></li>
-              <li><Link href="/about" className="hover:text-primary transition-colors duration-200">{t.about.pageTitle}</Link></li>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li><Link href="/suppliers" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.supplierSearch}</Link></li>
+              <li><Link href="/suppliers?plan=premium" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.premiumListings}</Link></li>
+              <li><Link href="/marketplace" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.marketplace}</Link></li>
+              <li><Link href="/news" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.news}</Link></li>
+              <li><Link href="/links" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.links}</Link></li>
+              <li><Link href="/about" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.about.pageTitle}</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.info}</h4>
-            <ul className="space-y-2.5 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-primary transition-colors duration-200">{t.footer.terms}</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors duration-200">{t.footer.privacy}</a></li>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li><a href="#" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.terms}</a></li>
+              <li><a href="#" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.privacy}</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.contact}</h4>
-            <ul className="space-y-2.5 text-sm text-muted-foreground">
-              <li><Link href="/contact" className="hover:text-primary transition-colors duration-200">{t.footer.contactForm}</Link></li>
-              <li><Link href="/admin-dashboard" className="hover:text-primary transition-colors duration-200">{t.footer.adminLogin}</Link></li>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li><Link href="/contact" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.contactForm}</Link></li>
+              <li><Link href="/login" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.adminLogin}</Link></li>
             </ul>
           </div>
         </div>
@@ -360,7 +383,8 @@ function BackToTop() {
       type="button"
       onClick={scrollToTop}
       aria-label="Back to top"
-      className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all duration-200"
+      className="fixed z-50 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all duration-200"
+      style={{ bottom: "max(1rem, env(safe-area-inset-bottom, 0px))", right: "max(1rem, env(safe-area-inset-right, 0px))" }}
     >
       <ChevronUp className="h-5 w-5" />
     </button>
@@ -382,10 +406,10 @@ function PageViewTracker() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       <PageViewTracker />
       <Header />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pt-20 md:pt-[4.55rem]">{children}</main>
       <Footer />
       <BackToTop />
     </div>

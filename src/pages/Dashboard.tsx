@@ -137,13 +137,13 @@ const Dashboard = () => {
         <div className="container py-8">
 
           {/* Tab navigation */}
-          <div className="border-b-2 border-border mb-8 bg-background">
-            <div className="flex overflow-x-auto">
+          <div className="border-b-2 border-border mb-8 bg-background overflow-hidden">
+            <div className="flex overflow-x-auto scrollbar-hide">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${
+                  className={`flex-shrink-0 flex items-center gap-2 min-h-[48px] px-4 sm:px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"

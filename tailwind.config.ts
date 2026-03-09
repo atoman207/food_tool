@@ -128,6 +128,10 @@ export default {
           "0%": { transform: "translateX(-50%)" },
           "100%": { transform: "translateX(0%)" },
         },
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(12px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -137,6 +141,7 @@ export default {
         "dropdown-open": "dropdown-open 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards",
         "btn-pop": "btn-pop 0.2s ease-out",
         "marquee-ltr": "marquee-ltr 40s linear infinite",
+        "fade-in-up": "fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards",
       },
     },
   },

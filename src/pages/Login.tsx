@@ -71,8 +71,8 @@ const Login = () => {
 
   return (
     <Layout>
-      <div className="container max-w-md py-16">
-        <div className="bg-card border p-8">
+      <div className="container max-w-md py-8 sm:py-12 md:py-16">
+        <div className="bg-card border p-4 sm:p-6 md:p-8">
           <div className="text-center mb-8">
             <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
               <UtensilsCrossed className="h-6 w-6 text-primary-foreground" />
@@ -119,7 +119,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@example.com"
-                className="w-full h-11 px-4 rounded-lg border bg-background text-sm"
+                className="w-full min-h-[44px] h-11 px-4 rounded-lg border bg-background text-base sm:text-sm"
                 required
               />
             </div>
@@ -130,7 +130,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full h-11 px-4 rounded-lg border bg-background text-sm"
+                className="w-full min-h-[44px] h-11 px-4 rounded-lg border bg-background text-base sm:text-sm"
                 required
               />
             </div>
