@@ -39,9 +39,9 @@ const planData = [
   {
     tier: "premium" as const,
     icon: <Crown className="h-6 w-6" />,
-    color: "text-amber-600",
-    bgColor: "bg-amber-100",
-    borderColor: "border-amber-400",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    borderColor: "border-primary",
     popular: true,
   },
 ];
@@ -115,7 +115,7 @@ const Plans = () => {
   function renderCell(value: CellValue, tier: "basic" | "standard" | "premium") {
     if (value === true) {
       return (
-        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${tier === "premium" ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"}`}>
+        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${tier === "premium" ? "bg-primary/10 text-primary" : "bg-primary/10 text-primary"}`}>
           <Check className="h-4 w-4 font-bold" strokeWidth={3} />
         </span>
       );
@@ -130,7 +130,7 @@ const Plans = () => {
     return (
       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
         tier === "premium"
-          ? "bg-amber-100 text-amber-700"
+          ? "bg-primary/10 text-primary"
           : tier === "standard"
           ? "bg-primary/10 text-primary"
           : "bg-muted text-muted-foreground"
@@ -161,12 +161,12 @@ const Plans = () => {
                 key={tier}
                 className={`relative rounded-2xl border-2 p-6 md:p-8 flex flex-col ${borderColor} ${
                   isPremium
-                    ? "shadow-xl shadow-amber-200/50 md:scale-105 md:-mt-2 md:-mb-2 bg-gradient-to-b from-amber-50/60 to-white"
+                    ? "shadow-xl shadow-primary/20 md:scale-105 md:-mt-2 md:-mb-2 bg-gradient-to-b from-primary/5 to-white"
                     : "shadow-sm bg-card"
                 }`}
               >
                 {popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-500 text-white text-xs font-bold shadow flex items-center gap-1.5 whitespace-nowrap">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow flex items-center gap-1.5 whitespace-nowrap">
                     <Crown className="h-3 w-3" /> {p.mostPopular}
                   </div>
                 )}
@@ -186,15 +186,13 @@ const Plans = () => {
                     return (
                       <li key={f.labelKey} className={`flex items-center gap-2 text-sm ${isIncluded ? "text-foreground" : "text-muted-foreground line-through"}`}>
                         {isIncluded
-                          ? <Check className={`h-4 w-4 flex-shrink-0 ${isPremium ? "text-amber-500" : "text-primary"}`} strokeWidth={2.5} />
+                          ? <Check className={`h-4 w-4 flex-shrink-0 text-primary`} strokeWidth={2.5} />
                           : <X className="h-4 w-4 flex-shrink-0 text-muted-foreground/50" />
                         }
                         <span>
                           {p[f.labelKey as keyof typeof p] as string}
                           {typeof val === "string" && (
-                            <span className={`ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${
-                              isPremium ? "bg-amber-100 text-amber-700" : "bg-primary/10 text-primary"
-                            }`}>
+                            <span className={`ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary`}>
                               {val}
                             </span>
                           )}
@@ -207,7 +205,7 @@ const Plans = () => {
                 <Button
                   className={`rounded-xl w-full font-bold flex items-center justify-center gap-2 ${
                     isPremium
-                      ? "bg-amber-500 hover:bg-amber-600 text-white"
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                       : tier === "standard"
                       ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                       : "bg-muted text-foreground hover:bg-muted/80"
@@ -267,7 +265,7 @@ const Plans = () => {
                     <td className="px-4 py-3.5 text-center bg-primary/5">
                       {renderCell(feature.standard, "standard")}
                     </td>
-                    <td className="px-4 py-3.5 text-center bg-amber-50/60">
+                    <td className="px-4 py-3.5 text-center bg-primary/5">
                       {renderCell(feature.premium, "premium")}
                     </td>
                   </tr>

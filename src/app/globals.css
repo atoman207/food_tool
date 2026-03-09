@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Design system: #FFFFFF, #212121, #FF2636, #686968, #F8F9FA, #E5E5E5 */
+    /* Design system: #FFFFFF, #212121, #FF2636, #686968, #F8F9FA, #E5E5E5 — サイト全体で primary を統一 */
     --background: 0 0% 100%;
     --foreground: 0 0% 13%;
     --card: 0 0% 100%;
@@ -15,7 +15,7 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 120 1% 41%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 17% 98%;
+    --muted: 210 14% 98%;
     --muted-foreground: 120 1% 41%;
     --accent: 355 100% 57%;
     --accent-foreground: 0 0% 100%;
@@ -25,7 +25,7 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --hero-overlay: 0 30% 10%;
-    --sidebar-background: 210 17% 98%;
+    --sidebar-background: 210 14% 98%;
     --sidebar-foreground: 0 0% 13%;
     --sidebar-primary: 355 100% 57%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -113,10 +113,9 @@
 
   .card-hover {
     @apply transition-all duration-fast ease-smooth;
-    transition-property: transform, box-shadow;
+    transition-property: box-shadow;
   }
   .card-hover:hover {
-    transform: scale(1.03);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
   }
 
@@ -171,11 +170,9 @@
   .flex { gap: inherit; }
 }
 
-/* Force hardware acceleration for smoother animations */
+/* Smoother hover (no card scale to avoid blurriness; image scale is on the image only) */
 .card-hover {
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
+  will-change: box-shadow;
 }
 
 /* -webkit-backdrop-filter for Safari */

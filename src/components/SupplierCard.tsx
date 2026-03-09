@@ -112,7 +112,7 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
           <img
             src={supplier.logo}
             alt={displayName}
-            className="w-full h-full object-cover transition-transform duration-300 ease-smooth group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-300 ease-smooth group-hover:scale-[1.03]"
           />
         </div>
         <div className="min-w-0 flex-1">
@@ -159,10 +159,10 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
           title={isFav ? (lang === "ja" ? "お気に入りから削除" : "Remove from favorites") : (lang === "ja" ? "お気に入りに追加" : "Add to favorites")}
           aria-label={isFav ? (lang === "ja" ? "お気に入りから削除" : "Remove from favorites") : (lang === "ja" ? "お気に入りに追加" : "Add to favorites")}
           className={`btn-3d h-9 min-h-9 w-9 min-w-9 flex items-center justify-center rounded-xl border transition-all flex-shrink-0 hover:scale-100 hover:translate-y-0 ${
-            isFav ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100" : "border-border text-muted-foreground hover:text-red-400 hover:border-red-200"
+            isFav ? "bg-primary/10 border-primary/30 text-primary hover:bg-primary/15" : "border-border text-muted-foreground hover:text-primary hover:border-primary/30"
           }`}
         >
-          <Heart className={`h-4 w-4 shrink-0 ${isFav ? "fill-red-500" : ""}`} />
+          <Heart className={`h-4 w-4 shrink-0 ${isFav ? "fill-primary" : ""}`} />
         </button>
       </div>
     </div>
@@ -171,13 +171,13 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
   return (
     <div className={`group bg-card rounded-xl overflow-hidden shadow-card card-hover border relative flex flex-col h-full min-h-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
       {cfg.tier === "premium" && !isList && (
-        <div className="h-1.5 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500" />
+        <div className="h-1.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90" />
       )}
       {cfg.featuredLabelEn && !isList && (
         <Link
           href="/plans"
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold shadow-sm z-10 transition-colors"
+          className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold shadow-sm z-10 transition-colors"
         >
           {lang === "ja" ? cfg.featuredLabelJa : cfg.featuredLabelEn}
         </Link>

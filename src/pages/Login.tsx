@@ -82,19 +82,19 @@ const Login = () => {
           </div>
 
           {emailNotConfirmed && (
-            <div className="mb-4 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm space-y-2">
+            <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/30 text-foreground text-sm space-y-2">
               <div className="flex items-center gap-2 font-semibold">
                 <Mail className="h-4 w-4" />
                 {t.login.emailNotConfirmedTitle}
               </div>
               <p>{t.login.emailNotConfirmedBody}</p>
               {resendSent ? (
-                <p className="text-green-700 font-medium">{t.login.resendSent}</p>
+                <p className="text-primary font-medium">{t.login.resendSent}</p>
               ) : (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs border-amber-300 text-amber-800 hover:bg-amber-100"
+                  className="h-8 text-xs border-primary/40 text-primary hover:bg-primary/10"
                   onClick={handleResend}
                   disabled={resendLoading || !email}
                 >

@@ -37,7 +37,7 @@ export function MarketplaceCard({ item }: MarketplaceCardProps) {
           <img
             src={item.image}
             alt={displayTitle}
-            className="w-full h-full object-cover transition-transform duration-300 ease-smooth group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-300 ease-smooth group-hover:scale-[1.03]"
           />
         </div>
         <div className="p-3">

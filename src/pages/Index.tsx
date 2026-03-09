@@ -181,7 +181,7 @@ const Index = () => {
       </section>
 
       {/* 1. 3 main menu cards: カテゴリー / 人気サプライヤー / Buy & Sell */}
-      <section className="bg-[#F8F9FA] py-10 md:py-12">
+      <section className="bg-muted py-10 md:py-12">
         <div className="container">
           <div className="grid grid-cols-3 gap-2 sm:gap-5">
             <Link href="/suppliers" className="group block">
@@ -236,7 +236,7 @@ const Index = () => {
       </section>
 
       {/* 3. Buy & Sell (Recent marketplace) */}
-      <section className="bg-[#F8F9FA] py-10 md:py-14">
+      <section className="bg-muted py-10 md:py-14">
         <div className="container">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
@@ -298,7 +298,7 @@ const Index = () => {
 
       {/* 5. Links (リンク集) */}
       {featuredLinks.length > 0 && (
-        <section className="bg-[#F8F9FA] py-10 md:py-12 w-full overflow-hidden">
+        <section className="bg-muted py-10 md:py-12 w-full overflow-hidden">
           <div className="container">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
@@ -372,7 +372,7 @@ const Index = () => {
                         src={link.bg_image || link.bgImage}
                         alt=""
                         aria-hidden="true"
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10 transition-opacity duration-300 group-hover:from-black/85 group-hover:via-black/45" />
                       <div className="absolute inset-0 p-3.5 flex flex-col justify-between">

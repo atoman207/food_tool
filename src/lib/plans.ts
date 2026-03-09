@@ -40,9 +40,9 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     badgeLabelEn: "Trusted supplier",
     badgeLabelJa: "信頼できるサプライヤー",
     badgeClass:
-      "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-2 border-amber-400 dark:border-amber-500 font-bold",
-    borderClass: "border-2 border-amber-400 dark:border-amber-500",
-    cardWrapperClass: "shadow-xl shadow-amber-200/40 dark:shadow-amber-900/30 ring-1 ring-amber-400/30",
+      "bg-primary/15 text-primary dark:text-primary border-2 border-primary/70 dark:border-primary font-bold",
+    borderClass: "border-2 border-primary/70 dark:border-primary",
+    cardWrapperClass: "shadow-xl shadow-primary/20 dark:shadow-primary/20 ring-1 ring-primary/30",
     titleClass: "text-base font-bold",
     ctaClass: "bg-primary text-primary-foreground border-primary hover:bg-primary/90 font-bold h-10 text-sm",
     showWhatsApp: true,

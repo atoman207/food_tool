@@ -101,7 +101,7 @@ const AdminDashboard = () => {
 };
 
 const PLAN_BADGE: Record<string, string> = {
-  premium: "bg-amber-100 text-amber-700 border border-amber-300",
+  premium: "bg-primary/10 text-primary border border-primary/40",
   standard: "bg-sky-100 text-sky-700 border border-sky-300",
   basic: "bg-muted text-muted-foreground border border-border",
 };
@@ -653,7 +653,7 @@ function MarketplaceManager() {
           <div>
             <label className="text-sm font-medium block mb-1.5">
               {label("Description (EN)", "説明（英語）")}
-              <span className="ml-2 text-[10px] font-normal text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+              <span className="ml-2 text-[10px] font-normal text-primary bg-primary/10 border border-primary/30 px-1.5 py-0.5 rounded-full">
                 {label("English only", "英語のみ入力")}
               </span>
             </label>
@@ -1343,7 +1343,7 @@ function AnalyticsPanel() {
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.totalViews}</p>
         </div>
         <div className="bg-card border rounded-2xl p-5 text-center">
-          <p className="text-3xl font-black text-amber-500">{suppliers.filter((s: any) => s.plan === "premium").length}</p>
+          <p className="text-3xl font-black text-primary">{suppliers.filter((s: any) => s.plan === "premium").length}</p>
           <p className="text-xs text-muted-foreground mt-1">{t.admin.analytics.premiumSuppliers}</p>
         </div>
       </div>
@@ -1427,7 +1427,7 @@ function AnalyticsPanel() {
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
               <Tooltip formatter={(value: number) => [value, t.admin.analytics.suppliersCount]} />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                <Cell fill="#f59e0b" />
+                <Cell fill="#FF2636" />
                 <Cell fill="hsl(var(--primary))" />
                 <Cell fill="hsl(var(--muted-foreground))" />
               </Bar>

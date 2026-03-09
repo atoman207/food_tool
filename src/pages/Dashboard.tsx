@@ -510,7 +510,7 @@ function FavoritesTab({ t, lang }: { t: any; lang: string }) {
                     className="rounded-xl text-destructive hover:bg-destructive/10 border-destructive/30"
                     onClick={() => removeFavorite(String(s.id))}
                   >
-                    <Heart className="h-3 w-3 mr-1 fill-red-400" /> {t.dashboard.removeFavorite}
+                    <Heart className="h-3 w-3 mr-1 fill-primary" /> {t.dashboard.removeFavorite}
                   </Button>
                 </div>
               </div>

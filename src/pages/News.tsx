@@ -79,7 +79,7 @@ const News = () => {
                     <img
                       src={article.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=340&fit=crop"}
                       alt={article.title_ja || article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
                     />
                   </div>
                   <div className="p-5">
