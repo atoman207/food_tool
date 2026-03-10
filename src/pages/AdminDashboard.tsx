@@ -429,7 +429,7 @@ function ProductManager({ slug }: { slug: string }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <InputField label={t.admin.productName} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
         <InputField label={t.admin.productNameEn} value={form.name_en} onChange={(v) => setForm((p) => ({ ...p, name_en: v }))} />
-        <InputField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} placeholder="https://..." />
+        <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
         <InputField label={t.admin.productCountryOfOrigin} value={form.country_of_origin} onChange={(v) => setForm((p) => ({ ...p, country_of_origin: v }))} />
         <InputField label={t.admin.productWeight} value={form.weight} onChange={(v) => setForm((p) => ({ ...p, weight: v }))} />
         <InputField label={t.admin.productQuantity} value={form.quantity} onChange={(v) => setForm((p) => ({ ...p, quantity: v }))} />
@@ -1125,11 +1125,13 @@ function AboutSiteManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium block mb-1.5">Hero title (EN)</label>
-            <input value={form.hero_title_en ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_title_en: e.target.value }))} placeholder={t.about.heroTitle} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+            <textarea value={form.hero_title_en ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_title_en: e.target.value }))} placeholder={t.about.heroTitle} rows={2} className="w-full p-3 rounded-lg border bg-background text-sm resize-none" />
+            <p className="text-xs text-muted-foreground mt-1">Enterキーで改行できます / Press Enter to add a line break</p>
           </div>
           <div>
             <label className="text-sm font-medium block mb-1.5">Hero title (JA)</label>
-            <input value={form.hero_title_ja ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_title_ja: e.target.value }))} placeholder="つながる。取引する。成長する。" className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+            <textarea value={form.hero_title_ja ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_title_ja: e.target.value }))} placeholder="つながる。取引する。成長する。" rows={2} className="w-full p-3 rounded-lg border bg-background text-sm resize-none" />
+            <p className="text-xs text-muted-foreground mt-1">Enterキーで改行できます / Press Enter to add a line break</p>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1143,8 +1145,13 @@ function AboutSiteManager() {
           </div>
         </div>
         <div>
-          <label className="text-sm font-medium block mb-1.5">Hero image URL</label>
-          <input value={form.hero_image ?? ""} onChange={(e) => setForm((p) => ({ ...p, hero_image: e.target.value }))} placeholder="https://..." className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+          <ImageField
+            label="Hero image"
+            value={form.hero_image ?? ""}
+            onChange={(v) => setForm((p) => ({ ...p, hero_image: v }))}
+            hint={lang === "ja" ? "推奨サイズ：横1440px × 縦600px（16:7比率）、JPG/PNG、2MB以下" : "Recommended: 1440 × 600 px (16:7 ratio), JPG/PNG, under 2 MB"}
+            uploadLabel={t.admin.imageUploadOrUrl}
+          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -1157,18 +1164,22 @@ function AboutSiteManager() {
           </div>
         </div>
         <div>
-          <label className="text-sm font-medium block mb-1.5">Feature images (1–4)</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+          <label className="text-sm font-medium block mb-1.5">
+            Feature images (1–4)
+            <span className="text-xs font-normal text-muted-foreground ml-2">
+              {lang === "ja" ? "推奨サイズ：横800px × 縦600px（4:3）、JPG/PNG、2MB以下" : "Recommended: 800 × 600 px (4:3), JPG/PNG, under 2 MB"}
+            </span>
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
             {([1, 2, 3, 4] as const).map((i) => (
-              <div key={i}>
-                <label className="text-xs text-muted-foreground block mb-1">Feature {i} image URL</label>
-                <input
-                  value={(form as Record<string, string>)[`feature_image_${i}`] ?? ""}
-                  onChange={(e) => setForm((p) => ({ ...p, [`feature_image_${i}`]: e.target.value }))}
-                  placeholder="https://..."
-                  className="w-full h-10 px-3 rounded-lg border bg-background text-sm"
-                />
-              </div>
+              <ImageField
+                key={i}
+                label={`Feature ${i}`}
+                value={(form as Record<string, string>)[`feature_image_${i}`] ?? ""}
+                onChange={(v) => setForm((p) => ({ ...p, [`feature_image_${i}`]: v }))}
+                hint={lang === "ja" ? `特集画像 ${i}（推奨：800×600px）` : `Feature image ${i} (recommended: 800×600 px)`}
+                uploadLabel={t.admin.imageUploadOrUrl}
+              />
             ))}
           </div>
         </div>

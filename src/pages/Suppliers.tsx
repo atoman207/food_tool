@@ -136,9 +136,9 @@ const Suppliers = () => {
 
   return (
     <Layout>
-      <div className="container py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-black tracking-tight">{t.suppliers.title}</h1>
+      <div className="container py-8 min-w-0 overflow-hidden w-full">
+        <div className="mb-8 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight break-words-safe">{t.suppliers.title}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t.suppliers.subtitle}</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -151,7 +151,7 @@ const Suppliers = () => {
             {t.common.filter}
           </button>
         </div>
-        <div className="flex gap-8">
+        <div className="flex gap-8 min-w-0">
           <aside className="hidden md:block w-56 flex-shrink-0">
             <div className="sticky top-24 bg-card border p-5">
               <FilterPanel />
@@ -169,8 +169,8 @@ const Suppliers = () => {
               </div>
             </div>
           )}
-          <div className="flex-1">
-            <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-4 mb-4 min-w-0">
               <p className="text-sm text-muted-foreground font-medium">{t.suppliers.resultCount(filtered.length)}</p>
               <div className="flex border border-border rounded-lg overflow-hidden">
                 <button
@@ -191,7 +191,7 @@ const Suppliers = () => {
                 </button>
               </div>
             </div>
-            <div className={viewMode === "list" ? "space-y-3" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"}>
+            <div className={`min-w-0 ${viewMode === "list" ? "space-y-3" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"}`}>
               {filtered.map((s, i) => (
                 <SupplierCard
                   key={s.id}

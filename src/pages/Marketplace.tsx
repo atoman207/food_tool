@@ -58,9 +58,9 @@ const Marketplace = () => {
 
   return (
     <Layout>
-      <div className="container py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-black tracking-tight">{t.marketplace.title}</h1>
+      <div className="container py-8 min-w-0 overflow-hidden w-full">
+        <div className="mb-8 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight break-words-safe">{t.marketplace.title}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t.marketplace.subtitle}</p>
         </div>
 
@@ -89,7 +89,7 @@ const Marketplace = () => {
         </div>
 
         <p className="text-sm text-muted-foreground mb-4 font-medium">{t.marketplace.resultCount(filtered.length)}</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 min-w-0">
           {filtered.map((item) => <MarketplaceCard key={item.id} item={item} />)}
         </div>
         {filtered.length === 0 && (

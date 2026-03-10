@@ -31,8 +31,8 @@ export function MarketplaceCard({ item }: MarketplaceCardProps) {
     : (mkt.conditionDisplay?.[item.condition] ?? item.condition);
 
   return (
-    <Link href={`/marketplace/${item.slug}`} className="group block h-full">
-      <div className="bg-card overflow-hidden shadow-card card-hover card-lift border border-border h-full flex flex-col">
+    <Link href={`/marketplace/${item.slug}`} className="group block h-full min-w-0">
+      <div className="bg-card overflow-hidden shadow-card card-hover card-lift border border-border h-full flex flex-col min-w-0">
         <div className="aspect-square overflow-hidden bg-muted flex-shrink-0">
           <img
             src={item.image}
@@ -40,11 +40,11 @@ export function MarketplaceCard({ item }: MarketplaceCardProps) {
             className="w-full h-full object-cover transition-transform duration-300 ease-smooth group-hover:scale-[1.03]"
           />
         </div>
-        <div className="p-3 flex flex-col flex-1 min-h-0">
+        <div className="p-3 flex flex-col flex-1 min-h-0 min-w-0 overflow-hidden">
           <p className="font-bold text-sm sm:text-base text-primary flex-shrink-0">S${item.price.toLocaleString()}</p>
-          <p className="text-xs sm:text-[15px] font-medium text-foreground truncate mt-1 leading-snug" title={displayTitle}>{displayTitle}</p>
-          <div className="flex items-center gap-2 mt-2 flex-shrink-0">
-            <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{displayArea}</span>
+          <p className="text-xs sm:text-[15px] font-medium text-foreground truncate mt-1 leading-snug min-w-0" title={displayTitle}>{displayTitle}</p>
+          <div className="flex items-center gap-2 mt-2 flex-shrink-0 min-w-0">
+            <span className="text-[10px] sm:text-xs text-muted-foreground truncate min-w-0">{displayArea}</span>
             <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground flex-shrink-0">{displayCondition}</span>
           </div>
         </div>

@@ -105,17 +105,17 @@ const About = () => {
     <Layout>
       {/* Hero section */}
       <section
-        className="relative min-h-[400px] flex items-center overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10"
+        className="relative min-h-[400px] flex items-center overflow-hidden w-full bg-gradient-to-br from-primary/5 via-background to-primary/10"
         style={content?.hero_image ? { backgroundImage: `url(${content.hero_image})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
       >
         {content?.hero_image && <div className="absolute inset-0 bg-black/40" />}
-        <div className="container py-16 md:py-20 relative z-10">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider">{t.about.pageSubtitle}</p>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+        <div className="container py-16 md:py-20 relative z-10 min-w-0 w-full">
+          <div className="max-w-2xl min-w-0">
+            <p className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider break-words-safe">{t.about.pageSubtitle}</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight whitespace-pre-line break-words-safe">
               {heroTitle}
             </h1>
-            <p className="mt-4 text-muted-foreground text-lg max-w-lg leading-relaxed">
+            <p className="mt-4 text-muted-foreground text-base sm:text-lg max-w-lg leading-relaxed whitespace-pre-line break-words-safe">
               {heroSub}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
@@ -136,16 +136,16 @@ const About = () => {
 
       {/* Optional intro paragraph from admin */}
       {introText && (
-        <section className="border-b border-border bg-muted/30">
-          <div className="container py-8">
-            <p className="text-muted-foreground leading-relaxed max-w-3xl">{introText}</p>
+        <section className="border-b border-border bg-muted/30 overflow-hidden w-full">
+          <div className="container py-8 min-w-0">
+            <p className="text-muted-foreground leading-relaxed max-w-3xl whitespace-pre-line break-words-safe">{introText}</p>
           </div>
         </section>
       )}
 
       {/* Stats bar */}
-      <section className="border-y border-border bg-white">
-        <div className="container py-8">
+      <section className="border-y border-border bg-white overflow-hidden w-full">
+        <div className="container py-8 min-w-0">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat) => (
               <div key={stat.labelKey} className="text-center">
@@ -158,8 +158,8 @@ const About = () => {
       </section>
 
       {/* Features alternating layout */}
-      <section className="py-12 md:py-16">
-        <div className="container">
+      <section className="py-12 md:py-16 overflow-hidden w-full">
+        <div className="container min-w-0">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-black">{t.about.pageTitle}</h2>
           </div>

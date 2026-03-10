@@ -103,51 +103,51 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero */}
-      <section className="relative min-h-[480px] md:min-h-[520px] flex items-center overflow-hidden bg-white">
+      <section className="relative min-h-[480px] md:min-h-[520px] flex items-center overflow-hidden bg-white w-full">
         <div className="absolute inset-0">
           <img src="/hero-bg.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
         </div>
-        <div className="container relative z-10 py-10 sm:py-14 md:py-20">
-          <div className="max-w-2xl">
+        <div className="container relative z-10 py-10 sm:py-14 md:py-20 w-full min-w-0">
+          <div className="max-w-2xl min-w-0">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium mb-6 animate-fade-in">
               <Sparkles className="h-3.5 w-3.5" />
               {t.home.badge}
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white leading-[1.15] tracking-tight animate-fade-in">
+            <h1 className="text-3xl md:text-5xl font-bold text-white leading-[1.15] tracking-tight animate-fade-in break-words-safe">
               {t.home.heroTitle1}<br />
               <span className="text-primary">{t.home.heroTitle2}</span><br />
               {t.home.heroTitle3}
             </h1>
-            <p className="mt-4 text-white/85 text-base md:text-lg animate-fade-in max-w-lg" style={{ animationDelay: "0.1s" }}>
+            <p className="mt-4 text-white/85 text-base md:text-lg animate-fade-in max-w-lg break-words-safe" style={{ animationDelay: "0.1s" }}>
               {t.home.heroSub}
             </p>
             {/* メインメニュー: カテゴリーで探す・人気サプライヤー・Buy & Sell を横並び（スマホでも3列） */}
-            <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3 animate-fade-in" style={{ animationDelay: "0.15s" }}>
+            <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3 animate-fade-in min-w-0" style={{ animationDelay: "0.15s" }}>
               <Link
                 href="/suppliers"
-                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm"
+                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm min-w-0 break-words-safe text-center"
               >
                 <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 <span className="text-center leading-tight">{t.home.card1Title}</span>
               </Link>
               <Link
                 href="/suppliers"
-                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm"
+                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm min-w-0 break-words-safe text-center"
               >
                 <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 <span className="text-center leading-tight">{t.home.popularSuppliers}</span>
               </Link>
               <Link
                 href="/marketplace"
-                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm"
+                className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-[10px] sm:text-sm border border-white/30 transition-all duration-200 backdrop-blur-sm min-w-0 break-words-safe text-center"
               >
                 <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 <span className="text-center leading-tight">{t.home.card3Title}</span>
               </Link>
             </div>
-            <div className="mt-6 bg-white p-4 md:p-5 shadow-card-hover animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              <div className="flex flex-col sm:flex-row gap-3">
+            <div className="mt-6 bg-white p-4 md:p-5 shadow-card-hover animate-fade-in min-w-0 overflow-hidden" style={{ animationDelay: "0.2s" }}>
+              <div className="flex flex-col sm:flex-row gap-3 min-w-0">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
@@ -181,9 +181,9 @@ const Index = () => {
       </section>
 
       {/* 1. 3 main menu cards: カテゴリー / 人気サプライヤー / Buy & Sell (shokuzai-pro style: card-lift + stagger) */}
-      <section className="bg-muted py-10 md:py-12">
-        <div className="container">
-          <div className="grid grid-cols-3 gap-2 sm:gap-5">
+      <section className="bg-muted py-10 md:py-12 overflow-hidden w-full">
+        <div className="container min-w-0">
+          <div className="grid grid-cols-3 gap-2 sm:gap-5 min-w-0">
             <Link href="/suppliers" className="group block opacity-0-init animate-fade-in-up reveal-stagger-0">
               <div className="bg-card border border-border p-3 sm:p-6 shadow-card card-lift text-center h-full">
                 <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:bg-primary/20 transition-colors duration-300">
@@ -216,8 +216,8 @@ const Index = () => {
       </section>
 
       {/* 2. Popular Suppliers (section-title + link-more style) */}
-      <section className="container py-10 md:py-12 opacity-0-init animate-fade-in-up reveal-stagger-2">
-        <div className="flex items-center justify-between mb-6 gap-4">
+      <section className="container py-10 md:py-12 opacity-0-init animate-fade-in-up reveal-stagger-2 min-w-0 overflow-hidden">
+        <div className="flex items-center justify-between mb-6 gap-4 min-w-0">
           <h2 className="section-title text-xl md:text-2xl flex items-center gap-2 min-w-0">
             <TrendingUp className="h-5 w-5 text-primary flex-shrink-0" /> <span className="truncate">{t.home.popularSuppliers}</span>
           </h2>
@@ -225,7 +225,7 @@ const Index = () => {
             {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 link-more-arrow" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 min-w-0">
           {suppliersLoading
             ? Array.from({ length: 6 }).map((_, i) => <SupplierSkeleton key={i} />)
             : popularSuppliers.map((s) => <SupplierCard key={s.id} supplier={s} />)
@@ -234,9 +234,9 @@ const Index = () => {
       </section>
 
       {/* 3. Buy & Sell (Recent marketplace) */}
-      <section className="bg-muted py-10 md:py-14 opacity-0-init animate-fade-in-up reveal-stagger-3">
-        <div className="container">
-          <div className="flex items-center justify-between mb-6 gap-4">
+      <section className="bg-muted py-10 md:py-14 overflow-hidden w-full opacity-0-init animate-fade-in-up reveal-stagger-3">
+        <div className="container min-w-0">
+          <div className="flex items-center justify-between mb-6 gap-4 min-w-0">
             <h2 className="section-title text-xl md:text-2xl flex items-center gap-2 min-w-0">
               <ShoppingBag className="h-5 w-5 text-primary flex-shrink-0" /> <span className="truncate">{t.home.recentMarketplace}</span>
             </h2>
@@ -244,7 +244,7 @@ const Index = () => {
               {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5 link-more-arrow" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 items-stretch">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 items-stretch min-w-0">
             {recentItems.map((item) => <MarketplaceCard key={item.id} item={item} />)}
           </div>
         </div>
@@ -252,8 +252,8 @@ const Index = () => {
 
       {/* 4. Latest News */}
       {latestNews.length > 0 && (
-        <section className="container py-10 md:py-12 opacity-0-init animate-fade-in-up reveal-stagger-4">
-          <div className="flex items-center justify-between mb-6 gap-4">
+        <section className="container py-10 md:py-12 min-w-0 overflow-hidden opacity-0-init animate-fade-in-up reveal-stagger-4">
+          <div className="flex items-center justify-between mb-6 gap-4 min-w-0">
             <h2 className="section-title text-xl md:text-2xl flex items-center gap-2 min-w-0">
               <Newspaper className="h-5 w-5 text-primary flex-shrink-0" />
               <span className="truncate">{t.news.homeSection}</span>
@@ -262,8 +262,8 @@ const Index = () => {
               {t.news.viewAllNews} <ArrowRight className="h-3.5 w-3.5 link-more-arrow" />
             </Link>
           </div>
-          <div className="bg-card overflow-hidden shadow-sm">
-            <div className="max-h-64 overflow-y-auto">
+          <div className="bg-card overflow-hidden shadow-sm min-w-0">
+            <div className="max-h-64 overflow-y-auto overflow-x-hidden">
               {latestNews.map((article, index) => {
                 const isCurrent = index === 0;
                 const displayDate = (article as { published_at?: string }).published_at || article.created_at;
@@ -275,15 +275,15 @@ const Index = () => {
                   <Link
                     key={article.id}
                     href={`/news/${article.slug}`}
-                    className={`flex items-center gap-4 px-6 py-4 hover:bg-muted/50 transition-colors duration-300 group ${index % 2 === 1 ? "bg-muted/20" : "bg-transparent"}`}
+                    className={`flex items-center gap-4 px-4 sm:px-6 py-4 hover:bg-muted/50 transition-colors duration-300 group min-w-0 ${index % 2 === 1 ? "bg-muted/20" : "bg-transparent"}`}
                   >
-                    <span className={`text-sm tabular-nums flex-shrink-0 w-24 ${isCurrent ? "font-bold text-primary" : "font-medium text-muted-foreground"}`}>
+                    <span className={`text-sm tabular-nums flex-shrink-0 w-20 sm:w-24 ${isCurrent ? "font-bold text-primary" : "font-medium text-muted-foreground"}`}>
                       {dateStr}
                     </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary text-white flex-shrink-0">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary text-white flex-shrink-0 min-w-0 truncate max-w-[80px] sm:max-w-none">
                       {categoryLabel}
                     </span>
-                    <span className="text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                    <span className="text-sm text-foreground group-hover:text-primary transition-colors truncate min-w-0 flex-1">
                       {title}
                     </span>
                   </Link>
@@ -297,8 +297,8 @@ const Index = () => {
       {/* 5. Links (リンク集) */}
       {featuredLinks.length > 0 && (
         <section className="bg-muted py-10 md:py-12 w-full overflow-hidden opacity-0-init animate-fade-in-up reveal-stagger-5">
-          <div className="container">
-            <div className="flex items-center justify-between mb-2 gap-4">
+          <div className="container min-w-0">
+            <div className="flex items-center justify-between mb-2 gap-4 min-w-0">
               <h2 className="section-title text-xl md:text-2xl flex items-center gap-2 min-w-0">
                 <Globe className="h-5 w-5 text-primary flex-shrink-0" />
                 <span className="truncate">{t.links.homeSectionTitle}</span>
@@ -335,7 +335,7 @@ const Index = () => {
             </button>
 
             {/* Viewport — on mobile: 1 card at 60vw; on desktop: 3 cards */}
-            <div className="overflow-hidden px-12 sm:px-14 md:px-16">
+            <div className="overflow-hidden px-12 sm:px-14 md:px-16 min-w-0 w-full">
               <div
                 className="flex flex-nowrap transition-transform duration-500 ease-out"
                 style={

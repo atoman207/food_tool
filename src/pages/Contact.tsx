@@ -40,17 +40,17 @@ const Contact = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl py-8 sm:py-10 md:py-14">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 font-medium">
-          <ArrowLeft className="h-4 w-4" /> {t.contact.backHome}
+      <div className="container max-w-4xl py-8 sm:py-10 md:py-14 min-w-0 overflow-hidden w-full">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 font-medium break-words-safe">
+          <ArrowLeft className="h-4 w-4 flex-shrink-0" /> <span className="min-w-0">{t.contact.backHome}</span>
         </Link>
 
-        <div className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight">{t.contact.pageTitle}</h1>
-          <p className="text-muted-foreground mt-3 max-w-xl">{t.contact.pageSubtitle}</p>
+        <div className="mb-10 min-w-0">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight break-words-safe">{t.contact.pageTitle}</h1>
+          <p className="text-muted-foreground mt-3 max-w-xl break-words-safe">{t.contact.pageSubtitle}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 min-w-0">
           {/* Contact info sidebar */}
           <div className="space-y-6">
             <div className="bg-card border p-5 space-y-4">

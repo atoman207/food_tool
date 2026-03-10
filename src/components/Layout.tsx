@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
 import logoImage from "@/assets/logo.png";
 import {
   Menu, X, ChevronRight, ChevronDown,
@@ -57,11 +58,17 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
   const { user, profile, signOut } = useAuth();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (
+        panelRef.current?.contains(target) ||
+        triggerRef.current?.contains(target)
+      ) return;
+      setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -71,57 +78,19 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
   const displayName = profile?.name || profile?.username || t.nav.user;
   const avatarSrc = profile?.avatar_url || null;
 
-  return (
-    <div className="relative" ref={ref}>
-      {/* Trigger: compact = avatar only with title for hover name */}
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        title={displayName}
-        className={`flex items-center border border-transparent hover:border-border hover:bg-muted transition-all duration-150 ${
-          compact ? "p-1.5 rounded-full" : "gap-2 px-3 py-2"
-        }`}
-      >
-        <AvatarBadge src={avatarSrc} alt={displayName} size={compact ? 40 : 38} />
-        {!compact && (
-          <>
-            {isAdmin
-              ? <ShieldCheck className="h-3.5 w-3.5 text-primary hidden sm:block flex-shrink-0" />
-              : <User className="h-3.5 w-3.5 text-muted-foreground hidden sm:block flex-shrink-0" />
-            }
-            <span className="max-w-[110px] truncate text-sm font-semibold hidden sm:block">{displayName}</span>
-            <ChevronDown
-              className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-            />
-          </>
-        )}
-      </button>
-
-      {/* Dropdown panel */}
-      {open && (
-        <div className="absolute right-0 top-full mt-1 w-60 max-w-[calc(100vw-2rem)] bg-white border border-border rounded-xl shadow-card-hover z-50 animate-dropdown-open origin-top">
-          {/* User info header */}
-          <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 border-b border-border rounded-t-xl">
-            <AvatarBadge src={avatarSrc} alt={displayName} size={52} />
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                {isAdmin
-                  ? <ShieldCheck className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                  : <User className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                }
-                <p className="text-sm font-bold truncate">{displayName}</p>
-              </div>
-              {profile?.username && (
-                <p className="text-xs text-muted-foreground truncate">{profile.username}</p>
-              )}
-              {isAdmin && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-0.5">
-                  {t.nav.adminBadge}
-                </span>
-              )}
-            </div>
-          </div>
-
+  const dropdownPanel = open && typeof document !== "undefined" && createPortal(
+    <div
+      ref={panelRef}
+      className="fixed w-60 max-w-[calc(100vw-2rem)] bg-white border border-border rounded-none shadow-lg z-[100] animate-dropdown-open origin-top"
+      style={{
+        top: triggerRef.current
+          ? triggerRef.current.getBoundingClientRect().bottom + 4
+          : 0,
+        right: triggerRef.current
+          ? document.documentElement.clientWidth - triggerRef.current.getBoundingClientRect().right
+          : 16,
+      }}
+    >
           {/* Menu items */}
           <div className="py-1">
             <Link
@@ -167,8 +136,36 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
               <span>{t.nav.logout}</span>
             </button>
           </div>
-        </div>
-      )}
+    </div>,
+    document.body
+  );
+
+  return (
+    <div className="relative">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen(!open)}
+        title={displayName}
+        className={`flex items-center border border-transparent hover:border-border hover:bg-muted transition-all duration-150 ${
+          compact ? "p-1.5 rounded-full" : "gap-2 px-3 py-2"
+        }`}
+      >
+        <AvatarBadge src={avatarSrc} alt={displayName} size={compact ? 40 : 38} />
+        {!compact && (
+          <>
+            {isAdmin
+              ? <ShieldCheck className="h-3.5 w-3.5 text-primary hidden sm:block flex-shrink-0" />
+              : <User className="h-3.5 w-3.5 text-muted-foreground hidden sm:block flex-shrink-0" />
+            }
+            <span className="max-w-[110px] truncate text-sm font-semibold hidden sm:block">{displayName}</span>
+            <ChevronDown
+              className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            />
+          </>
+        )}
+      </button>
+      {dropdownPanel}
     </div>
   );
 }
@@ -188,8 +185,8 @@ export function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-header border-b-2 border-primary">
-      <div className="container flex h-20 md:h-[4.55rem] items-center gap-4 md:gap-6">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-header border-b-2 border-primary overflow-hidden">
+      <div className="container flex h-20 md:h-[4.55rem] items-center gap-4 md:gap-6 min-w-0">
         {/* Logo — no border, no white background */}
         <Link href="/" className="flex items-center flex-shrink-0 min-w-0 max-w-[60vw] sm:max-w-none group bg-transparent border-0 shadow-none rounded-none p-0">
           <Image
@@ -314,10 +311,10 @@ export function Header() {
 export function Footer() {
   const { t } = useTranslation();
   return (
-    <footer className="border-t-2 border-primary bg-primary/[0.06]">
-      <div className="container py-8 sm:py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-          <div>
+    <footer className="border-t-2 border-primary bg-primary/[0.06] overflow-hidden w-full">
+      <div className="container py-8 sm:py-12 min-w-0">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 min-w-0">
+          <div className="min-w-0">
             <Link href="/" className="inline-block mb-4">
               
                 <Image
@@ -330,9 +327,9 @@ export function Footer() {
                 />
               
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">{t.footer.tagline}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed break-words-safe">{t.footer.tagline}</p>
           </div>
-          <div>
+          <div className="min-w-0">
             <h4 className="font-semibold mb-4 text-sm text-primary uppercase tracking-wider">{t.footer.services}</h4>
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li><Link href="/suppliers" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.supplierSearch}</Link></li>
@@ -343,14 +340,14 @@ export function Footer() {
               <li><Link href="/about" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.about.pageTitle}</Link></li>
             </ul>
           </div>
-          <div>
+          <div className="min-w-0">
             <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.info}</h4>
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li><a href="#" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.terms}</a></li>
               <li><a href="#" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.privacy}</a></li>
             </ul>
           </div>
-          <div>
+          <div className="min-w-0">
             <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.contact}</h4>
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li><Link href="/contact" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.contactForm}</Link></li>
@@ -406,10 +403,10 @@ function PageViewTracker() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
+    <div className="min-h-screen w-full min-w-0 flex flex-col overflow-x-hidden">
       <PageViewTracker />
       <Header />
-      <main className="flex-1 pt-20 md:pt-[4.55rem]">{children}</main>
+      <main className="flex-1 w-full min-w-0 pt-20 md:pt-[4.55rem] overflow-x-hidden">{children}</main>
       <Footer />
       <BackToTop />
     </div>

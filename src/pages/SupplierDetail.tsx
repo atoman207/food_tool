@@ -64,7 +64,7 @@ const SupplierDetail = () => {
 
   return (
     <Layout>
-      <div className="container py-4 sm:py-6 overflow-x-hidden">
+      <div className="container py-4 sm:py-6 overflow-x-hidden min-w-0 w-full">
         <Link href="/suppliers" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 font-medium">
           <ArrowLeft className="h-4 w-4" /> {t.supplierDetail.backToList}
         </Link>

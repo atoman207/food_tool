@@ -131,12 +131,12 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
       {!isList && (
         <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed flex-shrink-0" title={description}>{description}</p>
       )}
-      <div className={`flex flex-wrap gap-1.5 flex-shrink-0 min-h-[2.75rem] ${isList ? "order-last" : "mb-4"}`}>
+      <div className={`flex flex-wrap gap-1.5 flex-shrink-0 min-h-[2.75rem] min-w-0 overflow-hidden`} title={[...categories.slice(0, 3), ...(supplier.tags ?? [])].map(translateTag).join(", ")}>
         {categories.slice(0, 3).map((cat) => (
-          <span key={cat} className="tag-badge whitespace-nowrap" title={cat}>{cat}</span>
+          <span key={cat} className="tag-badge tag-badge-fixed" title={cat}>{cat}</span>
         ))}
         {!isList && (supplier.tags ?? []).map((tag) => (
-          <span key={tag} className="tag-badge whitespace-nowrap" title={translateTag(tag)}>{translateTag(tag)}</span>
+          <span key={tag} className="tag-badge tag-badge-fixed" title={translateTag(tag)}>{translateTag(tag)}</span>
         ))}
       </div>
       <div className={`flex gap-2 flex-shrink-0 flex-nowrap items-center ${isList ? "" : "mt-auto"}`}>
@@ -169,7 +169,7 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
   );
 
   return (
-    <div className={`group bg-card overflow-hidden shadow-card card-hover card-lift border relative flex flex-col h-full min-h-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
+    <div className={`group bg-card overflow-hidden shadow-card card-hover card-lift border relative flex flex-col h-full min-h-0 min-w-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
       {cfg.tier === "premium" && !isList && (
         <div className="h-1.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90" />
       )}

@@ -69,6 +69,11 @@
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    max-width: 100vw;
+    /* Prevent long words/URLs from breaking layout and garbling text on mobile */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
     /* var(--site-font) is injected by ThemeProvider; falls back to system stack */
     font-family: var(--site-font, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
     font-weight: 400;
@@ -77,10 +82,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  /* Responsive container padding for mobile (avoid 2rem on narrow screens) */
+  /* Responsive container: no horizontal overflow on mobile */
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   @media (min-width: 640px) {
     .container {
@@ -104,6 +111,14 @@
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     letter-spacing: -0.01em;
+  }
+  /* Prevent images and embeds from causing horizontal overflow on mobile */
+  img {
+    max-width: 100%;
+    vertical-align: middle;
+  }
+  iframe, object, embed {
+    max-width: 100%;
   }
 }
 
@@ -165,11 +180,18 @@
   .link-more:hover {
     @apply text-primary/90;
   }
+  /* Red "View all" buttons: text and arrow always white (no hover needed to see them) */
+  .link-more.bg-primary {
+    color: hsl(var(--primary-foreground));
+  }
+  .link-more.bg-primary:hover {
+    color: hsl(var(--primary-foreground));
+  }
   .link-more .link-more-arrow {
     @apply transition-transform duration-300 ease-smooth;
   }
   .link-more:hover .link-more-arrow {
-    transform: translateX(4px);
+    transform: translateX(6px);
   }
 
   .tag-badge {
@@ -229,10 +251,7 @@
   }
 }
 
-/* Safari flexbox/gap fixes */
-@supports (-webkit-touch-callout: none) {
-  .flex { gap: inherit; }
-}
+/* Safari: ensure touch targets and smooth scrolling; do NOT override gap (causes layout breakage) */
 
 /* Smoother hover (no card scale to avoid blurriness; image scale is on the image only) */
 .card-hover,

@@ -36,11 +36,11 @@ const News = () => {
 
   return (
     <Layout>
-      <div className="container py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-            <Newspaper className="h-7 w-7 text-primary" />
-            {t.news.title}
+      <div className="container py-8 min-w-0 overflow-hidden w-full">
+        <div className="mb-8 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-3 min-w-0 break-words-safe">
+            <Newspaper className="h-7 w-7 text-primary flex-shrink-0" />
+            <span className="min-w-0">{t.news.title}</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">{t.news.subtitle}</p>
         </div>
