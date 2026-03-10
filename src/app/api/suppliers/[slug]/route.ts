@@ -14,10 +14,11 @@ function normaliseMock(s: any) {
 }
 
 export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
+  const slug = decodeURIComponent(params.slug);
   const supabase = createServerSupabaseClient();
 
   if (!supabase) {
-    const mock = mockSuppliers.find((s) => s.slug === params.slug);
+    const mock = mockSuppliers.find((s) => s.slug === slug);
     if (!mock) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(normaliseMock(mock));
   }
@@ -25,11 +26,11 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
   const { data: supplier, error } = await supabase
     .from("suppliers")
     .select("*")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .single();
 
   if (error || !supplier || !supplier.id) {
-    const mock = mockSuppliers.find((s) => s.slug === params.slug);
+    const mock = mockSuppliers.find((s) => s.slug === slug);
     if (!mock) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(normaliseMock(mock));
   }
@@ -52,6 +53,7 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { slug: string } }) {
+  const slug = decodeURIComponent(params.slug);
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   const body = await req.json();
@@ -62,7 +64,7 @@ export async function PUT(req: NextRequest, { params }: { params: { slug: string
   const { data, error } = await supabase
     .from("suppliers")
     .update(updatePayload)
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -70,9 +72,10 @@ export async function PUT(req: NextRequest, { params }: { params: { slug: string
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { slug: string } }) {
+  const slug = decodeURIComponent(params.slug);
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
-  const { error } = await supabase.from("suppliers").delete().eq("slug", params.slug);
+  const { error } = await supabase.from("suppliers").delete().eq("slug", slug);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

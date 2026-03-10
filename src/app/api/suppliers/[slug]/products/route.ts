@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase-server";
 
 export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
+  const slug = decodeURIComponent(params.slug);
   const supabase = createServerSupabaseClient();
   if (!supabase) return NextResponse.json([]);
 
   const { data: supplier } = await supabase
     .from("suppliers")
     .select("id")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .single();
 
   if (!supplier) return NextResponse.json([]);
@@ -23,13 +24,14 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
 }
 
 export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
+  const slug = decodeURIComponent(params.slug);
   const admin = createAdminSupabaseClient();
   if (!admin) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
 
   const { data: supplier } = await admin
     .from("suppliers")
     .select("id")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .single();
 
   if (!supplier) return NextResponse.json({ error: "Supplier not found" }, { status: 404 });
