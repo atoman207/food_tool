@@ -396,10 +396,11 @@ function SupplierManager() {
 }
 
 function ProductManager({ slug }: { slug: string }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [products, setProducts] = useState<any[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
-    name: "", name_en: "", image: "",
+    name: "", name_en: "", image: "", moq: "",
     country_of_origin: "", weight: "", quantity: "",
     storage_condition: "", temperature: "",
   });
@@ -416,17 +417,46 @@ function ProductManager({ slug }: { slug: string }) {
     }
   };
 
-  const handleAdd = async () => {
+  const clearForm = () => {
+    setForm({ name: "", name_en: "", image: "", moq: "", country_of_origin: "", weight: "", quantity: "", storage_condition: "", temperature: "" });
+    setEditingId(null);
+  };
+
+  const handleEdit = (p: any) => {
+    setForm({
+      name: p.name ?? "",
+      name_en: p.name_en ?? "",
+      image: p.image ?? "",
+      moq: p.moq ?? "",
+      country_of_origin: p.country_of_origin ?? "",
+      weight: p.weight ?? "",
+      quantity: p.quantity ?? "",
+      storage_condition: p.storage_condition ?? "",
+      temperature: p.temperature ?? "",
+    });
+    setEditingId(p.id);
+  };
+
+  const handleSubmit = async () => {
     if (!(form.name || "").trim()) {
       alert(t.common.requiredField);
       return;
     }
-    await fetch(`/api/suppliers/${slug}/products`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    setForm({ name: "", name_en: "", image: "", country_of_origin: "", weight: "", quantity: "", storage_condition: "", temperature: "" });
+    if (editingId) {
+      await fetch(`/api/suppliers/${slug}/products`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingId, ...form }),
+      });
+      clearForm();
+    } else {
+      await fetch(`/api/suppliers/${slug}/products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      clearForm();
+    }
     fetchProducts();
   };
 
@@ -437,6 +467,7 @@ function ProductManager({ slug }: { slug: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
+    if (editingId === id) clearForm();
     fetchProducts();
   };
 
@@ -451,13 +482,14 @@ function ProductManager({ slug }: { slug: string }) {
       </div>
 
       {/* Row 2: Image (full width on mobile) */}
-      <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
+      <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.productImageHint ?? t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} cropTo43 />
 
-      {/* Row 3: Origin + Weight + Quantity */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Row 3: Origin + Weight + Quantity + MOQ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <InputField label={t.admin.productCountryOfOrigin} value={form.country_of_origin} onChange={(v) => setForm((p) => ({ ...p, country_of_origin: v }))} />
         <InputField label={t.admin.productWeight} value={form.weight} onChange={(v) => setForm((p) => ({ ...p, weight: v }))} />
         <InputField label={t.admin.productQuantity} value={form.quantity} onChange={(v) => setForm((p) => ({ ...p, quantity: v }))} />
+        <InputField label={lang === "ja" ? "MOQ" : "MOQ"} value={form.moq} onChange={(v) => setForm((p) => ({ ...p, moq: v }))} placeholder={lang === "ja" ? "例: 1kg〜" : "e.g. 1kg"} />
       </div>
 
       {/* Row 4: Storage + Temperature */}
@@ -478,9 +510,16 @@ function ProductManager({ slug }: { slug: string }) {
         </div>
       </div>
 
-      <Button className="w-full sm:w-auto rounded-xl gap-2 h-12 text-base" onClick={handleAdd}>
-        <Plus className="h-4 w-4" /> {t.admin.addProduct}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button className="rounded-xl gap-2 h-12 text-base" onClick={handleSubmit}>
+          {editingId ? (lang === "ja" ? "更新" : "Update") : <><Plus className="h-4 w-4" /> {t.admin.addProduct}</>}
+        </Button>
+        {editingId && (
+          <Button variant="outline" className="rounded-xl h-12" onClick={clearForm}>
+            {lang === "ja" ? "キャンセル" : "Cancel"}
+          </Button>
+        )}
+      </div>
 
       {!Array.isArray(products) || products.length === 0 ? (
         <p className="text-xs text-muted-foreground">{t.admin.noProducts}</p>
@@ -503,9 +542,14 @@ function ProductManager({ slug }: { slug: string }) {
                   {p.storage_condition && <span className="text-xs text-muted-foreground">{p.storage_condition}</span>}
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="rounded-lg text-destructive flex-shrink-0 h-10 w-10 p-0" onClick={() => handleDelete(p.id)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Button variant="outline" size="sm" className="rounded-lg h-10 w-10 p-0" onClick={() => handleEdit(p)} title={lang === "ja" ? "編集" : "Edit"}>
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" className="rounded-lg text-destructive flex-shrink-0 h-10 w-10 p-0" onClick={() => handleDelete(p.id)} title={lang === "ja" ? "削除" : "Delete"}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -1987,18 +2031,54 @@ function LinksManager() {
   );
 }
 
+/** Resize and center-crop image to 4:3 (e.g. 1200×900) to avoid display cropping. Returns blob or null. */
+async function resizeTo43(file: File, maxW = 1200, maxH = 900): Promise<Blob | null> {
+  if (!file.type.startsWith("image/")) return null;
+  return new Promise((resolve) => {
+    const img = document.createElement("img");
+    img.onload = () => {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      const targetRatio = 4 / 3;
+      const srcRatio = w / h;
+      let sX = 0, sY = 0, sW = w, sH = h;
+      if (srcRatio > targetRatio) {
+        sW = h * targetRatio;
+        sX = (w - sW) / 2;
+      } else {
+        sH = w / targetRatio;
+        sY = (h - sH) / 2;
+      }
+      const scale = Math.min(1, maxW / sW, maxH / sH);
+      const outW = Math.round(sW * scale);
+      const outH = Math.round(sH * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = outW;
+      canvas.height = outH;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { resolve(null); return; }
+      ctx.drawImage(img, sX, sY, sW, sH, 0, 0, outW, outH);
+      canvas.toBlob((blob) => resolve(blob), file.type, 0.9);
+    };
+    img.onerror = () => resolve(null);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 function ImageField({
   label,
   value,
   onChange,
   hint,
   uploadLabel,
+  cropTo43,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   hint: string;
   uploadLabel: string;
+  cropTo43?: boolean;
 }) {
   return (
     <div>
@@ -2011,8 +2091,13 @@ function ImageField({
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
+            let toUpload: Blob | File = file;
+            if (cropTo43 && file.type.startsWith("image/") && !file.type.includes("gif")) {
+              const resized = await resizeTo43(file);
+              if (resized) toUpload = new File([resized], file.name, { type: file.type });
+            }
             const fd = new FormData();
-            fd.append("file", file);
+            fd.append("file", toUpload);
             const res = await fetch("/api/upload", { method: "POST", body: fd });
             const j = await res.json();
             if (j?.url) onChange(j.url);

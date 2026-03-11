@@ -424,6 +424,7 @@ const en = {
     productName: "Product Name",
     productNameEn: "Product Name (English)",
     productImage: "Product Image URL",
+    productImageHint: "Recommended: 1200×900 px (4:3 ratio). Uploaded images are auto-resized to fit.",
     productCountryOfOrigin: "Country of Origin",
     productWeight: "Weight",
     productQuantity: "Quantity",

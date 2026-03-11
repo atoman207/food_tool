@@ -425,6 +425,7 @@ const ja: Translations = {
     productName: "商品名",
     productNameEn: "商品名（英語）",
     productImage: "商品画像URL",
+    productImageHint: "推奨: 1200×900 px（4:3比率）。アップロード時に自動リサイズされます。",
     productCountryOfOrigin: "原産国",
     productWeight: "重量",
     productQuantity: "入数",

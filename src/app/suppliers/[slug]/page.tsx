@@ -22,20 +22,21 @@ async function getSupplier(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const supplier = await getSupplier(params.slug);
+  const { slug } = await params;
+  const supplier = await getSupplier(slug);
 
   if (!supplier) {
     return { title: "Supplier Not Found" };
   }
 
-  const name: string = supplier.name || supplier.name_ja || params.slug;
+  const name: string = supplier.name || supplier.name_ja || slug;
   const description: string =
     (supplier.description || supplier.description_ja || `${name} — Singapore F&B Supplier`)
       .slice(0, 160);
   const image: string | undefined = supplier.logo;
-  const pageUrl = `${siteUrl}/suppliers/${params.slug}`;
+  const pageUrl = `${siteUrl}/suppliers/${slug}`;
 
   return {
     title: name,
@@ -64,7 +65,7 @@ export default async function SupplierDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params as any;
+  const { slug } = await params;
   const supplier = await getSupplier(slug);
 
   const jsonLd = supplier
