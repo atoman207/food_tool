@@ -1,6 +1,7 @@
 const en = {
   // ── Shared ───────────────────────────────────────────────────────────────
   common: {
+    requiredField: "This field is required.",
     loading: "Loading...",
     search: "Search",
     viewAll: "View All",
@@ -409,6 +410,7 @@ const en = {
     nameEn: "Name (English)",
     nameJa: "Name (Japanese)",
     slug: "Slug (URL)",
+    slugRequiredPlaceholder: "Required. Enter e.g. my-supplier (letters, numbers, hyphens)",
     area: "Area",
     areaJa: "Area (Japanese)",
     tags: "Tags (comma separated)",

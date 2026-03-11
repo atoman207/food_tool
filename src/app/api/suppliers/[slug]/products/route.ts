@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase-server";
 
-export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
-  const slug = decodeURIComponent(params.slug);
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug: slugParam } = await params;
+  const slug = decodeURIComponent(slugParam);
   const supabase = createServerSupabaseClient();
   if (!supabase) return NextResponse.json([]);
 
@@ -23,8 +24,9 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
   return NextResponse.json(products || []);
 }
 
-export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
-  const slug = decodeURIComponent(params.slug);
+export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug: slugParam } = await params;
+  const slug = decodeURIComponent(slugParam);
   const admin = createAdminSupabaseClient();
   if (!admin) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
 

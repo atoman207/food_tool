@@ -179,10 +179,24 @@ function SupplierManager() {
 
   const handleSave = async () => {
     if (isSaving) return;
+    const slugTrimmed = (form.slug || "").trim();
+    const nameTrimmed = (form.name || "").trim();
+    const nameJaTrimmed = (form.name_ja || "").trim();
+    if (!slugTrimmed) {
+      alert((lang === "ja" ? "スラッグは必須です。" : "Slug is required. ") + (t.admin.slugRequiredPlaceholder ?? ""));
+      return;
+    }
+    if (!nameTrimmed && !nameJaTrimmed) {
+      alert(lang === "ja" ? "名前（英語または日本語）のいずれかを入力してください。" : "Please enter either name (EN) or name (JA).");
+      return;
+    }
     setIsSaving(true);
     try {
       const body = {
         ...form,
+        slug: slugTrimmed,
+        name: nameTrimmed || form.name,
+        name_ja: nameJaTrimmed || form.name_ja,
         tags: form.tags.split(",").map((tt) => tt.trim()).filter(Boolean),
         certifications: form.certifications.split(",").map((c) => c.trim()).filter(Boolean),
       };
@@ -227,10 +241,10 @@ function SupplierManager() {
       {showForm && (
         <div className="bg-card border p-6 mb-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <InputField label={t.admin.nameEn} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
-            <InputField label={t.admin.nameJa} value={form.name_ja} onChange={(v) => setForm((p) => ({ ...p, name_ja: v }))} />
+            <InputField label={t.admin.nameEn} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} required />
+            <InputField label={t.admin.nameJa} value={form.name_ja} onChange={(v) => setForm((p) => ({ ...p, name_ja: v }))} required />
           </div>
-          <InputField label={t.admin.slug} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} />
+          <InputField label={t.admin.slug} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} required placeholder={t.admin.slugRequiredPlaceholder} />
           {/* Category 1 — select from CategoryManager */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -403,7 +417,10 @@ function ProductManager({ slug }: { slug: string }) {
   };
 
   const handleAdd = async () => {
-    if (!form.name) return;
+    if (!(form.name || "").trim()) {
+      alert(t.common.requiredField);
+      return;
+    }
     await fetch(`/api/suppliers/${slug}/products`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -427,7 +444,7 @@ function ProductManager({ slug }: { slug: string }) {
     <div className="ml-4 mt-2 bg-muted/50 border p-4 space-y-4">
       <h3 className="text-sm font-bold">{t.admin.productManagement}</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <InputField label={t.admin.productName} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
+        <InputField label={t.admin.productName} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} required />
         <InputField label={t.admin.productNameEn} value={form.name_en} onChange={(v) => setForm((p) => ({ ...p, name_en: v }))} />
         <div className="col-span-2 md:col-span-1">
           <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
@@ -607,7 +624,22 @@ function MarketplaceManager() {
   };
 
   const handleSave = async () => {
-    const body = { ...form, price: Number(form.price), years_used: Number(form.years_used) };
+    const titleTrimmed = (form.title || "").trim();
+    const slugTrimmed = (form.slug || "").trim();
+    const priceNum = Number(form.price);
+    if (!titleTrimmed) {
+      alert(lang === "ja" ? "タイトル（日本語）は必須です。" : "Title (JA) is required.");
+      return;
+    }
+    if (!slugTrimmed) {
+      alert(lang === "ja" ? "スラッグは必須です。" : "Slug is required.");
+      return;
+    }
+    if (isNaN(priceNum) || priceNum < 0) {
+      alert(lang === "ja" ? "価格を正しく入力してください。" : "Please enter a valid price.");
+      return;
+    }
+    const body = { ...form, title: titleTrimmed, slug: slugTrimmed, price: priceNum, years_used: Number(form.years_used) };
     if (editSlug) {
       await fetch(`/api/marketplace/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     } else {
@@ -651,12 +683,12 @@ function MarketplaceManager() {
       {showForm && (
         <div className="bg-card border p-6 mb-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <InputField label={label("Title (JA)", "タイトル（日本語）")} value={form.title} onChange={(v) => setForm((p) => ({ ...p, title: v }))} />
+            <InputField label={label("Title (JA)", "タイトル（日本語）")} value={form.title} onChange={(v) => setForm((p) => ({ ...p, title: v }))} required />
             <InputField label={label("Title (EN)", "タイトル（英語）")} value={form.title_en} onChange={(v) => setForm((p) => ({ ...p, title_en: v }))} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label={label("Slug (URL key)", "スラッグ（URLキー）")} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} />
-            <InputField label={label("Price (SGD)", "価格（SGD）")} value={form.price} onChange={(v) => setForm((p) => ({ ...p, price: v }))} type="number" />
+            <InputField label={label("Slug (URL key)", "スラッグ（URLキー）")} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} required placeholder={t.admin.slugRequiredPlaceholder} />
+            <InputField label={label("Price (SGD)", "価格（SGD）")} value={form.price} onChange={(v) => setForm((p) => ({ ...p, price: v }))} type="number" required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <InputField label={label("Area (JA)", "エリア（日本語）")} value={form.area} onChange={(v) => setForm((p) => ({ ...p, area: v }))} />
@@ -779,7 +811,18 @@ function NewsManager() {
   };
 
   const handleSave = async () => {
-    const body: Record<string, unknown> = { ...form };
+    const titleTrimmed = (form.title || "").trim();
+    const titleJaTrimmed = (form.title_ja || "").trim();
+    const slugTrimmed = (form.slug || "").trim();
+    if (!titleTrimmed && !titleJaTrimmed) {
+      alert(lang === "ja" ? "タイトル（英語または日本語）のいずれかを入力してください。" : "Please enter either Title (EN) or Title (JA).");
+      return;
+    }
+    if (!slugTrimmed) {
+      alert(lang === "ja" ? "スラッグは必須です。" : "Slug is required.");
+      return;
+    }
+    const body: Record<string, unknown> = { ...form, title: titleTrimmed || form.title, title_ja: titleJaTrimmed || form.title_ja, slug: slugTrimmed };
     body.published_at = form.published_at ? new Date(form.published_at).toISOString() : null;
     if (editSlug) {
       await fetch(`/api/news/${editSlug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -854,14 +897,14 @@ function NewsManager() {
             {editSlug ? (lang === "ja" ? "記事を編集" : "Edit Article") : (lang === "ja" ? "新規記事を追加" : "Add New Article")}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField label={lang === "ja" ? "タイトル（英語）" : "Title (English)"} value={form.title} onChange={(v) => setForm((p) => ({ ...p, title: v }))} />
-            <InputField label={lang === "ja" ? "タイトル（日本語）" : "Title (Japanese)"} value={form.title_ja} onChange={(v) => setForm((p) => ({ ...p, title_ja: v }))} />
+            <InputField label={lang === "ja" ? "タイトル（英語）" : "Title (English)"} value={form.title} onChange={(v) => setForm((p) => ({ ...p, title: v }))} required />
+            <InputField label={lang === "ja" ? "タイトル（日本語）" : "Title (Japanese)"} value={form.title_ja} onChange={(v) => setForm((p) => ({ ...p, title_ja: v }))} required />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField label={lang === "ja" ? "抜粋（英語）" : "Excerpt (English)"} value={form.excerpt} onChange={(v) => setForm((p) => ({ ...p, excerpt: v }))} />
             <InputField label={lang === "ja" ? "抜粋（日本語）" : "Excerpt (Japanese)"} value={form.excerpt_ja} onChange={(v) => setForm((p) => ({ ...p, excerpt_ja: v }))} />
           </div>
-          <InputField label={lang === "ja" ? "スラッグ（URL）" : "Slug (URL)"} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} placeholder="my-article-slug" />
+          <InputField label={lang === "ja" ? "スラッグ（URL）" : "Slug (URL)"} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} required placeholder={t.admin.slugRequiredPlaceholder} />
           <div>
             <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "画像" : "Image"}</label>
             <div className="flex flex-wrap items-center gap-2">
@@ -1002,8 +1045,17 @@ function CategoryManager() {
   };
 
   const handleAdd = async () => {
-    if (!newCat.value || !newCat.label) return;
-    await fetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newCat) });
+    const valueTrimmed = (newCat.value || "").trim();
+    const labelTrimmed = (newCat.label || "").trim();
+    if (!valueTrimmed) {
+      alert(lang === "ja" ? "値は必須です。" : "Value is required.");
+      return;
+    }
+    if (!labelTrimmed) {
+      alert(lang === "ja" ? "ラベルは必須です。" : "Label is required.");
+      return;
+    }
+    await fetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...newCat, value: valueTrimmed, label: labelTrimmed }) });
     setNewCat({ type: "supplier", value: "", label: "", label_ja: "", sort_order: 0 });
     fetchCategories();
   };
@@ -1035,12 +1087,12 @@ function CategoryManager() {
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium block mb-1">{t.admin.valueLabel} (EN key)</label>
-          <input value={newCat.value} onChange={(e) => setNewCat((p) => ({ ...p, value: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" placeholder="e.g. halal" />
+          <label className="text-xs font-medium block mb-1">{t.admin.valueLabel} (EN key) <span className="text-destructive">*</span></label>
+          <input value={newCat.value} onChange={(e) => setNewCat((p) => ({ ...p, value: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" placeholder={lang === "ja" ? "必須 (例: halal)" : "Required (e.g. halal)"} />
         </div>
         <div>
-          <label className="text-xs font-medium block mb-1">{t.admin.labelLabel} (EN)</label>
-          <input value={newCat.label} onChange={(e) => setNewCat((p) => ({ ...p, label: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-36" placeholder="English label" />
+          <label className="text-xs font-medium block mb-1">{t.admin.labelLabel} (EN) <span className="text-destructive">*</span></label>
+          <input value={newCat.label} onChange={(e) => setNewCat((p) => ({ ...p, label: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-36" placeholder={lang === "ja" ? "必須 (例: Halal)" : "Required (e.g. Halal)"} />
         </div>
         <div>
           <label className="text-xs font-medium block mb-1">{lang === "ja" ? "ラベル（日本語）" : "Label (JA)"}</label>
@@ -1965,10 +2017,13 @@ function ImageField({
   );
 }
 
-function InputField({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
+function InputField({ label, value, onChange, placeholder, type = "text", required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string; required?: boolean }) {
   return (
     <div>
-      <label className="text-sm font-medium block mb-1.5">{label}</label>
+      <label className="text-sm font-medium block mb-1.5">
+        {label}
+        {required && <span className="text-destructive ml-0.5">*</span>}
+      </label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
     </div>
   );

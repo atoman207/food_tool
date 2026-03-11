@@ -3,6 +3,7 @@ import type { Translations } from "./en";
 const ja: Translations = {
   // ── Shared ───────────────────────────────────────────────────────────────
   common: {
+    requiredField: "この項目は必須です。",
     loading: "読み込み中...",
     search: "検索",
     viewAll: "全て見る",
@@ -410,6 +411,7 @@ const ja: Translations = {
     nameEn: "英語名",
     nameJa: "日本語名",
     slug: "スラッグ (URL)",
+    slugRequiredPlaceholder: "必須。例: my-supplier （英小文字・数字・ハイフンのみ）",
     area: "エリア",
     areaJa: "エリア (日本語)",
     tags: "タグ (カンマ区切り)",

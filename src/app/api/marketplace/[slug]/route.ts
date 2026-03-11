@@ -16,11 +16,12 @@ function normaliseMock(item: any) {
   };
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const supabase = createServerSupabaseClient();
 
   if (!supabase) {
-    const mock = mockItems.find((i) => i.slug === params.slug);
+    const mock = mockItems.find((i) => i.slug === slug);
     if (!mock) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(normaliseMock(mock));
   }
@@ -28,34 +29,36 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
   const { data, error } = await supabase
     .from("marketplace_items")
     .select("*")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .single();
   if (error || !data) {
-    const mock = mockItems.find((i) => i.slug === params.slug);
+    const mock = mockItems.find((i) => i.slug === slug);
     if (!mock) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(normaliseMock(mock));
   }
   return NextResponse.json(data);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   const body = await req.json();
   const { data, error } = await supabase
     .from("marketplace_items")
     .update(body)
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
-  const { error } = await supabase.from("marketplace_items").delete().eq("slug", params.slug);
+  const { error } = await supabase.from("marketplace_items").delete().eq("slug", slug);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

@@ -13,8 +13,9 @@ function normaliseMock(s: any) {
   };
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
-  const slug = decodeURIComponent(params.slug);
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug: slugParam } = await params;
+  const slug = decodeURIComponent(slugParam);
   const supabase = createServerSupabaseClient();
 
   if (!supabase) {
@@ -52,8 +53,9 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
   return NextResponse.json({ ...supplier, products: products || [] });
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { slug: string } }) {
-  const slug = decodeURIComponent(params.slug);
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug: slugParam } = await params;
+  const slug = decodeURIComponent(slugParam);
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   const body = await req.json();
@@ -71,8 +73,9 @@ export async function PUT(req: NextRequest, { params }: { params: { slug: string
   return NextResponse.json(data);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { slug: string } }) {
-  const slug = decodeURIComponent(params.slug);
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug: slugParam } = await params;
+  const slug = decodeURIComponent(slugParam);
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   const { error } = await supabase.from("suppliers").delete().eq("slug", slug);
