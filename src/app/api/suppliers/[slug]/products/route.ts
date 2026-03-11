@@ -5,9 +5,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
   const { slug: slugParam } = await params;
   const slug = decodeURIComponent(slugParam);
   const supabase = createServerSupabaseClient();
-  if (!supabase) return NextResponse.json([]);
+  const admin = createAdminSupabaseClient();
+  const client = admin ?? supabase;
+  if (!client) return NextResponse.json([]);
 
-  const { data: supplier } = await supabase
+  const { data: supplier } = await client
     .from("suppliers")
     .select("id")
     .eq("slug", slug)
@@ -15,11 +17,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
 
   if (!supplier) return NextResponse.json([]);
 
-  const { data: products } = await supabase
+  const { data: products } = await client
     .from("supplier_products")
     .select("*")
-    .eq("supplier_id", supplier.id)
-    .order("created_at", { ascending: false });
+    .eq("supplier_id", supplier.id);
 
   return NextResponse.json(products || []);
 }
@@ -39,9 +40,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
   if (!supplier) return NextResponse.json({ error: "Supplier not found" }, { status: 404 });
 
   const body = await req.json();
+  const payload = {
+    supplier_id: supplier.id,
+    name: (body.name ?? "").toString().trim() || "",
+    image: (body.image ?? "").toString().trim() || "",
+    moq: (body.moq ?? "").toString().trim() || "",
+  };
+
   const { data, error } = await admin
     .from("supplier_products")
-    .insert({ ...body, supplier_id: supplier.id })
+    .insert(payload)
     .select()
     .single();
 

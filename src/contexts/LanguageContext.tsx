@@ -34,7 +34,17 @@ function getStoredLang(): Lang {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(getStoredLang);
+  // Always start with "en" so server and first client render match (avoids hydration mismatch).
+  const [lang, setLangState] = useState<Lang>("en");
+
+  // After mount, restore saved language from localStorage (client-only).
+  useEffect(() => {
+    const saved = getStoredLang();
+    setLangState(saved);
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = saved;
+    }
+  }, []);
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
