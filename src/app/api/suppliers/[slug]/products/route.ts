@@ -40,11 +40,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
   if (!supplier) return NextResponse.json({ error: "Supplier not found" }, { status: 404 });
 
   const body = await req.json();
-  const payload = {
+  const str = (v: unknown) => (v != null ? String(v).trim() : "");
+  const payload: Record<string, string> = {
     supplier_id: supplier.id,
-    name: (body.name ?? "").toString().trim() || "",
-    image: (body.image ?? "").toString().trim() || "",
-    moq: (body.moq ?? "").toString().trim() || "",
+    name:              str(body.name),
+    name_en:           str(body.name_en),
+    image:             str(body.image),
+    moq:               str(body.moq),
+    country_of_origin: str(body.country_of_origin),
+    weight:            str(body.weight),
+    quantity:          str(body.quantity),
+    storage_condition: str(body.storage_condition),
+    temperature:       str(body.temperature),
   };
 
   const { data, error } = await admin

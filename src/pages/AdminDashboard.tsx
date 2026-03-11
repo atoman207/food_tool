@@ -441,24 +441,34 @@ function ProductManager({ slug }: { slug: string }) {
   };
 
   return (
-    <div className="ml-4 mt-2 bg-muted/50 border p-4 space-y-4">
+    <div className="mt-2 bg-muted/50 border p-3 sm:p-4 space-y-4 overflow-x-hidden">
       <h3 className="text-sm font-bold">{t.admin.productManagement}</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+      {/* Row 1: Name (JA) + Name (EN) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <InputField label={t.admin.productName} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} required />
         <InputField label={t.admin.productNameEn} value={form.name_en} onChange={(v) => setForm((p) => ({ ...p, name_en: v }))} />
-        <div className="col-span-2 md:col-span-1">
-          <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
-        </div>
+      </div>
+
+      {/* Row 2: Image (full width on mobile) */}
+      <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
+
+      {/* Row 3: Origin + Weight + Quantity */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <InputField label={t.admin.productCountryOfOrigin} value={form.country_of_origin} onChange={(v) => setForm((p) => ({ ...p, country_of_origin: v }))} />
         <InputField label={t.admin.productWeight} value={form.weight} onChange={(v) => setForm((p) => ({ ...p, weight: v }))} />
         <InputField label={t.admin.productQuantity} value={form.quantity} onChange={(v) => setForm((p) => ({ ...p, quantity: v }))} />
+      </div>
+
+      {/* Row 4: Storage + Temperature */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <InputField label={t.admin.productStorageCondition} value={form.storage_condition} onChange={(v) => setForm((p) => ({ ...p, storage_condition: v }))} />
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium">{t.admin.productTemperature}</label>
           <select
             value={form.temperature}
             onChange={(e) => setForm((p) => ({ ...p, temperature: e.target.value }))}
-            className="h-10 px-3 rounded-lg border bg-background text-sm"
+            className="h-12 px-3 rounded-lg border bg-background text-sm"
           >
             <option value="">—</option>
             <option value="Frozen">{t.admin.productTemperatureFrozen}</option>
@@ -467,29 +477,34 @@ function ProductManager({ slug }: { slug: string }) {
           </select>
         </div>
       </div>
-      <Button size="sm" className="rounded-xl gap-1" onClick={handleAdd}>
-        <Plus className="h-3 w-3" /> {t.admin.addProduct}
+
+      <Button className="w-full sm:w-auto rounded-xl gap-2 h-12 text-base" onClick={handleAdd}>
+        <Plus className="h-4 w-4" /> {t.admin.addProduct}
       </Button>
+
       {!Array.isArray(products) || products.length === 0 ? (
         <p className="text-xs text-muted-foreground">{t.admin.noProducts}</p>
       ) : (
         <div className="space-y-2">
           {products.map((p: any) => (
-            <div key={p.id} className="flex items-center gap-3 bg-card border p-2">
-              {p.image && <img src={p.image} alt="" className="w-10 h-10 rounded object-cover" />}
+            <div key={p.id} className="flex items-center gap-3 bg-card border p-3">
+              {p.image
+                ? <img src={p.image} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
+                : <div className="w-12 h-12 rounded bg-muted flex-shrink-0" />
+              }
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{p.name}</p>
-                {p.name_en && <p className="text-xs text-muted-foreground">{p.name_en}</p>}
+                <p className="text-sm font-semibold truncate">{p.name}</p>
+                {p.name_en && <p className="text-xs text-muted-foreground truncate">{p.name_en}</p>}
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
-                  {p.country_of_origin && <p className="text-xs text-muted-foreground">{t.admin.productCountryOfOrigin}: {p.country_of_origin}</p>}
-                  {p.weight && <p className="text-xs text-muted-foreground">{t.admin.productWeight}: {p.weight}</p>}
-                  {p.quantity && <p className="text-xs text-muted-foreground">{t.admin.productQuantity}: {p.quantity}</p>}
-                  {p.storage_condition && <p className="text-xs text-muted-foreground">{t.admin.productStorageCondition}: {p.storage_condition}</p>}
-                  {p.temperature && <p className="text-xs text-muted-foreground">{t.admin.productTemperature}: {p.temperature}</p>}
+                  {p.temperature && <span className="text-xs font-medium text-primary">{p.temperature}</span>}
+                  {p.country_of_origin && <span className="text-xs text-muted-foreground">{p.country_of_origin}</span>}
+                  {p.weight && <span className="text-xs text-muted-foreground">{p.weight}</span>}
+                  {p.quantity && <span className="text-xs text-muted-foreground">{p.quantity}</span>}
+                  {p.storage_condition && <span className="text-xs text-muted-foreground">{p.storage_condition}</span>}
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="rounded-lg text-destructive" onClick={() => handleDelete(p.id)}>
-                <Trash2 className="h-3 w-3" />
+              <Button variant="outline" size="sm" className="rounded-lg text-destructive flex-shrink-0 h-10 w-10 p-0" onClick={() => handleDelete(p.id)}>
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           ))}

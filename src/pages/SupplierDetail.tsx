@@ -168,25 +168,29 @@ const SupplierDetail = () => {
             </div>
           )}
           {activeTab === "products" && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {catalogUrl && (
-                <div className="p-4 bg-muted/50 rounded-2xl border">
-                  <a href={catalogUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline inline-flex items-center gap-2">
+                <div className="p-3 bg-muted/50 rounded-xl border">
+                  <a href={catalogUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline inline-flex items-center gap-2 text-sm">
                     {t.supplierDetail.catalogLink} ↗
                   </a>
                 </div>
               )}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {products.length === 0 && (
+                <p className="text-sm text-muted-foreground py-4">{lang === "ja" ? "商品が登録されていません。" : "No products registered."}</p>
+              )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                 {products.map((p: any) => (
-                  <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border overflow-hidden text-left card-hover">
-                    {p.image && <div className="aspect-[4/3] overflow-hidden"><img src={p.image} alt={p.name} className="w-full h-full object-cover" /></div>}
-                    <div className="p-4">
-                      <p className="text-sm font-semibold">{p.name}</p>
-                      {p.country_of_origin && <p className="text-xs text-muted-foreground mt-1">{labels.origin}: {p.country_of_origin}</p>}
-                      {p.weight && <p className="text-xs text-muted-foreground">{labels.weight}: {p.weight}</p>}
-                      {p.quantity && <p className="text-xs text-muted-foreground">{labels.quantity}: {p.quantity}</p>}
-                      {p.storage_condition && <p className="text-xs text-muted-foreground">{labels.storage}: {p.storage_condition}</p>}
-                      {p.temperature && <p className="text-xs text-muted-foreground">{labels.temp}: {p.temperature}</p>}
+                  <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border overflow-hidden text-left active:opacity-80 w-full">
+                    {p.image
+                      ? <div className="aspect-[4/3] overflow-hidden w-full"><img src={p.image} alt={p.name} className="w-full h-full object-cover" /></div>
+                      : <div className="aspect-[4/3] bg-muted flex items-center justify-center"><span className="text-muted-foreground text-xs">No image</span></div>
+                    }
+                    <div className="p-2 sm:p-3">
+                      <p className="text-xs sm:text-sm font-semibold leading-snug">{p.name}</p>
+                      {p.name_en && <p className="text-xs text-muted-foreground truncate">{p.name_en}</p>}
+                      {p.temperature && <p className="text-xs text-primary font-medium mt-0.5">{p.temperature}</p>}
+                      {p.country_of_origin && <p className="text-xs text-muted-foreground">{labels.origin}: {p.country_of_origin}</p>}
                     </div>
                   </button>
                 ))}
@@ -219,22 +223,30 @@ const SupplierDetail = () => {
         </div>
 
         {selectedProduct && product && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setSelectedProduct(null)} />
-            <div className="relative bg-background rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-fade-in">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 bg-foreground/40" onClick={() => setSelectedProduct(null)} />
+            <div className="relative bg-background rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
               {product.image && <img src={product.image} alt={product.name} className="w-full aspect-video object-cover" />}
-              <div className="p-6">
-                <h3 className="text-lg font-bold">{product.name}</h3>
-                <div className="mt-2 space-y-1">
-                  {product.country_of_origin && <p className="text-sm text-muted-foreground">{labels.origin}: <span className="font-medium text-foreground">{product.country_of_origin}</span></p>}
-                  {product.weight && <p className="text-sm text-muted-foreground">{labels.weight}: <span className="font-medium text-foreground">{product.weight}</span></p>}
-                  {product.quantity && <p className="text-sm text-muted-foreground">{labels.quantity}: <span className="font-medium text-foreground">{product.quantity}</span></p>}
-                  {product.storage_condition && <p className="text-sm text-muted-foreground">{labels.storage}: <span className="font-medium text-foreground">{product.storage_condition}</span></p>}
-                  {product.temperature && <p className="text-sm text-muted-foreground">{labels.temp}: <span className="font-medium text-foreground">{product.temperature}</span></p>}
+              <div className="p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-bold">{product.name}</h3>
+                {product.name_en && <p className="text-sm text-muted-foreground">{product.name_en}</p>}
+                <div className="mt-3 space-y-2">
+                  {product.temperature && (
+                    <div className="inline-block bg-primary/10 text-primary text-xs font-semibold px-2 py-1 rounded-md">{product.temperature}</div>
+                  )}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2">
+                    {product.country_of_origin && <div><p className="text-xs text-muted-foreground">{labels.origin}</p><p className="text-sm font-medium">{product.country_of_origin}</p></div>}
+                    {product.weight && <div><p className="text-xs text-muted-foreground">{labels.weight}</p><p className="text-sm font-medium">{product.weight}</p></div>}
+                    {product.quantity && <div><p className="text-xs text-muted-foreground">{labels.quantity}</p><p className="text-sm font-medium">{product.quantity}</p></div>}
+                    {product.storage_condition && <div><p className="text-xs text-muted-foreground">{labels.storage}</p><p className="text-sm font-medium">{product.storage_condition}</p></div>}
+                  </div>
                 </div>
-                <div className="mt-5">
-                  <WhatsAppButton phone={supplier.whatsapp} message={lang === "ja" ? `${product.name}について問い合わせです。` : `I'd like to inquire about ${product.name}.`} fullWidth />
+                <div className="mt-4">
+                  <WhatsAppButton phone={supplier.whatsapp} message={lang === "ja" ? `${product.name}について問い合わせです。` : `I'd like to inquire about ${product.name}.`} fullWidth size="lg" />
                 </div>
+                <button onClick={() => setSelectedProduct(null)} className="mt-3 w-full py-3 text-sm text-muted-foreground border rounded-xl active:opacity-70">
+                  {lang === "ja" ? "閉じる" : "Close"}
+                </button>
               </div>
             </div>
           </div>

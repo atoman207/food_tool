@@ -94,8 +94,14 @@ export interface SupplierProductRow {
   id: string;
   supplier_id: string;
   name: string;
+  name_en?: string;
   image: string;
-  moq: string;
+  moq?: string;
+  country_of_origin?: string;
+  weight?: string;
+  quantity?: string;
+  storage_condition?: string;
+  temperature?: string;
 }
 
 export interface MarketplaceItemRow {

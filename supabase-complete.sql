@@ -183,6 +183,14 @@ ALTER TABLE public.profiles          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.suppliers         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.page_views           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.supplier_view_logs   ENABLE ROW LEVEL SECURITY;
+-- Add extra product detail columns (safe to run multiple times)
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS name_en           text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS country_of_origin text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS weight            text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS quantity          text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS storage_condition text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS temperature       text DEFAULT '';
+
 ALTER TABLE public.supplier_products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.marketplace_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.news_articles     ENABLE ROW LEVEL SECURITY;
