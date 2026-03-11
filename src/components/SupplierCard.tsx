@@ -106,8 +106,8 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
   const wrapperClass = `${cfg.borderClass} ${cfg.cardWrapperClass}`;
 
   const cardContent = (
-    <div className={`p-3 flex flex-col h-full min-h-0 ${isList ? "flex-row items-center gap-4" : ""}`}>
-      <div className={`flex items-start gap-3 ${isList ? "flex-1 min-w-0 flex-row" : "mb-3 flex-shrink-0"}`}>
+    <div className={`p-2.5 sm:p-3 flex flex-col h-full min-h-0 ${isList ? "flex-row items-center gap-4" : ""}`}>
+      <div className={`flex items-start gap-2.5 sm:gap-3 ${isList ? "flex-1 min-w-0 flex-row" : "mb-2 flex-shrink-0"}`}>
         <Link href={`/suppliers/${supplier.slug}`} className={`overflow-hidden flex-shrink-0 bg-muted block ${imageSizeClass}`} tabIndex={-1} aria-hidden="true">
           <img
             src={supplier.logo}
@@ -124,14 +124,14 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
             <MapPin className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">{areaLabel}{contactName ? ` · ${t.supplierCard.contactLabel}${contactName}` : ""}</span>
+            <span className="break-words line-clamp-2" title={areaLabel + (contactName ? ` · ${t.supplierCard.contactLabel}${contactName}` : "")}>{areaLabel}{contactName ? ` · ${t.supplierCard.contactLabel}${contactName}` : ""}</span>
           </div>
         </div>
       </div>
       {!isList && (
-        <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed flex-shrink-0" title={description}>{description}</p>
+        <p className="text-xs text-muted-foreground line-clamp-2 mb-2 leading-relaxed flex-shrink-0" title={description}>{description}</p>
       )}
-      <div className={`flex flex-wrap gap-1.5 flex-shrink-0 min-h-[2.75rem] min-w-0 overflow-hidden`} title={[...categories.slice(0, 3), ...(supplier.tags ?? [])].map(translateTag).join(", ")}>
+      <div className={`flex flex-wrap gap-1.5 flex-shrink-0 min-w-0`} title={[...categories.slice(0, 3), ...(supplier.tags ?? [])].map(translateTag).join(", ")}>
         {categories.slice(0, 3).map((cat) => (
           <span key={cat} className="tag-badge tag-badge-fixed" title={cat}>{cat}</span>
         ))}

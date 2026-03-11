@@ -187,10 +187,13 @@ const SupplierDetail = () => {
                       : <div className="aspect-[4/3] bg-muted flex items-center justify-center"><span className="text-muted-foreground text-xs">No image</span></div>
                     }
                     <div className="p-2 sm:p-3">
-                      <p className="text-xs sm:text-sm font-semibold leading-snug">{p.name}</p>
-                      {p.name_en && <p className="text-xs text-muted-foreground truncate">{p.name_en}</p>}
+                      <p className="text-xs sm:text-sm font-semibold leading-snug break-words">{p.name}</p>
+                      {p.name_en && <p className="text-xs text-muted-foreground break-words">{p.name_en}</p>}
                       {p.temperature && <p className="text-xs text-primary font-medium mt-0.5">{p.temperature}</p>}
                       {p.country_of_origin && <p className="text-xs text-muted-foreground">{labels.origin}: {p.country_of_origin}</p>}
+                      {p.weight && <p className="text-xs text-muted-foreground">{labels.weight}: {p.weight}</p>}
+                      {p.quantity && <p className="text-xs text-muted-foreground">{labels.quantity}: {p.quantity}</p>}
+                      {p.storage_condition && <p className="text-xs text-muted-foreground">{labels.storage}: {p.storage_condition}</p>}
                     </div>
                   </button>
                 ))}
@@ -222,24 +225,26 @@ const SupplierDetail = () => {
           )}
         </div>
 
+        {/* Product detail modal — same on all devices (bottom sheet on mobile, centered on desktop) */}
         {selectedProduct && product && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center overflow-hidden">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center overflow-hidden p-0 sm:p-4">
             <div className="absolute inset-0 bg-foreground/40" onClick={() => setSelectedProduct(null)} />
             <div className="relative bg-background rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
               {product.image && <img src={product.image} alt={product.name} className="w-full aspect-video object-cover" />}
-              <div className="p-4 sm:p-6">
-                <h3 className="text-base sm:text-lg font-bold">{product.name}</h3>
+              <div className="p-4">
+                <h3 className="text-base font-bold">{product.name}</h3>
                 {product.name_en && <p className="text-sm text-muted-foreground">{product.name_en}</p>}
                 <div className="mt-3 space-y-2">
                   {product.temperature && (
-                    <div className="inline-block bg-primary/10 text-primary text-xs font-semibold px-2 py-1 rounded-md">{product.temperature}</div>
+                    <span className="inline-block bg-primary/10 text-primary text-xs font-semibold px-2 py-1 rounded-md">{product.temperature}</span>
                   )}
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2">
-                    {product.country_of_origin && <div><p className="text-xs text-muted-foreground">{labels.origin}</p><p className="text-sm font-medium">{product.country_of_origin}</p></div>}
-                    {product.weight && <div><p className="text-xs text-muted-foreground">{labels.weight}</p><p className="text-sm font-medium">{product.weight}</p></div>}
-                    {product.quantity && <div><p className="text-xs text-muted-foreground">{labels.quantity}</p><p className="text-sm font-medium">{product.quantity}</p></div>}
-                    {product.storage_condition && <div><p className="text-xs text-muted-foreground">{labels.storage}</p><p className="text-sm font-medium">{product.storage_condition}</p></div>}
-                  </div>
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
+                    <div><dt className="text-xs text-muted-foreground">{labels.origin}</dt><dd className="text-sm font-medium">{product.country_of_origin || "—"}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{labels.weight}</dt><dd className="text-sm font-medium">{product.weight || "—"}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{labels.quantity}</dt><dd className="text-sm font-medium">{product.quantity || "—"}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{labels.storage}</dt><dd className="text-sm font-medium">{product.storage_condition || "—"}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{labels.temp}</dt><dd className="text-sm font-medium">{product.temperature || "—"}</dd></div>
+                  </dl>
                 </div>
                 <div className="mt-4">
                   <WhatsAppButton phone={supplier.whatsapp} message={lang === "ja" ? `${product.name}について問い合わせです。` : `I'd like to inquire about ${product.name}.`} fullWidth size="lg" />

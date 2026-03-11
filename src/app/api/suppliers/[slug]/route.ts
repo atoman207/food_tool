@@ -50,7 +50,21 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
     .select("*")
     .eq("supplier_id", supplier.id);
 
-  return NextResponse.json({ ...supplier, products: products || [] });
+  const normalisedProducts = (products || []).map((p: Record<string, unknown>) => ({
+    id: p.id,
+    supplier_id: p.supplier_id,
+    name: p.name ?? "",
+    name_en: p.name_en ?? "",
+    image: p.image ?? "",
+    moq: p.moq ?? "",
+    country_of_origin: p.country_of_origin ?? "",
+    weight: p.weight ?? "",
+    quantity: p.quantity ?? "",
+    storage_condition: p.storage_condition ?? "",
+    temperature: p.temperature ?? "",
+  }));
+
+  return NextResponse.json({ ...supplier, products: normalisedProducts });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {

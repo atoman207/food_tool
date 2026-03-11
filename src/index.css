@@ -112,9 +112,9 @@
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
   .tag-badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary;
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary;
   }
   .tag-badge-fixed {
-    @apply max-w-[6rem] overflow-hidden text-ellipsis whitespace-nowrap shrink-0;
+    @apply shrink-0;
   }
 }

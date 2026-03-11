@@ -489,27 +489,54 @@ ON CONFLICT (slug) DO UPDATE SET
   plan     = EXCLUDED.plan;
 
 -- ──────────────────────────────────────────────────────────────
--- 8. SEED — supplier products
+-- 8. SEED — supplier products (with Country of Origin, Weight, Quantity, Storage Condition, Temperature)
 -- ──────────────────────────────────────────────────────────────
-INSERT INTO public.supplier_products (supplier_id, name, image, moq)
-SELECT s.id, p.name, p.image, p.moq
+INSERT INTO public.supplier_products (supplier_id, name, name_en, image, moq, country_of_origin, weight, quantity, storage_condition, temperature)
+SELECT s.id, p.name, p.name_en, p.image, p.moq, p.country_of_origin, p.weight, p.quantity, p.storage_condition, p.temperature
 FROM (VALUES
-  ('tokyo-seafood',        'マグロ（本マグロ）',       'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=400&h=300&fit=crop', '1kg〜'),
-  ('tokyo-seafood',        'サーモン（ノルウェー産）', 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=400&h=300&fit=crop', '2kg〜'),
-  ('tokyo-seafood',        'エビ（ブラックタイガー）', 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=300&fit=crop', '1kg〜'),
-  ('green-harvest',        '有機レタスミックス',       'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop', '500g〜'),
-  ('green-harvest',        'フレッシュハーブセット',   'https://images.unsplash.com/photo-1515586000433-45406d8e6662?w=400&h=300&fit=crop', '100g〜'),
-  ('asia-meat-supply',     'A5和牛サーロイン',         'https://images.unsplash.com/photo-1615937722923-67f6deaf2cc9?w=400&h=300&fit=crop', '500g〜'),
-  ('asia-meat-supply',     'ハラールチキン',           'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&h=300&fit=crop', '2kg〜'),
-  ('sakura-beverages',     '純米大吟醸セット',         'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=300&fit=crop', '6本〜'),
-  ('pacific-dry-goods',    '有機醤油（1L）',           'https://images.unsplash.com/photo-1585672840563-f2af2ced55c9?w=400&h=300&fit=crop', '6本〜'),
-  ('pacific-dry-goods',    '信州味噌',                 'https://images.unsplash.com/photo-1614563637806-1d0e645e0940?w=400&h=300&fit=crop', '1kg〜'),
-  ('kitchen-pro-equipment','業務用冷蔵庫',             'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=400&h=300&fit=crop', '1台〜')
-) AS p(slug, name, image, moq)
+  ('tokyo-seafood',        'マグロ（本マグロ）',       'Bluefin Tuna',           'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=400&h=300&fit=crop', '1kg〜', 'Japan',           '1kg〜', '1kg per portion',  'Frozen at -18°C',     'Frozen'),
+  ('tokyo-seafood',        'サーモン（ノルウェー産）', 'Norwegian Salmon',       'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=400&h=300&fit=crop', '2kg〜', 'Norway',          '2kg〜', '2kg per fillet',    'Chilled 0-4°C',      'Chilled'),
+  ('tokyo-seafood',        'エビ（ブラックタイガー）', 'Black Tiger Shrimp',     'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=300&fit=crop', '1kg〜', 'Thailand',         '1kg〜', '1kg per box',       'Frozen at -18°C',     'Frozen'),
+  ('green-harvest',        '有機レタスミックス',       'Organic Lettuce Mix',    'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop', '500g〜', 'Singapore',       '500g〜', '500g per bag',      'Refrigerated 2-5°C', 'Fresh'),
+  ('green-harvest',        'フレッシュハーブセット',   'Fresh Herb Set',         'https://images.unsplash.com/photo-1515586000433-45406d8e6662?w=400&h=300&fit=crop', '100g〜', 'Singapore',       '100g〜', '100g per bunch',    'Refrigerated 2-5°C', 'Fresh'),
+  ('asia-meat-supply',     'A5和牛サーロイン',         'A5 Wagyu Sirloin',       'https://images.unsplash.com/photo-1615937722923-67f6deaf2cc9?w=400&h=300&fit=crop', '500g〜', 'Japan',           '500g〜', '500g per cut',      'Frozen at -18°C',     'Frozen'),
+  ('asia-meat-supply',     'ハラールチキン',           'Halal Chicken',          'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&h=300&fit=crop', '2kg〜', 'Malaysia',         '2kg〜', '2kg per pack',      'Chilled 0-4°C',      'Chilled'),
+  ('sakura-beverages',     '純米大吟醸セット',         'Junmai Daiginjo Set',    'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=300&fit=crop', '6本〜', 'Japan',           '720ml×6', '6 bottles',         'Room temperature',   'Fresh'),
+  ('pacific-dry-goods',    '有機醤油（1L）',           'Organic Soy Sauce (1L)', 'https://images.unsplash.com/photo-1585672840563-f2af2ced55c9?w=400&h=300&fit=crop', '6本〜', 'Japan',           '1L', '6 bottles',          'Room temperature',   'Fresh'),
+  ('pacific-dry-goods',    '信州味噌',                 'Shinshu Miso',           'https://images.unsplash.com/photo-1614563637806-1d0e645e0940?w=400&h=300&fit=crop', '1kg〜', 'Japan',           '1kg', '1kg per tub',       'Refrigerated after opening', 'Fresh'),
+  ('kitchen-pro-equipment','業務用冷蔵庫',             'Commercial Refrigerator','https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=400&h=300&fit=crop', '1台〜', 'Singapore',       'N/A', '1 unit',            'Indoor installation', 'Chilled')
+) AS p(slug, name, name_en, image, moq, country_of_origin, weight, quantity, storage_condition, temperature)
 JOIN public.suppliers s ON s.slug = p.slug
 WHERE NOT EXISTS (
   SELECT 1 FROM public.supplier_products sp WHERE sp.supplier_id = s.id AND sp.name = p.name
 );
+
+-- Backfill existing supplier_products rows with product details (for DBs that already had old seed data)
+UPDATE public.supplier_products sp SET
+  name_en = v.name_en,
+  country_of_origin = v.country_of_origin,
+  weight = v.weight,
+  quantity = v.quantity,
+  storage_condition = v.storage_condition,
+  temperature = v.temperature
+FROM (
+  SELECT s.id AS supplier_id, p.name, p.name_en, p.country_of_origin, p.weight, p.quantity, p.storage_condition, p.temperature
+  FROM (VALUES
+    ('tokyo-seafood',        'マグロ（本マグロ）',       'Bluefin Tuna',           'Japan',           '1kg〜', '1kg per portion',  'Frozen at -18°C',     'Frozen'),
+    ('tokyo-seafood',        'サーモン（ノルウェー産）', 'Norwegian Salmon',       'Norway',          '2kg〜', '2kg per fillet',    'Chilled 0-4°C',      'Chilled'),
+    ('tokyo-seafood',        'エビ（ブラックタイガー）', 'Black Tiger Shrimp',     'Thailand',         '1kg〜', '1kg per box',       'Frozen at -18°C',     'Frozen'),
+    ('green-harvest',        '有機レタスミックス',       'Organic Lettuce Mix',    'Singapore',       '500g〜', '500g per bag',      'Refrigerated 2-5°C', 'Fresh'),
+    ('green-harvest',        'フレッシュハーブセット',   'Fresh Herb Set',         'Singapore',       '100g〜', '100g per bunch',    'Refrigerated 2-5°C', 'Fresh'),
+    ('asia-meat-supply',     'A5和牛サーロイン',         'A5 Wagyu Sirloin',       'Japan',           '500g〜', '500g per cut',      'Frozen at -18°C',     'Frozen'),
+    ('asia-meat-supply',     'ハラールチキン',           'Halal Chicken',          'Malaysia',         '2kg〜', '2kg per pack',      'Chilled 0-4°C',      'Chilled'),
+    ('sakura-beverages',     '純米大吟醸セット',         'Junmai Daiginjo Set',    'Japan',           '720ml×6', '6 bottles',         'Room temperature',   'Fresh'),
+    ('pacific-dry-goods',    '有機醤油（1L）',           'Organic Soy Sauce (1L)', 'Japan',           '1L', '6 bottles',          'Room temperature',   'Fresh'),
+    ('pacific-dry-goods',    '信州味噌',                 'Shinshu Miso',           'Japan',           '1kg', '1kg per tub',       'Refrigerated after opening', 'Fresh'),
+    ('kitchen-pro-equipment','業務用冷蔵庫',             'Commercial Refrigerator','Singapore',       'N/A', '1 unit',            'Indoor installation', 'Chilled')
+  ) AS p(slug, name, name_en, country_of_origin, weight, quantity, storage_condition, temperature)
+  JOIN public.suppliers s ON s.slug = p.slug
+) v
+WHERE sp.supplier_id = v.supplier_id AND sp.name = v.name;
 
 -- ──────────────────────────────────────────────────────────────
 -- 9. SEED — marketplace items (~30 items, bilingual EN/JA)

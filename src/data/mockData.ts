@@ -21,8 +21,14 @@ export interface Supplier {
 export interface Product {
   id: string;
   name: string;
+  name_en?: string;
   image: string;
   moq: string;
+  country_of_origin?: string;
+  weight?: string;
+  quantity?: string;
+  storage_condition?: string;
+  temperature?: string;
 }
 
 export interface MarketplaceItem {
@@ -86,9 +92,9 @@ export const suppliers: Supplier[] = [
     whatsapp: '6512345678',
     views: 1250,
     products: [
-      { id: 'p1', name: 'マグロ（本マグロ）', image: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=400&h=300&fit=crop', moq: '1kg〜' },
-      { id: 'p2', name: 'サーモン（ノルウェー産）', image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=400&h=300&fit=crop', moq: '2kg〜' },
-      { id: 'p3', name: 'エビ（ブラックタイガー）', image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=300&fit=crop', moq: '1kg〜' },
+      { id: 'p1', name: 'マグロ（本マグロ）', name_en: 'Bluefin Tuna', image: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=400&h=300&fit=crop', moq: '1kg〜', country_of_origin: 'Japan', weight: '1kg〜', quantity: '1kg per portion', storage_condition: 'Frozen at -18°C', temperature: 'Frozen' },
+      { id: 'p2', name: 'サーモン（ノルウェー産）', name_en: 'Norwegian Salmon', image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=400&h=300&fit=crop', moq: '2kg〜', country_of_origin: 'Norway', weight: '2kg〜', quantity: '2kg per fillet', storage_condition: 'Chilled 0-4°C', temperature: 'Chilled' },
+      { id: 'p3', name: 'エビ（ブラックタイガー）', name_en: 'Black Tiger Shrimp', image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=300&fit=crop', moq: '1kg〜', country_of_origin: 'Thailand', weight: '1kg〜', quantity: '1kg per box', storage_condition: 'Frozen at -18°C', temperature: 'Frozen' },
     ],
     certifications: ['HACCP', 'ISO 22000', 'ハラール認証'],
     about: '2005年創業。シンガポールの日本料理店を中心に、最高品質の鮮魚を毎日お届けしています。築地市場との直接取引により、常に新鮮な商品をご提供いたします。',
@@ -109,8 +115,8 @@ export const suppliers: Supplier[] = [
     whatsapp: '6523456789',
     views: 980,
     products: [
-      { id: 'p4', name: '有機レタスミックス', image: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop', moq: '500g〜' },
-      { id: 'p5', name: 'フレッシュハーブセット', image: 'https://images.unsplash.com/photo-1515586000433-45406d8e6662?w=400&h=300&fit=crop', moq: '100g〜' },
+      { id: 'p4', name: '有機レタスミックス', name_en: 'Organic Lettuce Mix', image: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop', moq: '500g〜', country_of_origin: 'Singapore', weight: '500g〜', quantity: '500g per bag', storage_condition: 'Refrigerated 2-5°C', temperature: 'Fresh' },
+      { id: 'p5', name: 'フレッシュハーブセット', name_en: 'Fresh Herb Set', image: 'https://images.unsplash.com/photo-1515586000433-45406d8e6662?w=400&h=300&fit=crop', moq: '100g〜', country_of_origin: 'Singapore', weight: '100g〜', quantity: '100g per bunch', storage_condition: 'Refrigerated 2-5°C', temperature: 'Fresh' },
     ],
     certifications: ['有機JAS', 'GlobalGAP'],
     about: 'シンガポール北部の自社農園で栽培したオーガニック野菜を、レストランやカフェに直接お届けしています。',
@@ -131,8 +137,8 @@ export const suppliers: Supplier[] = [
     whatsapp: '6534567890',
     views: 1500,
     products: [
-      { id: 'p6', name: 'A5和牛サーロイン', image: 'https://images.unsplash.com/photo-1615937722923-67f6deaf2cc9?w=400&h=300&fit=crop', moq: '500g〜' },
-      { id: 'p7', name: 'ハラールチキン', image: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&h=300&fit=crop', moq: '2kg〜' },
+      { id: 'p6', name: 'A5和牛サーロイン', name_en: 'A5 Wagyu Sirloin', image: 'https://images.unsplash.com/photo-1615937722923-67f6deaf2cc9?w=400&h=300&fit=crop', moq: '500g〜', country_of_origin: 'Japan', weight: '500g〜', quantity: '500g per cut', storage_condition: 'Frozen at -18°C', temperature: 'Frozen' },
+      { id: 'p7', name: 'ハラールチキン', name_en: 'Halal Chicken', image: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&h=300&fit=crop', moq: '2kg〜', country_of_origin: 'Malaysia', weight: '2kg〜', quantity: '2kg per pack', storage_condition: 'Chilled 0-4°C', temperature: 'Chilled' },
     ],
     certifications: ['ハラール認証', 'HACCP'],
     about: 'アジア各国から厳選した肉類を、シンガポール全土のレストランにお届けしています。ハラール認証取得済み。',
@@ -153,7 +159,7 @@ export const suppliers: Supplier[] = [
     whatsapp: '6545678901',
     views: 870,
     products: [
-      { id: 'p8', name: '純米大吟醸セット', image: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=300&fit=crop', moq: '6本〜' },
+      { id: 'p8', name: '純米大吟醸セット', name_en: 'Junmai Daiginjo Set', image: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=300&fit=crop', moq: '6本〜', country_of_origin: 'Japan', weight: '720ml×6', quantity: '6 bottles', storage_condition: 'Room temperature', temperature: 'Fresh' },
     ],
     certifications: ['酒類販売免許'],
     about: '日本全国の蔵元と直接取引し、シンガポールの日本料理店に最高品質の日本酒をお届けしています。',
@@ -174,8 +180,8 @@ export const suppliers: Supplier[] = [
     whatsapp: '6556789012',
     views: 720,
     products: [
-      { id: 'p9', name: '有機醤油（1L）', image: 'https://images.unsplash.com/photo-1585672840563-f2af2ced55c9?w=400&h=300&fit=crop', moq: '6本〜' },
-      { id: 'p10', name: '信州味噌', image: 'https://images.unsplash.com/photo-1614563637806-1d0e645e0940?w=400&h=300&fit=crop', moq: '1kg〜' },
+      { id: 'p9', name: '有機醤油（1L）', name_en: 'Organic Soy Sauce (1L)', image: 'https://images.unsplash.com/photo-1585672840563-f2af2ced55c9?w=400&h=300&fit=crop', moq: '6本〜', country_of_origin: 'Japan', weight: '1L', quantity: '6 bottles', storage_condition: 'Room temperature', temperature: 'Fresh' },
+      { id: 'p10', name: '信州味噌', name_en: 'Shinshu Miso', image: 'https://images.unsplash.com/photo-1614563637806-1d0e645e0940?w=400&h=300&fit=crop', moq: '1kg〜', country_of_origin: 'Japan', weight: '1kg', quantity: '1kg per tub', storage_condition: 'Refrigerated after opening', temperature: 'Fresh' },
     ],
     certifications: ['食品衛生管理者'],
     about: '日本の伝統的な調味料と乾物を専門に取り扱う卸売業者です。シンガポール在住の日本人シェフに愛用されています。',
@@ -196,7 +202,7 @@ export const suppliers: Supplier[] = [
     whatsapp: '6567890123',
     views: 650,
     products: [
-      { id: 'p11', name: '業務用冷蔵庫', image: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=400&h=300&fit=crop', moq: '1台〜' },
+      { id: 'p11', name: '業務用冷蔵庫', name_en: 'Commercial Refrigerator', image: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=400&h=300&fit=crop', moq: '1台〜', country_of_origin: 'Singapore', weight: 'N/A', quantity: '1 unit', storage_condition: 'Indoor installation', temperature: 'Chilled' },
     ],
     certifications: ['ISO 9001'],
     about: 'シンガポール全土のレストラン・ホテルに業務用厨房機器を提供しています。設置からアフターメンテナンスまで一貫サポート。',
