@@ -45,7 +45,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
     ]);
   }
 
-  const { data: products } = await supabase
+  const { data: products } = await (admin ?? supabase)
     .from("supplier_products")
     .select("*")
     .eq("supplier_id", supplier.id);
