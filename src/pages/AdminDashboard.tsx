@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import {
   Store, ShoppingBag, CheckCircle, XCircle, Plus, Trash2, Edit2, Link2,
-  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink, FileText, Palette
+  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink, FileText, Palette, Users
 } from "lucide-react";
 import { FONT_OPTIONS, COLOR_OPTIONS, applyTheme } from "@/components/ThemeProvider";
 import {
@@ -21,6 +21,7 @@ const AdminDashboard = () => {
 
   const adminTabs = [
     { id: "suppliers",  label: t.admin.tabSuppliers,  icon: Store },
+    { id: "users",      label: t.admin.tabUsers,      icon: Users },
     { id: "approvals",  label: t.admin.tabApprovals,  icon: CheckCircle },
     { id: "marketplace", label: t.admin.tabMarketplace, icon: ShoppingBag },
     { id: "news",       label: t.admin.tabNews,       icon: Newspaper },
@@ -82,6 +83,7 @@ const AdminDashboard = () => {
             </div>
 
             {activeTab === "suppliers" && <SupplierManager />}
+            {activeTab === "users" && <UsersManager />}
             {activeTab === "approvals" && <ApprovalQueue />}
             {activeTab === "marketplace" && <MarketplaceManager />}
             {activeTab === "news" && <NewsManager />}
@@ -398,6 +400,172 @@ function SupplierManager() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function UsersManager() {
+  const { t, lang } = useTranslation();
+  const [users, setUsers] = useState<any[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addForm, setAddForm] = useState({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "" });
+  const [addError, setAddError] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", username: "", role: "user", whatsapp: "", company: "", banned: false, avatar_url: "" });
+
+  useEffect(() => { fetchUsers(); }, []);
+
+  const fetchUsers = async () => {
+    try { const res = await fetch("/api/users"); const data = await res.json(); setUsers(Array.isArray(data) ? data : []); }
+    catch { setUsers([]); }
+  };
+
+  const clearForm = () => {
+    setForm({ name: "", email: "", username: "", role: "user", whatsapp: "", company: "", banned: false, avatar_url: "" });
+    setEditingId(null);
+  };
+
+  const handleEdit = (u: any) => {
+    setForm({ name: u.name ?? "", email: u.email ?? "", username: u.username ?? "", role: u.role ?? "user", whatsapp: u.whatsapp ?? "", company: u.company ?? "", banned: !!u.banned, avatar_url: u.avatar_url ?? "" });
+    setEditingId(u.id);
+  };
+
+  const handleSave = async () => {
+    if (!editingId) return;
+    const res = await fetch(`/api/users/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+    if (!res.ok) { const err = await res.json().catch(() => ({})); alert(err?.error ?? res.statusText); return; }
+    clearForm(); fetchUsers();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(lang === "ja" ? "このユーザーを完全に削除しますか？" : "Delete this user permanently?")) return;
+    const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+    if (!res.ok) { const err = await res.json().catch(() => ({})); alert(err?.error ?? res.statusText); return; }
+    if (editingId === id) clearForm(); fetchUsers();
+  };
+
+  const handleAddUser = async () => {
+    setAddError("");
+    if (!(addForm.name || "").trim() || !(addForm.email || "").trim() || !(addForm.username || "").trim() || (addForm.password || "").length < 8) {
+      setAddError(lang === "ja" ? "必須項目を入力してください（パスワードは8文字以上）" : "All fields required. Password must be 8+ characters."); return;
+    }
+    setAddLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(addForm) });
+      const data = await res.json();
+      if (!res.ok || data.error) { setAddError(data.error ?? res.statusText); setAddLoading(false); return; }
+      setShowAddForm(false); setAddForm({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "" }); fetchUsers();
+    } catch { setAddError(lang === "ja" ? "ネットワークエラー" : "Network error."); }
+    finally { setAddLoading(false); }
+  };
+
+  const formatDate = (s: string) => { try { return new Date(s).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG", { year: "numeric", month: "short", day: "numeric" }); } catch { return s || "—"; } };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold">{t.admin.usersManagement}</h2>
+        <Button size="sm" className="rounded-xl gap-1" onClick={() => { setShowAddForm((v) => !v); setAddError(""); }}>
+          <Plus className="h-4 w-4" /> {showAddForm ? t.admin.close : t.admin.add}
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground mb-6">{t.admin.usersManagementDesc}</p>
+
+      {showAddForm && (
+        <div className="bg-muted/50 border rounded-xl p-5 mb-6 space-y-4">
+          <h3 className="font-semibold">{t.admin.addUser}</h3>
+          {addError && <div className="text-sm text-destructive">{addError}</div>}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <InputField label={t.admin.userName} value={addForm.name} onChange={(v) => setAddForm((p) => ({ ...p, name: v }))} required />
+            <InputField label={t.admin.userEmail} value={addForm.email} onChange={(v) => setAddForm((p) => ({ ...p, email: v }))} required />
+            <InputField label={t.admin.userUsername} value={addForm.username} onChange={(v) => setAddForm((p) => ({ ...p, username: v }))} required />
+            <InputField label={t.admin.userPassword} value={addForm.password} onChange={(v) => setAddForm((p) => ({ ...p, password: v }))} required placeholder="8+ characters" />
+            <InputField label={t.admin.userCompany} value={addForm.company} onChange={(v) => setAddForm((p) => ({ ...p, company: v }))} />
+            <InputField label={t.admin.userWhatsApp} value={addForm.whatsapp} onChange={(v) => setAddForm((p) => ({ ...p, whatsapp: v }))} />
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium">{t.admin.userRole}</label>
+              <select value={addForm.role} onChange={(e) => setAddForm((p) => ({ ...p, role: e.target.value }))} className="h-11 px-4 rounded-lg border bg-background text-sm">
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button className="rounded-xl" onClick={handleAddUser} disabled={addLoading}>{addLoading ? (lang === "ja" ? "作成中..." : "Creating...") : t.admin.create}</Button>
+            <Button variant="outline" className="rounded-xl" onClick={() => { setShowAddForm(false); setAddError(""); }}>{t.admin.close}</Button>
+          </div>
+        </div>
+      )}
+
+      {editingId && (
+        <div className="bg-muted/50 border rounded-xl p-5 mb-6 space-y-4">
+          <h3 className="font-semibold">{t.admin.edit}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <InputField label={t.admin.userName} value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} required />
+            <InputField label={t.admin.userEmail} value={form.email} onChange={(v) => setForm((p) => ({ ...p, email: v }))} required />
+            <InputField label={t.admin.userUsername} value={form.username} onChange={(v) => setForm((p) => ({ ...p, username: v }))} />
+            <InputField label={t.admin.userWhatsApp} value={form.whatsapp} onChange={(v) => setForm((p) => ({ ...p, whatsapp: v }))} />
+            <InputField label={t.admin.userCompany} value={form.company} onChange={(v) => setForm((p) => ({ ...p, company: v }))} />
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium">{t.admin.userRole}</label>
+              <select value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))} className="h-11 px-4 rounded-lg border bg-background text-sm">
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <input type="checkbox" id="user-banned" checked={form.banned} onChange={(e) => setForm((p) => ({ ...p, banned: e.target.checked }))} className="accent-primary" />
+              <label htmlFor="user-banned" className="text-sm font-medium">{t.admin.userBanned}</label>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleSave} className="rounded-xl">{t.admin.save}</Button>
+            <Button variant="outline" onClick={clearForm} className="rounded-xl">{t.admin.close}</Button>
+          </div>
+        </div>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left py-3 px-2 font-semibold">{t.admin.userName}</th>
+              <th className="text-left py-3 px-2 font-semibold">{t.admin.userEmail}</th>
+              <th className="text-left py-3 px-2 font-semibold hidden sm:table-cell">{t.admin.userUsername}</th>
+              <th className="text-left py-3 px-2 font-semibold hidden md:table-cell">{t.admin.userRole}</th>
+              <th className="text-left py-3 px-2 font-semibold hidden md:table-cell">{t.admin.userRegisteredAt}</th>
+              <th className="w-20 py-3 px-2" />
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((u: any) => (
+              <tr key={u.id} className={`border-b ${u.banned ? "bg-muted/50 opacity-75" : ""}`}>
+                <td className="py-3 px-2">
+                  <div className="flex items-center gap-2">
+                    {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">{(u.name || "?").slice(0, 1)}</div>}
+                    <span className="font-medium">{u.name || "—"}</span>
+                  </div>
+                </td>
+                <td className="py-3 px-2 break-all text-sm">{u.email || "—"}</td>
+                <td className="py-3 px-2 hidden sm:table-cell">{u.username || "—"}</td>
+                <td className="py-3 px-2 hidden md:table-cell">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{u.role}</span>
+                  {u.banned && <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-destructive/10 text-destructive">banned</span>}
+                </td>
+                <td className="py-3 px-2 hidden md:table-cell text-muted-foreground text-xs">{formatDate(u.created_at)}</td>
+                <td className="py-3 px-2">
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" className="rounded-lg h-8 w-8 p-0" onClick={() => handleEdit(u)}><Edit2 className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="sm" className="rounded-lg h-8 w-8 p-0 text-destructive" onClick={() => handleDelete(u.id)}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {users.length === 0 && <p className="text-sm text-muted-foreground py-8 text-center">{t.admin.noUsers}</p>}
     </div>
   );
 }

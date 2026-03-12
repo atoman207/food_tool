@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/contexts/LanguageContext";
-import { Mail, RefreshCw, UtensilsCrossed } from "lucide-react";
+import { Mail, RefreshCw, UtensilsCrossed, KeyRound } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
 const Login = () => {
@@ -139,7 +139,14 @@ const Login = () => {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
+          <div className="mt-4 text-center">
+            <Link href="/reset-password" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
+              <KeyRound className="h-3.5 w-3.5" />
+              {t.login.forgotPassword}
+            </Link>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-4">
             {t.login.noAccount}{" "}
             <Link href="/register" className="text-primary hover:underline font-medium">
               {t.login.register}
