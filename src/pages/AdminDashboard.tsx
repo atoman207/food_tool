@@ -482,7 +482,7 @@ function ProductManager({ slug }: { slug: string }) {
       </div>
 
       {/* Row 2: Image (full width on mobile) */}
-      <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.productImageHint ?? t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} cropTo43 />
+      <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.productImageHint ?? t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
 
       {/* Row 3: Origin + Weight + Quantity + MOQ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -2031,39 +2031,6 @@ function LinksManager() {
   );
 }
 
-/** Resize and center-crop image to 4:3 (e.g. 1200×900) to avoid display cropping. Returns blob or null. */
-async function resizeTo43(file: File, maxW = 1200, maxH = 900): Promise<Blob | null> {
-  if (!file.type.startsWith("image/")) return null;
-  return new Promise((resolve) => {
-    const img = document.createElement("img");
-    img.onload = () => {
-      const w = img.naturalWidth;
-      const h = img.naturalHeight;
-      const targetRatio = 4 / 3;
-      const srcRatio = w / h;
-      let sX = 0, sY = 0, sW = w, sH = h;
-      if (srcRatio > targetRatio) {
-        sW = h * targetRatio;
-        sX = (w - sW) / 2;
-      } else {
-        sH = w / targetRatio;
-        sY = (h - sH) / 2;
-      }
-      const scale = Math.min(1, maxW / sW, maxH / sH);
-      const outW = Math.round(sW * scale);
-      const outH = Math.round(sH * scale);
-      const canvas = document.createElement("canvas");
-      canvas.width = outW;
-      canvas.height = outH;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) { resolve(null); return; }
-      ctx.drawImage(img, sX, sY, sW, sH, 0, 0, outW, outH);
-      canvas.toBlob((blob) => resolve(blob), file.type, 0.9);
-    };
-    img.onerror = () => resolve(null);
-    img.src = URL.createObjectURL(file);
-  });
-}
 
 function ImageField({
   label,
@@ -2071,14 +2038,12 @@ function ImageField({
   onChange,
   hint,
   uploadLabel,
-  cropTo43,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   hint: string;
   uploadLabel: string;
-  cropTo43?: boolean;
 }) {
   return (
     <div>
@@ -2091,13 +2056,8 @@ function ImageField({
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            let toUpload: Blob | File = file;
-            if (cropTo43 && file.type.startsWith("image/") && !file.type.includes("gif")) {
-              const resized = await resizeTo43(file);
-              if (resized) toUpload = new File([resized], file.name, { type: file.type });
-            }
             const fd = new FormData();
-            fd.append("file", toUpload);
+            fd.append("file", file);
             const res = await fetch("/api/upload", { method: "POST", body: fd });
             const j = await res.json();
             if (j?.url) onChange(j.url);

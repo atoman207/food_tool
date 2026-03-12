@@ -181,9 +181,9 @@ const SupplierDetail = () => {
               )}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                 {products.map((p: any) => (
-                  <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border overflow-hidden text-left active:opacity-80 w-full">
+                  <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border text-left active:opacity-80 w-full">
                     {p.image
-                      ? <div className="aspect-[4/3] overflow-hidden w-full"><img src={p.image} alt={p.name} className="w-full h-full object-cover" /></div>
+                      ? <img src={p.image} alt={p.name} className="w-full h-auto block" />
                       : <div className="aspect-[4/3] bg-muted flex items-center justify-center"><span className="text-muted-foreground text-xs">No image</span></div>
                     }
                     <div className="p-2 sm:p-3">
@@ -230,7 +230,9 @@ const SupplierDetail = () => {
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center overflow-hidden p-0 sm:p-4">
             <div className="absolute inset-0 bg-foreground/40" onClick={() => setSelectedProduct(null)} />
             <div className="relative bg-background rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
-              {product.image && <img src={product.image} alt={product.name} className="w-full aspect-video object-cover" />}
+              {product.image && (
+                <img src={product.image} alt={product.name} className="w-full h-auto block" />
+              )}
               <div className="p-4">
                 <h3 className="text-base font-bold">{product.name}</h3>
                 {product.name_en && <p className="text-sm text-muted-foreground">{product.name_en}</p>}
