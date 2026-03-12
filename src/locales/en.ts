@@ -536,7 +536,7 @@ const en = {
     pageTitle: "Why Choose Our Platform",
     pageSubtitle: "Singapore's most trusted F&B supplier network",
     heroTitle: "Connect. Trade. Grow.",
-    heroSub: "The all-in-one platform for Singapore's F&B industry — find suppliers, trade equipment, and grow your business.",
+    heroSub: "The all-in-one platform for Singapore's F&B industry — find suppliers, trade equipment, and grow your business.\nFind the best.",
     feature1Title: "Find Trusted Suppliers",
     feature1Desc: "Browse hundreds of verified F&B suppliers across Singapore. Filter by category, area, and certifications to find exactly what you need.",
     feature2Title: "Buy & Sell Equipment",

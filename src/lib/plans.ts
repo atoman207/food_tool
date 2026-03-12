@@ -48,8 +48,6 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     showWhatsApp: true,
     maxProducts: 12,
     cardImageSize: "w-20 h-20",
-    featuredLabelEn: "Featured",
-    featuredLabelJa: "おすすめ",
   },
   standard: {
     tier: "standard",

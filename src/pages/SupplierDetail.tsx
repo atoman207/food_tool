@@ -181,21 +181,21 @@ const SupplierDetail = () => {
               )}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                 {products.map((p: any) => (
-                  <button key={p.id} onClick={() => setSelectedProduct(p.id)} className="bg-card border text-left active:opacity-80 w-full">
+                  <div key={p.id} role="button" tabIndex={0} onClick={() => setSelectedProduct(p.id)} onKeyDown={(e) => e.key === "Enter" && setSelectedProduct(p.id)} className="bg-card border text-left active:opacity-80 w-full cursor-pointer select-none">
                     {p.image
                       ? <img src={p.image} alt={p.name} className="w-full h-auto block" />
                       : <div className="aspect-[4/3] bg-muted flex items-center justify-center"><span className="text-muted-foreground text-xs">No image</span></div>
                     }
                     <div className="p-2 sm:p-3">
-                      <p className="text-xs sm:text-sm font-semibold leading-snug break-words">{p.name}</p>
-                      {p.name_en && <p className="text-xs text-muted-foreground break-words">{p.name_en}</p>}
-                      {p.temperature && <p className="text-xs text-primary font-medium mt-0.5">{p.temperature}</p>}
-                      {p.country_of_origin && <p className="text-xs text-muted-foreground">{labels.origin}: {p.country_of_origin}</p>}
-                      {p.weight && <p className="text-xs text-muted-foreground">{labels.weight}: {p.weight}</p>}
-                      {p.quantity && <p className="text-xs text-muted-foreground">{labels.quantity}: {p.quantity}</p>}
-                      {p.storage_condition && <p className="text-xs text-muted-foreground">{labels.storage}: {p.storage_condition}</p>}
+                      <div className="text-xs sm:text-sm font-semibold leading-snug break-words">{p.name}</div>
+                      {p.name_en && <div className="text-xs text-muted-foreground break-words">{p.name_en}</div>}
+                      {p.temperature && <div className="text-xs text-primary font-medium mt-0.5">{p.temperature}</div>}
+                      {p.country_of_origin && <div className="text-xs text-muted-foreground">{labels.origin}: {p.country_of_origin}</div>}
+                      {p.weight && <div className="text-xs text-muted-foreground">{labels.weight}: {p.weight}</div>}
+                      {p.quantity && <div className="text-xs text-muted-foreground">{labels.quantity}: {p.quantity}</div>}
+                      {p.storage_condition && <div className="text-xs text-muted-foreground">{labels.storage}: {p.storage_condition}</div>}
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>

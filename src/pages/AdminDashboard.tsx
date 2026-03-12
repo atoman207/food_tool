@@ -225,7 +225,14 @@ function SupplierManager() {
 
   const handleDelete = async (slug: string) => {
     if (!confirm(t.admin.deleteSupplierConfirm)) return;
-    await fetch(`/api/suppliers/${slug}`, { method: "DELETE" });
+    const res = await fetch(`/api/suppliers/${encodeURIComponent(slug)}`, { method: "DELETE" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(lang === "ja"
+        ? `削除に失敗しました。\n${err?.error ?? res.statusText}`
+        : `Delete failed.\n${err?.error ?? res.statusText}`);
+      return;
+    }
     fetchSuppliers();
   };
 
@@ -409,7 +416,7 @@ function ProductManager({ slug }: { slug: string }) {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch(`/api/suppliers/${slug}/products`);
+      const res = await fetch(`/api/suppliers/${encodeURIComponent(slug)}/products`);
       const data = await res.json();
       setProducts(Array.isArray(data) ? data : []);
     } catch {
@@ -442,31 +449,42 @@ function ProductManager({ slug }: { slug: string }) {
       alert(t.common.requiredField);
       return;
     }
-    if (editingId) {
-      await fetch(`/api/suppliers/${slug}/products`, {
-        method: "PUT",
+    try {
+      const method = editingId ? "PUT" : "POST";
+      const body = editingId ? { id: editingId, ...form } : form;
+      const res = await fetch(`/api/suppliers/${encodeURIComponent(slug)}/products`, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingId, ...form }),
+        body: JSON.stringify(body),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(lang === "ja"
+          ? `保存に失敗しました。\n${err?.error ?? res.statusText}`
+          : `Save failed.\n${err?.error ?? res.statusText}`);
+        return;
+      }
       clearForm();
-    } else {
-      await fetch(`/api/suppliers/${slug}/products`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      clearForm();
+      fetchProducts();
+    } catch {
+      alert(lang === "ja" ? "ネットワークエラーが発生しました。" : "Network error. Please try again.");
     }
-    fetchProducts();
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm(t.admin.deleteProductConfirm)) return;
-    await fetch(`/api/suppliers/${slug}/products`, {
+    const res = await fetch(`/api/suppliers/${encodeURIComponent(slug)}/products`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(lang === "ja"
+        ? `削除に失敗しました。\n${err?.error ?? res.statusText}`
+        : `Delete failed.\n${err?.error ?? res.statusText}`);
+      return;
+    }
     if (editingId === id) clearForm();
     fetchProducts();
   };
@@ -1165,8 +1183,8 @@ function CategoryManager() {
           <div className="flex flex-wrap gap-2">
             {categories.filter((c: any) => c.type === type).map((c: any) => (
               <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm">
-                <span className="font-medium">{c.label}</span>
-                {c.label_ja && <span className="text-muted-foreground text-xs">/ {c.label_ja}</span>}
+                <span className="font-medium">{c.label} <span className="text-[10px] font-normal text-muted-foreground">EN</span></span>
+                {c.label_ja && <span className="text-muted-foreground text-xs">/ {c.label_ja} <span className="text-[10px]">JA</span></span>}
                 <span className="text-xs text-muted-foreground">({c.value})</span>
                 <button onClick={() => handleDelete(c.id)} className="text-muted-foreground hover:text-destructive ml-1"><Trash2 className="h-3 w-3" /></button>
               </div>

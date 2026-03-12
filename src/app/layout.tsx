@@ -28,6 +28,10 @@ export const metadata: Metadata = {
     "halal supplier Singapore",
     "F&B portal",
   ],
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
   robots: { index: true, follow: true },
   openGraph: {
     title: "Singapore F&B Portal | The Kitchen Connection",
