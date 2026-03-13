@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     "F&B portal",
   ],
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+    icon: "/pabicon.png",
+    apple: "/pabicon.png",
   },
   robots: { index: true, follow: true },
   openGraph: {
