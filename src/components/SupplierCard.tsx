@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { MapPin, Crown, Star, Heart } from "lucide-react";
+import { MapPin, Crown, Star, Heart, ShieldCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useTranslation } from "@/contexts/LanguageContext";
@@ -41,13 +41,27 @@ function PlanBadge({ plan, lang }: { plan?: string | null; lang: string }) {
   const cfg = getPlanConfig(plan);
   if (cfg.tier === "basic") return null;
   const label = (lang === "ja" ? cfg.badgeLabelJa ?? cfg.labelJa : cfg.badgeLabelEn ?? cfg.labelEn);
+
+  if (cfg.tier === "premium") {
+    return (
+      <Link
+        href="/plans"
+        onClick={(e) => e.stopPropagation()}
+        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] hover:opacity-90 transition-opacity ${cfg.badgeClass}`}
+      >
+        <ShieldCheck className="h-3 w-3 text-amber-600 dark:text-amber-300" />
+        <span className="tracking-wide">{label}</span>
+      </Link>
+    );
+  }
+
   return (
     <Link
       href="/plans"
       onClick={(e) => e.stopPropagation()}
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] hover:opacity-80 transition-opacity ${cfg.badgeClass}`}
     >
-      {cfg.tier === "premium" ? <Crown className="h-2.5 w-2.5" /> : <Star className="h-2.5 w-2.5" />}
+      <Star className="h-2.5 w-2.5" />
       {label}
     </Link>
   );
@@ -103,12 +117,13 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
 
   const isList = variant === "list";
   const imageSizeClass = isList ? "w-12 h-12" : cfg.cardImageSize;
+  const logoRing = !isList && cfg.logoRingClass ? cfg.logoRingClass : "";
   const wrapperClass = `${cfg.borderClass} ${cfg.cardWrapperClass}`;
 
   const cardContent = (
     <div className={`p-2.5 sm:p-3 flex flex-col h-full min-h-0 ${isList ? "flex-row items-center gap-4" : ""}`}>
       <div className={`flex items-start gap-2.5 sm:gap-3 ${isList ? "flex-1 min-w-0 flex-row" : "mb-2 flex-shrink-0"}`}>
-        <Link href={`/suppliers/${supplier.slug}`} className={`overflow-hidden flex-shrink-0 bg-muted block ${imageSizeClass}`} tabIndex={-1} aria-hidden="true">
+        <Link href={`/suppliers/${supplier.slug}`} className={`overflow-hidden flex-shrink-0 bg-muted block rounded-lg ${imageSizeClass} ${logoRing}`} tabIndex={-1} aria-hidden="true">
           <img
             src={supplier.logo}
             alt={displayName}
@@ -168,10 +183,12 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
     </div>
   );
 
+  const cardBg = !isList && cfg.cardBgClass ? cfg.cardBgClass : "bg-card";
+
   return (
-    <div className={`group bg-card overflow-hidden shadow-card card-hover card-lift border relative flex flex-col h-full min-h-0 min-w-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
-      {cfg.tier === "premium" && !isList && (
-        <div className="h-1.5 bg-gradient-to-r from-primary/90 via-primary to-primary/90" />
+    <div className={`group ${cardBg} overflow-hidden shadow-card card-hover card-lift border relative flex flex-col h-full min-h-0 min-w-0 ${wrapperClass} ${isList ? "flex-row items-center" : ""}`}>
+      {cfg.accentBarClass && !isList && (
+        <div className={cfg.accentBarClass} />
       )}
       {cfg.featuredLabelEn && !isList && (
         <Link

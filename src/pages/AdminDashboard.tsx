@@ -1537,7 +1537,7 @@ function TermsManager() {
 function QRManager() {
   const [redirectUrl, setRedirectUrl] = useState("");
   const [saving, setSaving] = useState(false);
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   useEffect(() => {
     fetch("/api/settings?key=qr_redirect_url").then((r) => r.json()).then((d) => setRedirectUrl(d?.value || "/suppliers"));
@@ -1550,16 +1550,89 @@ function QRManager() {
     alert(t.admin.qrSaved);
   };
 
+  const presets = [
+    { value: "/suppliers", label: lang === "ja" ? "サプライヤー一覧" : "Supplier Directory" },
+    { value: "/marketplace", label: lang === "ja" ? "マーケットプレイス" : "Marketplace" },
+    { value: "/about", label: lang === "ja" ? "このサイトについて" : "About Page" },
+    { value: "/register", label: lang === "ja" ? "新規登録ページ" : "Registration Page" },
+  ];
+
   return (
     <div>
       <h2 className="text-xl font-bold mb-6">{t.admin.qrTitle}</h2>
-      <div className="bg-card border p-6 max-w-lg">
-        <p className="text-sm text-muted-foreground mb-4">
-          {t.admin.qrDescription}
-        </p>
-        <label className="text-sm font-medium block mb-1.5">{t.admin.qrRedirectLabel}</label>
-        <input value={redirectUrl} onChange={(e) => setRedirectUrl(e.target.value)} placeholder="/suppliers or https://..." className="w-full h-11 px-4 rounded-lg border bg-background text-sm mb-4" />
-        <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}><Save className="h-4 w-4" /> {saving ? t.admin.qrSaving : t.admin.qrSave}</Button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: QR Code preview + download */}
+        <div className="bg-card border rounded-xl p-6 flex flex-col items-center">
+          <h3 className="text-sm font-semibold mb-4 self-start">{t.admin.qrPreviewTitle}</h3>
+          <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
+            <img src="/QR.png" alt="QR Code" className="w-48 h-48 sm:w-56 sm:h-56 object-contain" />
+          </div>
+          <p className="text-xs text-muted-foreground text-center mb-3">
+            {t.admin.qrPointsTo}
+          </p>
+          <a
+            href="/QR.png"
+            download="TheKitchenConnection-QR.png"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+          >
+            <ExternalLink className="h-4 w-4" />
+            {t.admin.qrDownload}
+          </a>
+        </div>
+
+        {/* Right: Redirect URL settings */}
+        <div className="bg-card border rounded-xl p-6">
+          <h3 className="text-sm font-semibold mb-2">{t.admin.qrSettingsTitle}</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            {t.admin.qrDescription}
+          </p>
+
+          <label className="text-sm font-medium block mb-1.5">{t.admin.qrRedirectLabel}</label>
+          <input value={redirectUrl} onChange={(e) => setRedirectUrl(e.target.value)} placeholder="/suppliers or https://..." className="w-full h-11 px-4 rounded-lg border bg-background text-sm mb-3" />
+
+          <div className="mb-4">
+            <p className="text-xs font-medium text-muted-foreground mb-2">{t.admin.qrQuickSelect}</p>
+            <div className="flex flex-wrap gap-2">
+              {presets.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setRedirectUrl(p.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    redirectUrl === p.value
+                      ? "bg-primary/10 border-primary/40 text-primary"
+                      : "bg-muted/50 border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}>
+            <Save className="h-4 w-4" /> {saving ? t.admin.qrSaving : t.admin.qrSave}
+          </Button>
+
+          <div className="mt-5 border-t pt-4">
+            <h4 className="text-xs font-semibold mb-2">{t.admin.qrHowTitle}</h4>
+            <div className="space-y-2 text-xs text-muted-foreground">
+              <div className="flex gap-2">
+                <span className="font-bold text-primary shrink-0">1.</span>
+                <span>{t.admin.qrHow1}</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="font-bold text-primary shrink-0">2.</span>
+                <span>{t.admin.qrHow2}</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="font-bold text-primary shrink-0">3.</span>
+                <span>{t.admin.qrHow3}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

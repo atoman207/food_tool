@@ -29,6 +29,12 @@ export interface PlanConfig {
   featuredLabelEn?: string;
   /** Featured badge label shown on premium cards (Japanese) */
   featuredLabelJa?: string;
+  /** CSS class for top accent bar on card */
+  accentBarClass?: string;
+  /** CSS class for logo ring (premium glow) */
+  logoRingClass?: string;
+  /** Subtle card background class */
+  cardBgClass?: string;
 }
 
 export const PLANS: Record<PlanTier, PlanConfig> = {
@@ -40,14 +46,17 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     badgeLabelEn: "Trusted supplier",
     badgeLabelJa: "信頼できるサプライヤー",
     badgeClass:
-      "bg-primary/15 text-primary dark:text-primary border-2 border-primary/70 dark:border-primary font-bold",
-    borderClass: "border-2 border-primary/70 dark:border-primary",
-    cardWrapperClass: "shadow-xl shadow-primary/20 dark:shadow-primary/20 ring-1 ring-primary/30",
+      "premium-badge-shimmer bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/40 dark:to-amber-800/30 text-amber-800 dark:text-amber-200 border border-amber-300/80 dark:border-amber-600/60 font-bold shadow-sm",
+    borderClass: "border border-amber-300/60 dark:border-amber-600/50",
+    cardWrapperClass: "shadow-lg shadow-amber-200/30 dark:shadow-amber-900/30 ring-1 ring-amber-200/40 dark:ring-amber-700/30",
     titleClass: "text-base font-bold",
     ctaClass: "bg-primary text-primary-foreground border-primary hover:bg-primary/90 font-bold h-10 text-sm",
     showWhatsApp: true,
     maxProducts: 12,
     cardImageSize: "w-20 h-20",
+    accentBarClass: "h-1 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400",
+    logoRingClass: "ring-2 ring-amber-300/70 dark:ring-amber-600/50",
+    cardBgClass: "bg-gradient-to-b from-amber-50/40 via-card to-card dark:from-amber-950/20",
   },
   standard: {
     tier: "standard",
