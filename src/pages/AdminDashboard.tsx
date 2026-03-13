@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import {
   Store, ShoppingBag, CheckCircle, XCircle, Plus, Trash2, Edit2, Link2,
-  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink, FileText, Palette, Users
+  BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink, FileText, Palette, Users,
+  Search, Ban, UserCheck, ClipboardList,
 } from "lucide-react";
 import { FONT_OPTIONS, COLOR_OPTIONS, applyTheme } from "@/components/ThemeProvider";
 import {
@@ -13,6 +14,20 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { getSupabase } from "@/lib/supabase";
+
+/**
+ * Authenticated fetch helper: attaches the current user's Bearer token to
+ * every request so admin API routes can verify the caller's identity.
+ */
+async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const sb = getSupabase();
+  const session = sb ? (await sb.auth.getSession()).data.session : null;
+  const headers = new Headers(options.headers as HeadersInit | undefined);
+  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  if (session?.access_token) headers.set("Authorization", `Bearer ${session.access_token}`);
+  return fetch(url, { ...options, headers });
+}
 
 const AdminDashboard = () => {
   const { user, profile, loading: authLoading } = useRequireAuth(true);
@@ -33,6 +48,7 @@ const AdminDashboard = () => {
     { id: "reports",    label: t.admin.tabReports,    icon: AlertTriangle },
     { id: "analytics",  label: t.admin.tabAnalytics,  icon: BarChart3 },
     { id: "appearance", label: t.admin.tabAppearance,  icon: Palette },
+    { id: "audit-log",  label: t.admin.tabAuditLog,   icon: ClipboardList },
   ];
 
   if (authLoading || !user || profile?.role !== "admin") {
@@ -95,6 +111,7 @@ const AdminDashboard = () => {
             {activeTab === "reports" && <ReportManager />}
             {activeTab === "analytics" && <AnalyticsPanel />}
             {activeTab === "appearance" && <AppearanceManager />}
+            {activeTab === "audit-log" && <AuditLogViewer />}
           </div>
         </div>
       </div>
@@ -407,18 +424,24 @@ function SupplierManager() {
 function UsersManager() {
   const { t, lang } = useTranslation();
   const [users, setUsers] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "", avatar_url: "" });
   const [addError, setAddError] = useState("");
   const [addLoading, setAddLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", username: "", role: "user", whatsapp: "", company: "", banned: false, avatar_url: "" });
+  const [banLoading, setBanLoading] = useState<string | null>(null);
 
   useEffect(() => { fetchUsers(); }, []);
 
   const fetchUsers = async () => {
-    try { const res = await fetch("/api/users"); const data = await res.json(); setUsers(Array.isArray(data) ? data : []); }
-    catch { setUsers([]); }
+    try {
+      const res = await authFetch("/api/users");
+      if (!res.ok) { setUsers([]); return; }
+      const data = await res.json();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch { setUsers([]); }
   };
 
   const clearForm = () => {
@@ -433,16 +456,34 @@ function UsersManager() {
 
   const handleSave = async () => {
     if (!editingId) return;
-    const res = await fetch(`/api/users/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+    const res = await authFetch(`/api/users/${editingId}`, { method: "PUT", body: JSON.stringify(form) });
     if (!res.ok) { const err = await res.json().catch(() => ({})); alert(err?.error ?? res.statusText); return; }
     clearForm(); fetchUsers();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(lang === "ja" ? "このユーザーを完全に削除しますか？" : "Delete this user permanently?")) return;
-    const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+  const handleBanToggle = async (u: any) => {
+    const newBanned = !u.banned;
+    const msg = newBanned
+      ? (lang === "ja" ? `「${u.name || u.email}」を停止しますか？` : `Suspend "${u.name || u.email}"?`)
+      : (lang === "ja" ? `「${u.name || u.email}」の停止を解除しますか？` : `Reactivate "${u.name || u.email}"?`);
+    if (!confirm(msg)) return;
+    setBanLoading(u.id);
+    try {
+      const res = await authFetch(`/api/users/${u.id}`, { method: "PUT", body: JSON.stringify({ banned: newBanned }) });
+      if (!res.ok) { const err = await res.json().catch(() => ({})); alert(err?.error ?? res.statusText); }
+      else fetchUsers();
+    } finally { setBanLoading(null); }
+  };
+
+  const handleDelete = async (id: string, label?: string) => {
+    const msg = lang === "ja"
+      ? `「${label || id}」を完全に削除しますか？\nこの操作は取り消せません。`
+      : `Permanently delete "${label || id}"?\nThis cannot be undone.`;
+    if (!confirm(msg)) return;
+    const res = await authFetch(`/api/users/${id}`, { method: "DELETE" });
     if (!res.ok) { const err = await res.json().catch(() => ({})); alert(err?.error ?? res.statusText); return; }
-    if (editingId === id) clearForm(); fetchUsers();
+    if (editingId === id) clearForm();
+    fetchUsers();
   };
 
   const handleAddUser = async () => {
@@ -452,30 +493,65 @@ function UsersManager() {
     }
     setAddLoading(true);
     try {
-      const res = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(addForm) });
+      const res = await authFetch("/api/auth/register", { method: "POST", body: JSON.stringify(addForm) });
       const data = await res.json();
-      if (!res.ok || data.error) { setAddError(data.error ?? res.statusText); setAddLoading(false); return; }
-      setShowAddForm(false); setAddForm({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "", avatar_url: "" }); fetchUsers();
+      if (!res.ok || data.error) { setAddError(data.error ?? res.statusText); return; }
+      setShowAddForm(false);
+      setAddForm({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "", avatar_url: "" });
+      fetchUsers();
     } catch { setAddError(lang === "ja" ? "ネットワークエラー" : "Network error."); }
     finally { setAddLoading(false); }
   };
 
-  const formatDate = (s: string) => { try { return new Date(s).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG", { year: "numeric", month: "short", day: "numeric" }); } catch { return s || "—"; } };
+  const formatDate = (s: string) => {
+    try { return new Date(s).toLocaleDateString(lang === "ja" ? "ja-JP" : "en-SG", { year: "numeric", month: "short", day: "numeric" }); }
+    catch { return s || "—"; }
+  };
+
+  const filteredUsers = users.filter((u) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      (u.name || "").toLowerCase().includes(q) ||
+      (u.email || "").toLowerCase().includes(q) ||
+      (u.username || "").toLowerCase().includes(q) ||
+      (u.company || "").toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">{t.admin.usersManagement}</h2>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold">{t.admin.usersManagement}</h2>
+          <span className="text-xs text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full font-medium">
+            {users.length}
+          </span>
+        </div>
         <Button size="sm" className="rounded-xl gap-1" onClick={() => { setShowAddForm((v) => !v); setAddError(""); }}>
           <Plus className="h-4 w-4" /> {showAddForm ? t.admin.close : t.admin.add}
         </Button>
       </div>
-      <p className="text-sm text-muted-foreground mb-6">{t.admin.usersManagementDesc}</p>
+      <p className="text-sm text-muted-foreground mb-4">{t.admin.usersManagementDesc}</p>
 
+      {/* Search */}
+      <div className="relative mb-5">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={lang === "ja" ? "名前・メール・ユーザー名で検索…" : "Search by name, email, or username…"}
+          className="w-full h-10 pl-9 pr-4 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+        />
+      </div>
+
+      {/* Add user form */}
       {showAddForm && (
         <div className="bg-muted/50 border rounded-xl p-5 mb-6 space-y-4">
           <h3 className="font-semibold">{t.admin.addUser}</h3>
-          {addError && <div className="text-sm text-destructive">{addError}</div>}
+          {addError && <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg">{addError}</div>}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <InputField label={t.admin.userName} value={addForm.name} onChange={(v) => setAddForm((p) => ({ ...p, name: v }))} required />
             <InputField label={t.admin.userEmail} value={addForm.email} onChange={(v) => setAddForm((p) => ({ ...p, email: v }))} required />
@@ -501,6 +577,7 @@ function UsersManager() {
         </div>
       )}
 
+      {/* Edit user form */}
       {editingId && (
         <div className="bg-muted/50 border rounded-xl p-5 mb-6 space-y-4">
           <h3 className="font-semibold">{t.admin.edit}</h3>
@@ -532,38 +609,80 @@ function UsersManager() {
         </div>
       )}
 
-      <div className="overflow-x-auto">
+      {/* Users table */}
+      <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="border-b">
-              <th className="text-left py-3 px-2 font-semibold">{t.admin.userName}</th>
-              <th className="text-left py-3 px-2 font-semibold">{t.admin.userEmail}</th>
-              <th className="text-left py-3 px-2 font-semibold hidden sm:table-cell">{t.admin.userUsername}</th>
-              <th className="text-left py-3 px-2 font-semibold hidden md:table-cell">{t.admin.userRole}</th>
-              <th className="text-left py-3 px-2 font-semibold hidden md:table-cell">{t.admin.userRegisteredAt}</th>
-              <th className="w-20 py-3 px-2" />
+            <tr className="border-b bg-muted/30">
+              <th className="text-left py-3 px-3 font-semibold">{t.admin.userName}</th>
+              <th className="text-left py-3 px-3 font-semibold">{t.admin.userEmail}</th>
+              <th className="text-left py-3 px-3 font-semibold hidden sm:table-cell">{t.admin.userRole}</th>
+              <th className="text-left py-3 px-3 font-semibold hidden md:table-cell">{t.admin.userRegisteredAt}</th>
+              <th className="py-3 px-3 text-right" />
             </tr>
           </thead>
           <tbody>
-            {users.map((u: any) => (
-              <tr key={u.id} className={`border-b ${u.banned ? "bg-muted/50 opacity-75" : ""}`}>
-                <td className="py-3 px-2">
-                  <div className="flex items-center gap-2">
-                    {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">{(u.name || "?").slice(0, 1)}</div>}
-                    <span className="font-medium">{u.name || "—"}</span>
+            {filteredUsers.map((u: any) => (
+              <tr key={u.id} className={`border-b last:border-0 transition-colors ${u.banned ? "bg-destructive/5" : "hover:bg-muted/20"}`}>
+                <td className="py-3 px-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {u.avatar_url
+                      ? <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                      : <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold flex-shrink-0">{(u.name || "?").slice(0, 1).toUpperCase()}</div>
+                    }
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{u.name || "—"}</p>
+                      {u.username && <p className="text-xs text-muted-foreground truncate">@{u.username}</p>}
+                    </div>
                   </div>
                 </td>
-                <td className="py-3 px-2 break-all text-sm">{u.email || "—"}</td>
-                <td className="py-3 px-2 hidden sm:table-cell">{u.username || "—"}</td>
-                <td className="py-3 px-2 hidden md:table-cell">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{u.role}</span>
-                  {u.banned && <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-destructive/10 text-destructive">banned</span>}
+                <td className="py-3 px-3 text-sm">
+                  <span className="break-all">{u.email || "—"}</span>
                 </td>
-                <td className="py-3 px-2 hidden md:table-cell text-muted-foreground text-xs">{formatDate(u.created_at)}</td>
-                <td className="py-3 px-2">
-                  <div className="flex gap-1">
-                    <Button variant="outline" size="sm" className="rounded-lg h-8 w-8 p-0" onClick={() => handleEdit(u)}><Edit2 className="h-4 w-4" /></Button>
-                    <Button variant="outline" size="sm" className="rounded-lg h-8 w-8 p-0 text-destructive" onClick={() => handleDelete(u.id)}><Trash2 className="h-4 w-4" /></Button>
+                <td className="py-3 px-3 hidden sm:table-cell">
+                  <div className="flex flex-wrap gap-1">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{u.role}</span>
+                    {u.banned && (
+                      <span className="px-2 py-0.5 rounded-full text-xs bg-destructive/10 text-destructive font-medium">
+                        {lang === "ja" ? "停止中" : "Suspended"}
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="py-3 px-3 hidden md:table-cell text-muted-foreground text-xs whitespace-nowrap">{formatDate(u.created_at)}</td>
+                <td className="py-3 px-3">
+                  <div className="flex items-center gap-1 justify-end">
+                    {/* Quick suspend / reactivate */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`rounded-lg h-8 w-8 p-0 ${u.banned ? "text-green-600 hover:bg-green-50 hover:border-green-300" : "text-amber-600 hover:bg-amber-50 hover:border-amber-300"}`}
+                      onClick={() => handleBanToggle(u)}
+                      disabled={banLoading === u.id}
+                      title={u.banned ? (lang === "ja" ? "停止解除" : "Reactivate") : (lang === "ja" ? "停止" : "Suspend")}
+                    >
+                      {u.banned ? <UserCheck className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                    </Button>
+                    {/* Edit */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg h-8 w-8 p-0"
+                      onClick={() => handleEdit(u)}
+                      title={lang === "ja" ? "編集" : "Edit"}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    {/* Permanent delete */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:border-destructive/40"
+                      onClick={() => handleDelete(u.id, u.name || u.email)}
+                      title={lang === "ja" ? "完全削除" : "Delete permanently"}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -571,7 +690,14 @@ function UsersManager() {
           </tbody>
         </table>
       </div>
-      {users.length === 0 && <p className="text-sm text-muted-foreground py-8 text-center">{t.admin.noUsers}</p>}
+
+      {filteredUsers.length === 0 && (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          {search.trim()
+            ? (lang === "ja" ? "検索結果がありません。" : "No users match your search.")
+            : t.admin.noUsers}
+        </p>
+      )}
     </div>
   );
 }
@@ -2353,6 +2479,108 @@ function InputField({ label, value, onChange, placeholder, type = "text", requir
         {required && <span className="text-destructive ml-0.5">*</span>}
       </label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full h-11 px-4 rounded-lg border bg-background text-sm" />
+    </div>
+  );
+}
+
+// ── Audit Log Viewer ─────────────────────────────────────────────────────────
+function AuditLogViewer() {
+  const { lang } = useTranslation();
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await authFetch("/api/admin/audit-log");
+        if (!res.ok) {
+          setError(lang === "ja" ? "ログの取得に失敗しました。" : "Failed to load audit log.");
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setLogs(Array.isArray(data.logs) ? data.logs : []);
+      } catch {
+        setError(lang === "ja" ? "ネットワークエラーが発生しました。" : "Network error.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const formatDt = (s: string) => {
+    try {
+      return new Date(s).toLocaleString(lang === "ja" ? "ja-JP" : "en-SG", {
+        year: "numeric", month: "short", day: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      });
+    } catch { return s; }
+  };
+
+  type ActionMeta = { en: string; ja: string; color: string };
+  const ACTION_META: Record<string, ActionMeta> = {
+    delete_user: { en: "User deleted",     ja: "ユーザー削除",  color: "text-destructive" },
+    update_user: { en: "User updated",     ja: "ユーザー更新",  color: "text-amber-600" },
+    ban_user:    { en: "User suspended",   ja: "ユーザー停止",  color: "text-orange-500" },
+    unban_user:  { en: "User reactivated", ja: "停止解除",      color: "text-green-600" },
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-2">
+        <h2 className="text-xl font-bold">{lang === "ja" ? "監査ログ" : "Audit Log"}</h2>
+        {!loading && <span className="text-xs text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full font-medium">{logs.length}</span>}
+      </div>
+      <p className="text-sm text-muted-foreground mb-6">
+        {lang === "ja" ? "管理者による操作履歴（最新200件）" : "Record of admin actions — last 200 entries"}
+      </p>
+
+      {loading && (
+        <p className="text-sm text-muted-foreground text-center py-10 animate-pulse">
+          {lang === "ja" ? "読み込み中…" : "Loading…"}
+        </p>
+      )}
+
+      {!loading && error && (
+        <div className="p-4 rounded-xl bg-destructive/10 text-destructive text-sm">{error}</div>
+      )}
+
+      {!loading && !error && logs.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-10">
+          {lang === "ja" ? "ログがまだありません。" : "No audit log entries yet."}
+        </p>
+      )}
+
+      {!loading && !error && logs.length > 0 && (
+        <div className="overflow-x-auto rounded-xl border">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b bg-muted/30">
+                <th className="text-left py-3 px-3 font-semibold whitespace-nowrap">{lang === "ja" ? "日時" : "Time"}</th>
+                <th className="text-left py-3 px-3 font-semibold">{lang === "ja" ? "操作" : "Action"}</th>
+                <th className="text-left py-3 px-3 font-semibold hidden sm:table-cell">{lang === "ja" ? "対象" : "Target"}</th>
+                <th className="text-left py-3 px-3 font-semibold hidden md:table-cell">{lang === "ja" ? "実施者" : "Admin"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log: any) => {
+                const meta: ActionMeta = ACTION_META[log.action] ?? { en: log.action, ja: log.action, color: "text-foreground" };
+                const adminName = (log.admin as any)?.name || (log.admin as any)?.email || "—";
+                return (
+                  <tr key={log.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
+                    <td className="py-2.5 px-3 text-xs text-muted-foreground whitespace-nowrap">{formatDt(log.created_at)}</td>
+                    <td className={`py-2.5 px-3 text-xs font-semibold ${meta.color}`}>{lang === "ja" ? meta.ja : meta.en}</td>
+                    <td className="py-2.5 px-3 text-xs hidden sm:table-cell break-all max-w-[220px]">{log.detail || log.target_id || "—"}</td>
+                    <td className="py-2.5 px-3 text-xs text-muted-foreground hidden md:table-cell">{adminName}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

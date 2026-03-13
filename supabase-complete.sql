@@ -846,6 +846,34 @@ ON CONFLICT (slug) DO UPDATE SET
   published = EXCLUDED.published;
 
 -- ──────────────────────────────────────────────────────────────
+-- 10b. AUDIT LOGS — Record of admin actions
+-- ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+  id          bigserial   PRIMARY KEY,
+  admin_id    uuid        REFERENCES public.profiles(id) ON DELETE SET NULL,
+  action      text        NOT NULL,
+  target_type text        NOT NULL DEFAULT '',
+  target_id   text        NOT NULL DEFAULT '',
+  detail      text,
+  created_at  timestamptz DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS audit_logs_created_at_idx ON public.audit_logs (created_at);
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+-- Admins can read all log entries; inserts come from the service-role key (bypasses RLS)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'audit_logs' AND policyname = 'audit_logs_admin_read'
+  ) THEN
+    CREATE POLICY "audit_logs_admin_read" ON public.audit_logs
+      FOR SELECT TO authenticated
+      USING (
+        (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+      );
+  END IF;
+END $$;
+
+-- ──────────────────────────────────────────────────────────────
 -- 11. ADMIN USER SETUP
 -- Confirms email + creates admin profile for Admin@gmail.com
 -- (Create the user first: Supabase Dashboard → Auth → Users → Add user,

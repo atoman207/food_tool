@@ -285,6 +285,10 @@ const ja: Translations = {
     doneBody: "パスワードの変更が完了しました。新しいパスワードでログインしてください。",
     goToLogin: "ログインページへ",
     backToLogin: "ログインに戻る",
+    verifying: "リセットリンクを確認中…",
+    invalidTitle: "無効または期限切れのリンク",
+    invalidBody: "パスワードリセットリンクの期限が切れているか、無効です。新しいリンクをリクエストしてください。",
+    requestNewLink: "新しいリセットリンクをリクエスト",
   },
 
   // ── Register ─────────────────────────────────────────────────────────────
@@ -499,6 +503,7 @@ const ja: Translations = {
     reportDeleteConfirm: "この商品を削除して出品者に通知しますか？",
     reportNotifyMsg: "違反報告により、あなたの出品が削除されました。",
     tabLinks: "リンク管理",
+    tabAuditLog: "監査ログ",
     deleteConfirm: "削除しますか？",
     qrTitle: "QRリダイレクト",
     qrPreviewTitle: "QRコード",

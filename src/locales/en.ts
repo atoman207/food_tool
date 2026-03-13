@@ -284,6 +284,10 @@ const en = {
     doneBody: "Your password has been changed. You can now log in with your new password.",
     goToLogin: "Go to Login",
     backToLogin: "Back to Login",
+    verifying: "Verifying reset link…",
+    invalidTitle: "Invalid or Expired Link",
+    invalidBody: "The password reset link has expired or is invalid. Please request a new one.",
+    requestNewLink: "Request New Reset Link",
   },
 
   // ── Register ─────────────────────────────────────────────────────────────
@@ -498,6 +502,7 @@ const en = {
     reportDeleteConfirm: "Delete this reported item and notify the seller?",
     reportNotifyMsg: "Your listing has been removed due to a violation report.",
     tabLinks: "Links",
+    tabAuditLog: "Audit Log",
     deleteConfirm: "Are you sure you want to delete?",
     qrTitle: "QR Redirect",
     qrPreviewTitle: "Your QR Code",

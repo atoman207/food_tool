@@ -172,7 +172,7 @@ const ResetPassword = () => {
           {/* ── Verifying link ──────────────────────────────────────────── */}
           {mode === "verifying" && (
             <div className="text-center py-6 text-muted-foreground text-sm animate-pulse">
-              Verifying reset link…
+              {t.reset.verifying}
             </div>
           )}
 
@@ -181,11 +181,10 @@ const ResetPassword = () => {
             <div className="text-center space-y-4">
               <div className="flex items-center justify-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
-                <p className="font-semibold">Invalid or Expired Link</p>
+                <p className="font-semibold">{t.reset.invalidTitle}</p>
               </div>
               <p className="text-sm text-muted-foreground">
-                The password reset link has expired or is invalid. Please
-                request a new one.
+                {t.reset.invalidBody}
               </p>
               <Button
                 className="w-full h-11 rounded-xl font-bold"
@@ -195,7 +194,7 @@ const ResetPassword = () => {
                   setMode("request");
                 }}
               >
-                Request New Reset Link
+                {t.reset.requestNewLink}
               </Button>
             </div>
           )}
