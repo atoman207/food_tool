@@ -30,7 +30,9 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: "/pabicon.png",
-    apple: "/pabicon.png",
+    apple: [
+      { url: "/pabicon.png", sizes: "180x180" },
+    ],
   },
   robots: { index: true, follow: true },
   openGraph: {
