@@ -25,6 +25,14 @@ const ja: Translations = {
     filters: "フィルター",
   },
 
+  loginPrompt: {
+    title: "ログインが必要です",
+    description: "マーケットプレイスの利用や出品者への連絡には、ログインまたは無料アカウントの作成が必要です。",
+    loginButton: "ログイン",
+    registerButton: "無料アカウントを作成",
+    freeNote: "登録は無料で、1分もかかりません。",
+  },
+
   // ── Header / Footer ──────────────────────────────────────────────────────
   nav: {
     brand: "F&Bポータル",

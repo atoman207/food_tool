@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import { MarketplaceCard } from "@/components/MarketplaceCard";
 import { useFetch } from "@/hooks/useSupabaseData";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { useLoginPrompt } from "@/components/LoginPromptModal";
 import type { MarketplaceItemRow, CategoryRow } from "@/types/database";
 
 type SortOption = "newest" | "price-asc" | "price-desc";
@@ -15,6 +16,7 @@ const Marketplace = () => {
   const [selectedCondition, setSelectedCondition] = useState("");
   const [sort, setSort] = useState<SortOption>("newest");
   const { t } = useTranslation();
+  const { requireLogin, loginPromptModal } = useLoginPrompt();
 
   const { data: items } = useFetch<MarketplaceItemRow[]>("/api/marketplace");
   const { data: categories } = useFetch<CategoryRow[]>("/api/categories?type=marketplace");
@@ -90,7 +92,9 @@ const Marketplace = () => {
 
         <p className="text-sm text-muted-foreground mb-4 font-medium">{t.marketplace.resultCount(filtered.length)}</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 min-w-0">
-          {filtered.map((item) => <MarketplaceCard key={item.id} item={item} />)}
+          {filtered.map((item) => (
+            <MarketplaceCard key={item.id} item={item} onRequireLogin={requireLogin} />
+          ))}
         </div>
         {filtered.length === 0 && (
           <div className="text-center py-20 text-muted-foreground">
@@ -98,6 +102,7 @@ const Marketplace = () => {
           </div>
         )}
       </div>
+      {loginPromptModal}
     </Layout>
   );
 };

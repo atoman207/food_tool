@@ -13,9 +13,10 @@ interface MarketplaceCardProps {
     condition: string;
     condition_en?: string;
   };
+  onRequireLogin?: () => boolean;
 }
 
-export function MarketplaceCard({ item }: MarketplaceCardProps) {
+export function MarketplaceCard({ item, onRequireLogin }: MarketplaceCardProps) {
   const { t, lang } = useTranslation();
   const mkt = t.marketplace as {
     areaDisplay?: Record<string, string>;
@@ -30,8 +31,14 @@ export function MarketplaceCard({ item }: MarketplaceCardProps) {
     ? (item.condition_en?.trim() || mkt.conditionDisplay?.[item.condition] || item.condition)
     : (mkt.conditionDisplay?.[item.condition] ?? item.condition);
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (onRequireLogin && !onRequireLogin()) {
+      e.preventDefault();
+    }
+  };
+
   return (
-    <Link href={`/marketplace/${item.slug}`} className="group block h-full min-w-0">
+    <Link href={`/marketplace/${item.slug}`} className="group block h-full min-w-0" onClick={handleClick}>
       <div className="bg-card overflow-hidden shadow-card card-hover card-lift border border-border h-full flex flex-col min-w-0">
         <div className="aspect-square overflow-hidden bg-muted flex-shrink-0">
           <img

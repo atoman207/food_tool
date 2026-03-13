@@ -1,12 +1,13 @@
 "use client";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { MapPin, ArrowLeft, Award, Phone, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, ArrowLeft, Award, Phone, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useFetch } from "@/hooks/useSupabaseData";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { useLoginPrompt } from "@/components/LoginPromptModal";
 
 const SupplierDetail = () => {
   const params = useParams();
@@ -16,6 +17,7 @@ const SupplierDetail = () => {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const { t, lang } = useTranslation();
+  const { requireLogin, loginPromptModal, isLoggedIn } = useLoginPrompt();
 
   const tabs = [
     { id: "about",          label: t.supplierDetail.tabAbout },
@@ -144,7 +146,13 @@ const SupplierDetail = () => {
               {contactName && <p className="text-xs text-muted-foreground mt-1">{t.supplierDetail.contactLabel}{contactName}</p>}
             </div>
             <div className="hidden sm:block">
-              <WhatsAppButton phone={supplier.whatsapp} message={contactMsg} size="lg" />
+              {isLoggedIn ? (
+                <WhatsAppButton phone={supplier.whatsapp} message={contactMsg} size="lg" />
+              ) : (
+                <button onClick={() => requireLogin()} className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold text-whatsapp-foreground whatsapp-gradient border-0 hover:opacity-95 transition-all duration-200 min-h-[44px] h-10 px-4 py-2">
+                  <MessageCircle className="h-4 w-4 shrink-0" /><span>WhatsApp</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -220,7 +228,13 @@ const SupplierDetail = () => {
                   <p className="text-sm font-semibold">+{supplier.whatsapp}</p>
                 </div>
               </div>
-              <WhatsAppButton phone={supplier.whatsapp} message={contactMsg} fullWidth size="lg" />
+              {isLoggedIn ? (
+                <WhatsAppButton phone={supplier.whatsapp} message={contactMsg} fullWidth size="lg" />
+              ) : (
+                <button onClick={() => requireLogin()} className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold text-whatsapp-foreground whatsapp-gradient border-0 hover:opacity-95 transition-all duration-200 min-h-[44px] w-full h-11 px-8 text-base">
+                  <MessageCircle className="h-4 w-4 shrink-0" /><span>WhatsApp</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -249,7 +263,13 @@ const SupplierDetail = () => {
                   </dl>
                 </div>
                 <div className="mt-4">
-                  <WhatsAppButton phone={supplier.whatsapp} message={lang === "ja" ? `${product.name}について問い合わせです。` : `I'd like to inquire about ${product.name}.`} fullWidth size="lg" />
+                  {isLoggedIn ? (
+                    <WhatsAppButton phone={supplier.whatsapp} message={lang === "ja" ? `${product.name}について問い合わせです。` : `I'd like to inquire about ${product.name}.`} fullWidth size="lg" />
+                  ) : (
+                    <button onClick={() => requireLogin()} className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold text-whatsapp-foreground whatsapp-gradient border-0 hover:opacity-95 transition-all duration-200 min-h-[44px] w-full h-11 px-8 text-base">
+                      <MessageCircle className="h-4 w-4 shrink-0" /><span>WhatsApp</span>
+                    </button>
+                  )}
                 </div>
                 <button onClick={() => setSelectedProduct(null)} className="mt-3 w-full py-3 text-sm text-muted-foreground border rounded-xl active:opacity-70">
                   {lang === "ja" ? "閉じる" : "Close"}
@@ -260,8 +280,15 @@ const SupplierDetail = () => {
         )}
       </div>
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t sm:hidden z-40">
-        <WhatsAppButton phone={supplier.whatsapp} message={contactMsg} fullWidth size="lg" />
+        {isLoggedIn ? (
+          <WhatsAppButton phone={supplier.whatsapp} message={contactMsg} fullWidth size="lg" />
+        ) : (
+          <button onClick={() => requireLogin()} className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold text-whatsapp-foreground whatsapp-gradient border-0 hover:opacity-95 transition-all duration-200 min-h-[44px] w-full h-11 px-8 text-base">
+            <MessageCircle className="h-4 w-4 shrink-0" /><span>WhatsApp</span>
+          </button>
+        )}
       </div>
+      {loginPromptModal}
     </Layout>
   );
 };

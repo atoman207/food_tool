@@ -9,6 +9,7 @@ import { useFetch } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { useLoginPrompt } from "@/components/LoginPromptModal";
 
 const MarketplaceItemPage = () => {
   const params = useParams();
@@ -19,6 +20,7 @@ const MarketplaceItemPage = () => {
   const [reportReason, setReportReason] = useState("");
   const { user } = useAuth();
   const { t, lang } = useTranslation();
+  const { requireLogin, loginPromptModal } = useLoginPrompt();
 
   if (loading) return <Layout><div className="container py-16 text-center text-muted-foreground">{t.common.loading}</div></Layout>;
 
@@ -102,7 +104,16 @@ const MarketplaceItemPage = () => {
               <p className="text-sm font-semibold">{item.seller_name}</p>
             </div>
             <div className="mt-4 hidden sm:block">
-              <WhatsAppButton phone={item.seller_whatsapp} message={`Hi, I'm interested in your ${displayTitle} listed on the F&B Portal.`} fullWidth size="lg" />
+              {user ? (
+                <WhatsAppButton phone={item.seller_whatsapp} message={`Hi, I'm interested in your ${displayTitle} listed on the F&B Portal.`} fullWidth size="lg" />
+              ) : (
+                <button
+                  onClick={() => requireLogin()}
+                  className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold text-whatsapp-foreground whatsapp-gradient border-0 hover:opacity-95 transition-all duration-200 min-h-[44px] w-full h-11 px-8 text-base"
+                >
+                  <span className="relative z-0">WhatsApp</span>
+                </button>
+              )}
             </div>
             {user && (
               <button onClick={() => setShowReport(true)} className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive">
@@ -128,8 +139,19 @@ const MarketplaceItemPage = () => {
       )}
 
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t sm:hidden z-40">
-        <WhatsAppButton phone={item.seller_whatsapp} message={`Hi, I'm interested in your ${displayTitle} listed on the F&B Portal.`} fullWidth size="lg" />
+        {user ? (
+          <WhatsAppButton phone={item.seller_whatsapp} message={`Hi, I'm interested in your ${displayTitle} listed on the F&B Portal.`} fullWidth size="lg" />
+        ) : (
+          <button
+            onClick={() => requireLogin()}
+            className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold text-whatsapp-foreground whatsapp-gradient border-0 hover:opacity-95 transition-all duration-200 min-h-[44px] w-full h-11 px-8 text-base"
+          >
+            <span className="relative z-0">WhatsApp</span>
+          </button>
+        )}
       </div>
+
+      {loginPromptModal}
     </Layout>
   );
 };

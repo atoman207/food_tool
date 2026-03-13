@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
-import { MapPin, Crown, Star, Heart, ShieldCheck } from "lucide-react";
+import { MapPin, Crown, Star, Heart, ShieldCheck, MessageCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { getPlanConfig } from "@/lib/plans";
 import { toggleFavorite, getFavoriteIds, syncFromStorage } from "@/lib/favorites";
+import { useLoginPrompt } from "./LoginPromptModal";
 
 interface SupplierCardProps {
   supplier: {
@@ -89,6 +90,7 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
   const cfg = getPlanConfig(supplier.plan);
   const { favorites, toggle } = useFavorites();
   const isFav = favorites.includes(String(supplier.id));
+  const { requireLogin, loginPromptModal, isLoggedIn } = useLoginPrompt();
 
   const nameEn = supplier.name || supplier.name_ja || supplier.nameJa || "";
   const nameJa = supplier.name_ja || supplier.nameJa || supplier.name || "";
@@ -161,12 +163,23 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
           </button>
         </Link>
         {cfg.showWhatsApp && (
-          <WhatsAppButton
-            phone={supplier.whatsapp}
-            message={lang === "ja" ? `${displayName}${t.supplierCard.inquire}` : `I'd like to inquire about ${displayName}.`}
-            size="sm"
-            className="!h-9 !min-h-9 flex-shrink-0 [&>span]:truncate"
-          />
+          isLoggedIn ? (
+            <WhatsAppButton
+              phone={supplier.whatsapp}
+              message={lang === "ja" ? `${displayName}${t.supplierCard.inquire}` : `I'd like to inquire about ${displayName}.`}
+              size="sm"
+              className="!h-9 !min-h-9 flex-shrink-0 [&>span]:truncate"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); requireLogin(); }}
+              className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold text-whatsapp-foreground whatsapp-gradient border-0 hover:opacity-95 transition-all duration-200 !h-9 !min-h-9 px-3 text-sm flex-shrink-0"
+            >
+              <MessageCircle className="h-4 w-4 shrink-0" />
+              <span className="truncate">WhatsApp</span>
+            </button>
+          )
         )}
         <button
           type="button"
@@ -205,6 +218,7 @@ export function SupplierCard({ supplier, variant = "grid", rank }: SupplierCardP
         </div>
       )}
       {cardContent}
+      {loginPromptModal}
     </div>
   );
 }

@@ -23,6 +23,14 @@ const en = {
     filters: "Filters",
   },
 
+  loginPrompt: {
+    title: "Login Required",
+    description: "Please log in or create a free account to access the marketplace and contact sellers.",
+    loginButton: "Log In",
+    registerButton: "Create Free Account",
+    freeNote: "Registration is free and takes less than a minute.",
+  },
+
   // ── Header / Footer ──────────────────────────────────────────────────────
   nav: {
     brand: "F&B Portal",
