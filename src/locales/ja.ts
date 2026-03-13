@@ -443,6 +443,7 @@ const ja: Translations = {
     userPassword: "パスワード",
     userWhatsApp: "WhatsApp",
     userCompany: "会社名",
+    userAvatar: "アバター（任意）",
     userRole: "ロール",
     userBanned: "Banned（ログイン禁止）",
     userRegisteredAt: "登録日",

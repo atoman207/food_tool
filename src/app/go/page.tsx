@@ -26,8 +26,8 @@ export default function GoRedirect() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center">
-        <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
-          <span className="text-primary-foreground font-black text-sm">食</span>
+        <div className="mx-auto mb-4 flex justify-center">
+          <img src="/QR.png" alt="The Kitchen Connection" className="w-40 h-40 sm:w-48 sm:h-48 object-contain animate-pulse" />
         </div>
         <p className="text-sm text-muted-foreground">リダイレクト中...</p>
       </div>

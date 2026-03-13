@@ -77,11 +77,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) fetchProfile(session.user.id);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(async (err) => {
+        const msg = err?.message || "";
+        if (msg.includes("Refresh Token") || msg.includes("refresh_token") || msg.includes("invalid") && msg.includes("token")) {
+          await sb.auth.signOut();
+          setUser(null);
+          setProfile(null);
+        }
+        setLoading(false);
+      });
 
     const {
       data: { subscription },
-    } = sb.auth.onAuthStateChange((_event, session) => {
+    } = sb.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);

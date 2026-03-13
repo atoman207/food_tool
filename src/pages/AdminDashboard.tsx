@@ -409,7 +409,7 @@ function UsersManager() {
   const [users, setUsers] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [addForm, setAddForm] = useState({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "" });
+  const [addForm, setAddForm] = useState({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "", avatar_url: "" });
   const [addError, setAddError] = useState("");
   const [addLoading, setAddLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", username: "", role: "user", whatsapp: "", company: "", banned: false, avatar_url: "" });
@@ -455,7 +455,7 @@ function UsersManager() {
       const res = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(addForm) });
       const data = await res.json();
       if (!res.ok || data.error) { setAddError(data.error ?? res.statusText); setAddLoading(false); return; }
-      setShowAddForm(false); setAddForm({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "" }); fetchUsers();
+      setShowAddForm(false); setAddForm({ name: "", email: "", username: "", password: "", role: "user", company: "", whatsapp: "", avatar_url: "" }); fetchUsers();
     } catch { setAddError(lang === "ja" ? "ネットワークエラー" : "Network error."); }
     finally { setAddLoading(false); }
   };
@@ -483,6 +483,9 @@ function UsersManager() {
             <InputField label={t.admin.userPassword} value={addForm.password} onChange={(v) => setAddForm((p) => ({ ...p, password: v }))} required placeholder="8+ characters" />
             <InputField label={t.admin.userCompany} value={addForm.company} onChange={(v) => setAddForm((p) => ({ ...p, company: v }))} />
             <InputField label={t.admin.userWhatsApp} value={addForm.whatsapp} onChange={(v) => setAddForm((p) => ({ ...p, whatsapp: v }))} />
+            <div className="sm:col-span-2">
+              <ImageField label={t.admin.userAvatar} value={addForm.avatar_url} onChange={(v) => setAddForm((p) => ({ ...p, avatar_url: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} folder="avatars" />
+            </div>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium">{t.admin.userRole}</label>
               <select value={addForm.role} onChange={(e) => setAddForm((p) => ({ ...p, role: e.target.value }))} className="h-11 px-4 rounded-lg border bg-background text-sm">
@@ -507,6 +510,9 @@ function UsersManager() {
             <InputField label={t.admin.userUsername} value={form.username} onChange={(v) => setForm((p) => ({ ...p, username: v }))} />
             <InputField label={t.admin.userWhatsApp} value={form.whatsapp} onChange={(v) => setForm((p) => ({ ...p, whatsapp: v }))} />
             <InputField label={t.admin.userCompany} value={form.company} onChange={(v) => setForm((p) => ({ ...p, company: v }))} />
+            <div className="sm:col-span-2">
+              <ImageField label={t.admin.userAvatar} value={form.avatar_url} onChange={(v) => setForm((p) => ({ ...p, avatar_url: v }))} hint={t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} folder="avatars" />
+            </div>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium">{t.admin.userRole}</label>
               <select value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))} className="h-11 px-4 rounded-lg border bg-background text-sm">
@@ -2297,12 +2303,14 @@ function ImageField({
   onChange,
   hint,
   uploadLabel,
+  folder,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   hint: string;
   uploadLabel: string;
+  folder?: string;
 }) {
   return (
     <div>
@@ -2317,6 +2325,7 @@ function ImageField({
             if (!file) return;
             const fd = new FormData();
             fd.append("file", file);
+            if (folder) fd.append("folder", folder);
             const res = await fetch("/api/upload", { method: "POST", body: fd });
             const j = await res.json();
             if (j?.url) onChange(j.url);

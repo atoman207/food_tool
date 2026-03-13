@@ -11,7 +11,7 @@ function createAdminClient() {
 }
 
 export async function POST(req: NextRequest) {
-  const { email, password, name, username } = await req.json();
+  const { email, password, name, username, avatar_url, role, company, whatsapp } = await req.json();
 
   if (!email || !password || !name || !username) {
     return NextResponse.json(
@@ -73,10 +73,10 @@ export async function POST(req: NextRequest) {
     email,
     name,
     username,
-    avatar_url: "",
-    role: "user",
-    whatsapp: "",
-    company: "",
+    avatar_url: typeof avatar_url === "string" && avatar_url.trim() ? avatar_url.trim() : "",
+    role: role === "admin" ? "admin" : "user",
+    whatsapp: typeof whatsapp === "string" ? whatsapp : "",
+    company: typeof company === "string" ? company : "",
     banned: false,
   });
 

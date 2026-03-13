@@ -442,6 +442,7 @@ const en = {
     userPassword: "Password",
     userWhatsApp: "WhatsApp",
     userCompany: "Company",
+    userAvatar: "Avatar (optional)",
     userRole: "Role",
     userBanned: "Banned",
     userRegisteredAt: "Registered",
