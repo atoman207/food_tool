@@ -66,16 +66,12 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: "500+", labelKey: "stat1" as const },
-  { value: "1,200+", labelKey: "stat2" as const },
-  { value: "12", labelKey: "stat3" as const },
-  { value: "2", labelKey: "stat4" as const },
-];
+type LiveStats = { suppliers: number; products: number; categories: number; users: number };
 
 const About = () => {
   const { t, lang } = useTranslation();
   const [content, setContent] = useState<AboutSiteContent | null>(null);
+  const [liveStats, setLiveStats] = useState<LiveStats | null>(null);
 
   useEffect(() => {
     fetch("/api/settings?key=about_site")
@@ -88,6 +84,11 @@ const About = () => {
           } catch {}
         }
       })
+      .catch(() => {});
+
+    fetch("/api/stats")
+      .then((r) => r.json())
+      .then((d) => setLiveStats(d))
       .catch(() => {});
   }, []);
 
@@ -143,16 +144,34 @@ const About = () => {
         </section>
       )}
 
-      {/* Stats bar */}
+      {/* Stats bar — live counts from database */}
       <section className="border-y border-border bg-white overflow-hidden w-full">
         <div className="container py-8 min-w-0">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat) => (
-              <div key={stat.labelKey} className="text-center">
-                <p className="text-3xl md:text-4xl font-black text-primary">{stat.value}</p>
-                <p className="text-sm text-muted-foreground mt-1 font-medium">{t.about[stat.labelKey]}</p>
-              </div>
-            ))}
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-black text-primary">
+                {liveStats ? liveStats.suppliers.toLocaleString() : "—"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1 font-medium">{t.about.stat1}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-black text-primary">
+                {liveStats ? liveStats.products.toLocaleString() : "—"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1 font-medium">{t.about.stat2}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-black text-primary">
+                {liveStats ? liveStats.categories.toLocaleString() : "—"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1 font-medium">{t.about.stat3}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-black text-primary">
+                {liveStats ? liveStats.users.toLocaleString() : "—"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1 font-medium">{t.about.stat4}</p>
+            </div>
           </div>
         </div>
       </section>

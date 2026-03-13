@@ -584,10 +584,10 @@ const en = {
     ctaSub: "Join the F&B Portal community today.",
     ctaButton: "Find Suppliers",
     ctaButton2: "List Your Business",
-    stat1: "Verified Suppliers",
-    stat2: "Equipment Listings",
+    stat1: "Registered Suppliers",
+    stat2: "Products Listed",
     stat3: "Industry Categories",
-    stat4: "Languages Supported",
+    stat4: "Registered Users",
   },
 
   // ── Plans ────────────────────────────────────────────────────────────────
