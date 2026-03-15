@@ -927,3 +927,4 @@ SELECT table_name, rows FROM (
   SELECT 'site_settings',                   COUNT(*)         FROM public.site_settings      UNION ALL
   SELECT 'reports',                         COUNT(*)         FROM public.reports
 ) t ORDER BY table_name;
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS video_url text DEFAULT '';
