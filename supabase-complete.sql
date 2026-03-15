@@ -190,6 +190,8 @@ ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS weight            
 ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS quantity          text DEFAULT '';
 ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS storage_condition text DEFAULT '';
 ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS temperature       text DEFAULT '';
+-- Video URL: direct MP4/WebM upload URL or YouTube / Vimeo embed URL
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS video_url         text DEFAULT '';
 
 ALTER TABLE public.supplier_products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.marketplace_items ENABLE ROW LEVEL SECURITY;

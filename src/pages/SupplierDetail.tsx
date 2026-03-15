@@ -1,13 +1,48 @@
 "use client";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { MapPin, ArrowLeft, Award, Phone, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import { MapPin, ArrowLeft, Award, Phone, ChevronLeft, ChevronRight, MessageCircle, Video } from "lucide-react";
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useFetch } from "@/hooks/useSupabaseData";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { useLoginPrompt } from "@/components/LoginPromptModal";
+
+/** Embeds a YouTube / Vimeo iframe or native <video> for a product video URL. */
+function ProductVideoEmbed({ url, className = "" }: { url: string; className?: string }) {
+  const ytMatch =
+    url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/) ||
+    url.match(/youtube\.com\/embed\/([A-Za-z0-9_-]{11})/);
+  if (ytMatch) {
+    return (
+      <div className={`aspect-video w-full overflow-hidden bg-black ${className}`}>
+        <iframe
+          src={`https://www.youtube.com/embed/${ytMatch[1]}`}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="w-full h-full"
+        />
+      </div>
+    );
+  }
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) {
+    return (
+      <div className={`aspect-video w-full overflow-hidden bg-black ${className}`}>
+        <iframe
+          src={`https://player.vimeo.com/video/${vimeoMatch[1]}`}
+          allow="autoplay; fullscreen"
+          allowFullScreen
+          className="w-full h-full"
+        />
+      </div>
+    );
+  }
+  return (
+    <video src={url} controls className={`w-full bg-black ${className}`} />
+  );
+}
 
 const SupplierDetail = () => {
   const params = useParams();
@@ -190,10 +225,18 @@ const SupplierDetail = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                 {products.map((p: any) => (
                   <div key={p.id} role="button" tabIndex={0} onClick={() => setSelectedProduct(p.id)} onKeyDown={(e) => e.key === "Enter" && setSelectedProduct(p.id)} className="bg-card border text-left active:opacity-80 w-full cursor-pointer select-none">
-                    {p.image
-                      ? <img src={p.image} alt={p.name} className="w-full h-auto block" />
-                      : <div className="aspect-[4/3] bg-muted flex items-center justify-center"><span className="text-muted-foreground text-xs">No image</span></div>
-                    }
+                    <div className="relative">
+                      {p.image
+                        ? <img src={p.image} alt={p.name} className="w-full h-auto block" />
+                        : <div className="aspect-[4/3] bg-muted flex items-center justify-center"><span className="text-muted-foreground text-xs">No image</span></div>
+                      }
+                      {p.video_url && (
+                        <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 bg-black/70 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                          <Video className="h-2.5 w-2.5" />
+                          {lang === "ja" ? "動画" : "Video"}
+                        </span>
+                      )}
+                    </div>
                     <div className="p-2 sm:p-3">
                       <div className="text-xs sm:text-sm font-semibold leading-snug break-words">{p.name}</div>
                       {p.name_en && <div className="text-xs text-muted-foreground break-words">{p.name_en}</div>}
@@ -246,6 +289,9 @@ const SupplierDetail = () => {
             <div className="relative bg-background rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
               {product.image && (
                 <img src={product.image} alt={product.name} className="w-full h-auto block" />
+              )}
+              {product.video_url && (
+                <ProductVideoEmbed url={product.video_url} className={product.image ? "border-t" : "rounded-t-2xl sm:rounded-t-2xl"} />
               )}
               <div className="p-4">
                 <h3 className="text-base font-bold">{product.name}</h3>

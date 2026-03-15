@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import {
   Store, ShoppingBag, CheckCircle, XCircle, Plus, Trash2, Edit2, Link2,
   BarChart3, Tag, Image, AlertTriangle, Shield, Save, Eye, Newspaper, Globe, ExternalLink, FileText, Palette, Users,
-  Search, Ban, UserCheck, ClipboardList,
+  Search, Ban, UserCheck, ClipboardList, Video,
 } from "lucide-react";
 import { FONT_OPTIONS, COLOR_OPTIONS, applyTheme } from "@/components/ThemeProvider";
 import {
@@ -706,10 +706,11 @@ function ProductManager({ slug }: { slug: string }) {
   const { t, lang } = useTranslation();
   const [products, setProducts] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [videoUploading, setVideoUploading] = useState(false);
   const [form, setForm] = useState({
     name: "", name_en: "", image: "", moq: "",
     country_of_origin: "", weight: "", quantity: "",
-    storage_condition: "", temperature: "",
+    storage_condition: "", temperature: "", video_url: "",
   });
 
   useEffect(() => { fetchProducts(); }, [slug]);
@@ -725,7 +726,7 @@ function ProductManager({ slug }: { slug: string }) {
   };
 
   const clearForm = () => {
-    setForm({ name: "", name_en: "", image: "", moq: "", country_of_origin: "", weight: "", quantity: "", storage_condition: "", temperature: "" });
+    setForm({ name: "", name_en: "", image: "", moq: "", country_of_origin: "", weight: "", quantity: "", storage_condition: "", temperature: "", video_url: "" });
     setEditingId(null);
   };
 
@@ -740,6 +741,7 @@ function ProductManager({ slug }: { slug: string }) {
       quantity: p.quantity ?? "",
       storage_condition: p.storage_condition ?? "",
       temperature: p.temperature ?? "",
+      video_url: p.video_url ?? "",
     });
     setEditingId(p.id);
   };
@@ -802,6 +804,60 @@ function ProductManager({ slug }: { slug: string }) {
       {/* Row 2: Image (full width on mobile) */}
       <ImageField label={t.admin.productImage} value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} hint={t.admin.productImageHint ?? t.admin.imageHint} uploadLabel={t.admin.imageUploadOrUrl} />
 
+      {/* Row 2b: Video */}
+      <div>
+        <label className="text-sm font-medium block mb-1.5">
+          <span className="inline-flex items-center gap-1.5"><Video className="h-3.5 w-3.5" />{t.admin.productVideo}</span>
+        </label>
+        <div className="flex flex-wrap gap-2 items-center mb-1.5">
+          <label className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border cursor-pointer transition-colors ${videoUploading ? "opacity-50 pointer-events-none" : "hover:bg-muted"}`}>
+            <Video className="h-3.5 w-3.5" />
+            {videoUploading
+              ? (lang === "ja" ? "アップロード中…" : "Uploading…")
+              : (lang === "ja" ? "MP4 / WebM をアップロード" : "Upload MP4 / WebM")}
+            <input
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime"
+              className="sr-only"
+              disabled={videoUploading}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setVideoUploading(true);
+                const fd = new FormData();
+                fd.append("file", file);
+                fd.append("folder", "videos");
+                try {
+                  const res = await fetch("/api/upload", { method: "POST", body: fd });
+                  const j = await res.json();
+                  if (j?.url) setForm((prev) => ({ ...prev, video_url: j.url }));
+                  else alert(j?.error ?? (lang === "ja" ? "アップロードに失敗しました。" : "Upload failed."));
+                } catch {
+                  alert(lang === "ja" ? "ネットワークエラー" : "Network error.");
+                } finally {
+                  setVideoUploading(false);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </label>
+          <span className="text-xs text-muted-foreground">{lang === "ja" ? "または" : "or"}</span>
+        </div>
+        <input
+          type="url"
+          value={form.video_url}
+          onChange={(e) => setForm((p) => ({ ...p, video_url: e.target.value }))}
+          placeholder={t.admin.productVideoUrlPlaceholder}
+          className="w-full h-10 px-3 rounded-lg border bg-background text-sm"
+        />
+        <p className="text-xs text-muted-foreground mt-1">{t.admin.productVideoHint}</p>
+        {form.video_url && (
+          <div className="mt-2">
+            <VideoPreview url={form.video_url} />
+          </div>
+        )}
+      </div>
+
       {/* Row 3: Origin + Weight + Quantity + MOQ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <InputField label={t.admin.productCountryOfOrigin} value={form.country_of_origin} onChange={(v) => setForm((p) => ({ ...p, country_of_origin: v }))} />
@@ -845,10 +901,17 @@ function ProductManager({ slug }: { slug: string }) {
         <div className="space-y-2">
           {products.map((p: any) => (
             <div key={p.id} className="flex items-center gap-3 bg-card border p-3">
-              {p.image
-                ? <img src={p.image} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
-                : <div className="w-12 h-12 rounded bg-muted flex-shrink-0" />
-              }
+              <div className="relative flex-shrink-0">
+                {p.image
+                  ? <img src={p.image} alt="" className="w-12 h-12 rounded object-cover" />
+                  : <div className="w-12 h-12 rounded bg-muted flex items-center justify-center"><Image className="h-5 w-5 text-muted-foreground" /></div>
+                }
+                {p.video_url && (
+                  <span className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-0.5" title={lang === "ja" ? "動画あり" : "Has video"}>
+                    <Video className="h-2.5 w-2.5" />
+                  </span>
+                )}
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{p.name}</p>
                 {p.name_en && <p className="text-xs text-muted-foreground truncate">{p.name_en}</p>}
@@ -2422,6 +2485,56 @@ function LinksManager() {
   );
 }
 
+
+/**
+ * Renders a small inline preview of a video URL.
+ * Detects YouTube / Vimeo embeds and falls back to a native <video> player.
+ */
+function VideoPreview({ url }: { url: string }) {
+  if (!url) return null;
+
+  // YouTube
+  const ytMatch =
+    url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/) ||
+    url.match(/youtube\.com\/embed\/([A-Za-z0-9_-]{11})/);
+  if (ytMatch) {
+    return (
+      <div className="aspect-video w-full rounded-lg overflow-hidden bg-black">
+        <iframe
+          src={`https://www.youtube.com/embed/${ytMatch[1]}`}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="w-full h-full"
+        />
+      </div>
+    );
+  }
+
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) {
+    return (
+      <div className="aspect-video w-full rounded-lg overflow-hidden bg-black">
+        <iframe
+          src={`https://player.vimeo.com/video/${vimeoMatch[1]}`}
+          allow="autoplay; fullscreen"
+          allowFullScreen
+          className="w-full h-full"
+        />
+      </div>
+    );
+  }
+
+  // Direct MP4 / WebM
+  return (
+    <video
+      src={url}
+      controls
+      className="w-full rounded-lg bg-black"
+      style={{ maxHeight: "240px" }}
+    />
+  );
+}
 
 function ImageField({
   label,

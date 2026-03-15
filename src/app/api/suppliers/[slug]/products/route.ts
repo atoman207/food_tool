@@ -52,6 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     quantity:          str(body.quantity),
     storage_condition: str(body.storage_condition),
     temperature:       str(body.temperature),
+    video_url:         str(body.video_url),
   };
 
   const { data, error } = await admin
@@ -93,6 +94,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
     quantity:          str(body.quantity),
     storage_condition: str(body.storage_condition),
     temperature:       str(body.temperature),
+    video_url:         str(body.video_url),
   };
 
   const { data, error } = await admin

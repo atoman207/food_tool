@@ -102,6 +102,8 @@ export interface SupplierProductRow {
   quantity?: string;
   storage_condition?: string;
   temperature?: string;
+  /** Direct MP4/WebM URL or YouTube/Vimeo embed URL */
+  video_url?: string;
 }
 
 export interface MarketplaceItemRow {
