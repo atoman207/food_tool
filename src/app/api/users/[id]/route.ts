@@ -4,6 +4,7 @@ import {
   requireAdmin,
   logAuditAction,
 } from "@/lib/supabase-server";
+import { sendAdminActionEmail } from "@/lib/email";
 
 /** GET /api/users/[id] — Fetch a single user (admin only). */
 export async function GET(
@@ -73,6 +74,14 @@ export async function PUT(
     detail: `${(data as any).name || id} — fields: ${changedFields}`,
   });
 
+  if ((action === "ban_user" || action === "unban_user") && (data as any).email) {
+    await sendAdminActionEmail({
+      action: action === "ban_user" ? "ban" : "unban",
+      userName: (data as any).name || "User",
+      userEmail: (data as any).email,
+    });
+  }
+
   return NextResponse.json(data);
 }
 
@@ -105,6 +114,14 @@ export async function DELETE(
     targetId: id,
     detail: target ? `${target.name} (${target.email})` : id,
   });
+
+  if (target?.email) {
+    await sendAdminActionEmail({
+      action: "delete",
+      userName: target.name || "User",
+      userEmail: target.email,
+    });
+  }
 
   return NextResponse.json({ success: true });
 }
