@@ -146,12 +146,12 @@ const About = () => {
                 </Button>
               </Link>
               <Link href="/contact">
-                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold border-white text-white hover:bg-white/10 hover:text-white">
+                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold !bg-transparent border-2 border-white !text-white shadow-none hover:!bg-white/15 hover:!text-white hover:border-white">
                   {t.about.ctaButton2}
                 </Button>
               </Link>
               <Link href="/marketplace">
-                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold border-white text-white hover:bg-white/10 hover:text-white">
+                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold !bg-transparent border-2 border-white !text-white shadow-none hover:!bg-white/15 hover:!text-white hover:border-white">
                   {t.about.ctaButton3}
                 </Button>
               </Link>
@@ -261,12 +261,12 @@ const About = () => {
               </Button>
             </Link>
             <Link href="/contact">
-              <Button variant="outline" className="h-12 px-8 rounded-xl font-bold border-2 border-white bg-transparent text-white hover:bg-white/10 hover:text-white">
+              <Button variant="outline" className="h-12 px-8 rounded-xl font-bold !bg-transparent border-2 border-white !text-white shadow-none hover:!bg-white/15 hover:!text-white">
                 {t.about.ctaButton2}
               </Button>
             </Link>
             <Link href="/marketplace">
-              <Button variant="outline" className="h-12 px-8 rounded-xl font-bold border-2 border-white bg-transparent text-white hover:bg-white/10 hover:text-white">
+              <Button variant="outline" className="h-12 px-8 rounded-xl font-bold !bg-transparent border-2 border-white !text-white shadow-none hover:!bg-white/15 hover:!text-white">
                 {t.about.ctaButton3}
               </Button>
             </Link>

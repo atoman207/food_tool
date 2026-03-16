@@ -114,11 +114,11 @@ const ResetPassword = () => {
       return;
     }
 
-    // Always use the domain the user is currently on so the link in the
-    // email goes to the live site, not localhost.
-    const origin = typeof window !== "undefined"
-      ? window.location.origin
-      : (process.env.NEXT_PUBLIC_SITE_URL || "https://fbportal.sg");
+    // Prioritise the configured production URL so the link in the email
+    // always points to the live site, never localhost.
+    const origin =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (typeof window !== "undefined" ? window.location.origin : "https://fbportal.sg");
 
     const { error: err } = await sb.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/reset-password`,
@@ -171,9 +171,10 @@ const ResetPassword = () => {
     setMode("done");
   };
 
-  /* ── Step indicator (shown when not verifying / done / invalid) ─────── */
+  /* ── Step indicator ─────────────────────────────────────────────────── */
   const StepBar = () => {
-    const step = mode === "update" ? 2 : 0;
+    // 0 = Enter Email active, 1 = Set Password active, 3 = all done
+    const step = mode === "done" ? 3 : mode === "update" ? 1 : 0;
     const steps = lang === "ja"
       ? ["メール入力", "パスワード設定", "完了"]
       : ["Enter Email", "Set Password", "Done"];
@@ -231,7 +232,7 @@ const ResetPassword = () => {
           </div>
 
           {/* ── Step bar ─────────────────────────────────────────────────── */}
-          {(mode === "request" || mode === "update") && <StepBar />}
+          {(mode === "request" || mode === "update" || mode === "done") && <StepBar />}
 
           {/* ── Error banner ─────────────────────────────────────────────── */}
           {error && (

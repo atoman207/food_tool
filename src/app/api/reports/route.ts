@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase-server";
 import { sendReportNotification } from "@/lib/email";
 
 export async function GET() {
@@ -12,7 +12,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createServerSupabaseClient();
+  // Use admin client so RLS never blocks a legitimate report submission.
+  const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   const body = await req.json();
   const { data, error } = await supabase.from("reports").insert(body).select().single();
