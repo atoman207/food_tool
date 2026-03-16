@@ -288,6 +288,8 @@ const en = {
     invalidTitle: "Invalid or Expired Link",
     invalidBody: "The password reset link has expired or is invalid. Please request a new one.",
     requestNewLink: "Request New Reset Link",
+    rateLimitExceeded: "Too many reset emails sent. Please wait a few minutes before requesting another.",
+    tryAgainIn: "Try again in {seconds}s",
   },
 
   // ── Register ─────────────────────────────────────────────────────────────
