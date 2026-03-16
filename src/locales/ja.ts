@@ -270,7 +270,7 @@ const ja: Translations = {
   reset: {
     title: "パスワードリセット",
     subtitle: "登録済みのメールアドレスを入力するとリセット用のリンクを送信します。",
-    sendButton: "リセットメールを送信",
+    sendButton: "メールを送信",
     sending: "送信中...",
     sentTitle: "メールを送信しました",
     sentBody: "{email} にパスワードリセット用のリンクを送信しました。受信トレイをご確認ください。",
@@ -278,7 +278,7 @@ const ja: Translations = {
     newPasswordSubtitle: "新しいパスワードを入力してください。",
     newPassword: "新しいパスワード",
     confirmPassword: "新しいパスワード（確認）",
-    updateButton: "パスワードを更新",
+    updateButton: "変更する",
     updating: "更新中...",
     passwordTooShort: "パスワードは8文字以上で入力してください。",
     doneTitle: "パスワードを更新しました",

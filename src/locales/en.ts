@@ -269,7 +269,7 @@ const en = {
   reset: {
     title: "Reset Password",
     subtitle: "Enter your registered email address to receive a reset link.",
-    sendButton: "Send Reset Link",
+    sendButton: "Send Email",
     sending: "Sending...",
     sentTitle: "Email sent",
     sentBody: "A password reset link has been sent to {email}. Please check your inbox.",
@@ -277,7 +277,7 @@ const en = {
     newPasswordSubtitle: "Enter your new password below.",
     newPassword: "New Password",
     confirmPassword: "Confirm New Password",
-    updateButton: "Update Password",
+    updateButton: "Change Password",
     updating: "Updating...",
     passwordTooShort: "Password must be at least 8 characters.",
     doneTitle: "Password Updated",
