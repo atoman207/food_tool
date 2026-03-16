@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { sendReportNotification } from "@/lib/email";
 
 export async function GET() {
   const supabase = createServerSupabaseClient();
@@ -16,6 +17,15 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { data, error } = await supabase.from("reports").insert(body).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Notify admin of new report
+  try {
+    await sendReportNotification({
+      itemId: String(body.item_id || "unknown"),
+      reason: body.reason || "",
+    });
+  } catch {}
+
   return NextResponse.json(data);
 }
 

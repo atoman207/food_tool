@@ -128,7 +128,8 @@ const MarketplaceItemPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setShowReport(false)} />
           <div className="relative bg-background rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-in">
-            <h3 className="text-lg font-bold mb-4">{t.marketplaceItem.reportTitle}</h3>
+            <h3 className="text-lg font-bold mb-1">{t.marketplaceItem.reportTitle}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.marketplaceItem.reportEnglishOnly}</p>
             <textarea value={reportReason} onChange={(e) => setReportReason(e.target.value)} placeholder={t.marketplaceItem.reportPlaceholder} className="w-full h-24 p-3 rounded-xl border bg-background text-sm resize-none" />
             <div className="flex gap-3 mt-4">
               <Button variant="outline" onClick={() => setShowReport(false)} className="flex-1 rounded-xl">{t.common.cancel}</Button>

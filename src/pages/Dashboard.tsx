@@ -361,11 +361,12 @@ const Dashboard = () => {
                   <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-2">
                       {t.dashboard.fieldName}
+                      {lang === "ja" && <span className="ml-1 normal-case text-[10px] font-normal">（英語のみ）</span>}
                     </label>
                     <input
                       type="text"
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={(e) => setName(e.target.value.replace(/[^\x00-\x7F]/g, ""))}
                       className="w-full h-11 px-4 border-2 border-border bg-background text-sm focus:outline-none focus:border-primary transition-colors"
                     />
                   </div>

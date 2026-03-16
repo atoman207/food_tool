@@ -344,7 +344,7 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.info}</h4>
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li><a href="#" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.terms}</a></li>
-              <li><a href="#" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.privacy}</a></li>
+              <li><Link href="/privacy" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.privacy}</Link></li>
             </ul>
           </div>
           <div className="min-w-0">
@@ -355,8 +355,9 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-10 pt-6 border-t border-border text-center text-xs text-muted-foreground">
-          {t.footer.copyright}
+        <div className="mt-10 pt-6 border-t border-border text-center text-xs text-muted-foreground space-y-1">
+          <div>{t.footer.copyright}</div>
+          <div>WILL &amp; BEYOND PTE. LTD. (UEN: 202222320N)</div>
         </div>
       </div>
     </footer>

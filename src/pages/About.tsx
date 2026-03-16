@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, ShoppingBag, Newspaper, Globe, ArrowRight, CheckCircle } from "lucide-react";
+import { Search, ShoppingBag, Newspaper, Globe, ArrowRight } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/contexts/LanguageContext";
@@ -18,6 +18,22 @@ type AboutSiteContent = {
   feature_image_2?: string;
   feature_image_3?: string;
   feature_image_4?: string;
+  feature1_title_en?: string;
+  feature1_title_ja?: string;
+  feature1_desc_en?: string;
+  feature1_desc_ja?: string;
+  feature2_title_en?: string;
+  feature2_title_ja?: string;
+  feature2_desc_en?: string;
+  feature2_desc_ja?: string;
+  feature3_title_en?: string;
+  feature3_title_ja?: string;
+  feature3_desc_en?: string;
+  feature3_desc_ja?: string;
+  feature4_title_en?: string;
+  feature4_title_ja?: string;
+  feature4_desc_en?: string;
+  feature4_desc_ja?: string;
 };
 
 const DEFAULT_FEATURE_IMAGES = [
@@ -72,6 +88,7 @@ const About = () => {
   const { t, lang } = useTranslation();
   const [content, setContent] = useState<AboutSiteContent | null>(null);
   const [liveStats, setLiveStats] = useState<LiveStats | null>(null);
+  const [contentLoaded, setContentLoaded] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings?key=about_site")
@@ -84,7 +101,8 @@ const About = () => {
           } catch {}
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setContentLoaded(true));
 
     fetch("/api/stats")
       .then((r) => r.json())
@@ -102,21 +120,23 @@ const About = () => {
     content?.feature_image_4 ?? DEFAULT_FEATURE_IMAGES[3],
   ];
 
+  const heroImage = content?.hero_image || "/hero-bg.jpg";
+
   return (
     <Layout>
       {/* Hero section */}
-      <section
-        className="relative min-h-[400px] flex items-center overflow-hidden w-full bg-gradient-to-br from-primary/5 via-background to-primary/10"
-        style={content?.hero_image ? { backgroundImage: `url(${content.hero_image})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
-      >
-        {content?.hero_image && <div className="absolute inset-0 bg-black/40" />}
+      <section className="relative min-h-[400px] flex items-center overflow-hidden w-full">
+        <div className="absolute inset-0">
+          <img src={heroImage} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
+        </div>
         <div className="container py-16 md:py-20 relative z-10 min-w-0 w-full">
-          <div className="max-w-2xl min-w-0">
-            <p className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider break-words-safe">{t.about.pageSubtitle}</p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight whitespace-pre-line break-words-safe">
+          <div className={`max-w-2xl min-w-0 transition-opacity duration-300 ${contentLoaded ? "opacity-100" : "opacity-0"}`}>
+            <p className="text-sm font-semibold text-white/80 mb-3 uppercase tracking-wider break-words-safe">{t.about.pageSubtitle}</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight whitespace-pre-line break-words-safe text-white">
               {heroTitle}
             </h1>
-            <p className="mt-4 text-muted-foreground text-base sm:text-lg max-w-lg leading-relaxed whitespace-pre-line break-words-safe">
+            <p className="mt-4 text-white/85 text-base sm:text-lg max-w-lg leading-relaxed whitespace-pre-line break-words-safe">
               {heroSub}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
@@ -125,9 +145,14 @@ const About = () => {
                   {t.about.ctaButton} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/register">
-                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold">
+              <Link href="/contact">
+                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold border-white text-white hover:bg-white/10 hover:text-white">
                   {t.about.ctaButton2}
+                </Button>
+              </Link>
+              <Link href="/marketplace">
+                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold border-white text-white hover:bg-white/10 hover:text-white">
+                  {t.about.ctaButton3}
                 </Button>
               </Link>
             </div>
@@ -187,6 +212,15 @@ const About = () => {
             {features.map((feature, idx) => {
               const Icon = feature.icon;
               const isEven = idx % 2 === 0;
+              const n = idx + 1;
+              const titleKey = `feature${n}_title` as const;
+              const descKey = `feature${n}_desc` as const;
+              const featureTitle = lang === "ja"
+                ? ((content as any)?.[`${titleKey}_ja`] || t.about[feature.titleKey])
+                : ((content as any)?.[`${titleKey}_en`] || t.about[feature.titleKey]);
+              const featureDesc = lang === "ja"
+                ? ((content as any)?.[`${descKey}_ja`] || t.about[feature.descKey])
+                : ((content as any)?.[`${descKey}_en`] || t.about[feature.descKey]);
               return (
                 <div key={feature.titleKey} className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center ${!isEven ? "md:[&>*:first-child]:order-2" : ""}`}>
                   {/* Text side */}
@@ -195,20 +229,16 @@ const About = () => {
                       <div className={`w-6 h-6 rounded-full ${feature.iconBg} flex items-center justify-center`}>
                         <Icon className={`h-3.5 w-3.5 ${feature.iconColor}`} />
                       </div>
-                      0{idx + 1}
+                      0{n}
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-black">{t.about[feature.titleKey]}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{t.about[feature.descKey]}</p>
-                    <div className="flex items-center gap-2 text-sm text-primary font-semibold">
-                      <CheckCircle className="h-4 w-4" />
-                      <span>{idx === 0 ? (t.common.viewAll + " →") : ""}</span>
-                    </div>
+                    <h3 className="text-2xl md:text-3xl font-black">{featureTitle}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{featureDesc}</p>
                   </div>
                   {/* Image side */}
                   <div className={`rounded-2xl overflow-hidden shadow-lg ${feature.color}`}>
                     <img
                       src={featureImages[idx]}
-                      alt={t.about[feature.titleKey]}
+                      alt={featureTitle}
                       className="w-full h-64 md:h-80 object-cover"
                     />
                   </div>
@@ -230,9 +260,14 @@ const About = () => {
                 {t.about.ctaButton} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/register">
+            <Link href="/contact">
               <Button variant="outline" className="h-12 px-8 rounded-xl font-bold border-2 border-white bg-transparent text-white hover:bg-white/10 hover:text-white">
                 {t.about.ctaButton2}
+              </Button>
+            </Link>
+            <Link href="/marketplace">
+              <Button variant="outline" className="h-12 px-8 rounded-xl font-bold border-2 border-white bg-transparent text-white hover:bg-white/10 hover:text-white">
+                {t.about.ctaButton3}
               </Button>
             </Link>
           </div>

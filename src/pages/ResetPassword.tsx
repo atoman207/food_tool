@@ -98,7 +98,7 @@ const ResetPassword = () => {
     }
 
     const { error: err } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/reset-password`,
     });
     setLoading(false);
     if (err) {

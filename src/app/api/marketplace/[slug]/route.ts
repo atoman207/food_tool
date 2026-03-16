@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase-server";
 import { marketplaceItems as mockItems } from "@/data/mockData";
+import { sendMarketplaceRejectionEmail } from "@/lib/email";
 
 function normaliseMock(item: any) {
   return {
@@ -44,6 +45,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   const body = await req.json();
+
+  // Fetch seller info before updating, needed for rejection email
+  let sellerItem: any = null;
+  if (body.status === "rejected") {
+    const { data } = await supabase
+      .from("marketplace_items")
+      .select("seller_id, seller_name, title")
+      .eq("slug", slug)
+      .single();
+    sellerItem = data;
+  }
+
   const { data, error } = await supabase
     .from("marketplace_items")
     .update(body)
@@ -51,6 +64,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Send rejection email to seller
+  if (body.status === "rejected" && sellerItem?.seller_id) {
+    try {
+      const { data: userData } = await supabase.auth.admin.getUserById(sellerItem.seller_id);
+      if (userData?.user?.email) {
+        await sendMarketplaceRejectionEmail({
+          userEmail: userData.user.email,
+          userName: sellerItem.seller_name || userData.user.email,
+          itemTitle: sellerItem.title || slug,
+          rejectReason: body.reject_reason || "",
+        });
+      }
+    } catch {}
+  }
+
   return NextResponse.json(data);
 }
 

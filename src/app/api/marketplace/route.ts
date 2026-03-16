@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase-server";
 import { marketplaceItems as mockItems } from "@/data/mockData";
+import { sendNewListingNotification } from "@/lib/email";
 
 function normaliseMock(item: any) {
   return {
@@ -26,7 +27,8 @@ export async function GET(req: NextRequest) {
   // Used by the admin approval queue so mock pending items don't pollute it.
   const noFallback = searchParams.get("noFallback") === "true";
 
-  const useAdmin = all || status === "pending";
+  // Use admin client when fetching by seller_id so RLS doesn't hide pending items from the owner
+  const useAdmin = all || status === "pending" || !!seller_id;
   const supabase = useAdmin ? createAdminSupabaseClient() : createServerSupabaseClient();
 
   if (!supabase) {
@@ -75,5 +77,15 @@ export async function POST(req: NextRequest) {
   if (!body.status) body.status = "pending";
   const { data, error } = await supabase.from("marketplace_items").insert(body).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Notify admin of new pending listing
+  try {
+    await sendNewListingNotification({
+      title: body.title || "Unknown",
+      sellerName: body.seller_name || "Unknown",
+      price: body.price || 0,
+    });
+  } catch {}
+
   return NextResponse.json(data);
 }

@@ -49,14 +49,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const sb = getSupabase();
-    if (!sb) return;
-    const { data } = await sb
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-    setProfile(data as Profile | null);
+    try {
+      const sb = getSupabase();
+      if (!sb) return;
+      const { data } = await sb
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      setProfile(data as Profile | null);
+    } catch {
+      setProfile(null);
+    }
   }, []);
 
   const refreshProfile = useCallback(async () => {
@@ -72,14 +76,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     sb.auth
       .getSession()
-      .then(({ data: { session } }) => {
+      .then(async ({ data: { session }, error }) => {
+        if (error) {
+          const msg = error.message || "";
+          if (
+            msg.includes("Refresh Token") ||
+            msg.includes("refresh_token") ||
+            (msg.includes("invalid") && msg.includes("token"))
+          ) {
+            await sb.auth.signOut();
+            setUser(null);
+            setProfile(null);
+          }
+          setLoading(false);
+          return;
+        }
         setUser(session?.user ?? null);
-        if (session?.user) fetchProfile(session.user.id);
+        if (session?.user) void fetchProfile(session.user.id).catch(() => {});
         setLoading(false);
       })
       .catch(async (err) => {
         const msg = err?.message || "";
-        if (msg.includes("Refresh Token") || msg.includes("refresh_token") || msg.includes("invalid") && msg.includes("token")) {
+        if (
+          msg.includes("Refresh Token") ||
+          msg.includes("refresh_token") ||
+          (msg.includes("invalid") && msg.includes("token"))
+        ) {
           await sb.auth.signOut();
           setUser(null);
           setProfile(null);
@@ -90,9 +112,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = sb.auth.onAuthStateChange((event, session) => {
+      if (event === "TOKEN_REFRESHED" && !session) {
+        // Token refresh failed — clear stale session
+        sb.auth.signOut();
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        void fetchProfile(session.user.id).catch(() => {});
       } else {
         setProfile(null);
       }
@@ -260,7 +290,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const sb = getSupabase();
     if (!sb)
       return { error: "Supabase is not configured. Please check .env.local." };
-    const { error } = await sb.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       // Translate common Supabase error messages to Japanese
       if (
@@ -276,6 +306,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: "Invalid email or password." };
       }
       return { error: error.message };
+    }
+    // Check if user is banned
+    if (data.user) {
+      const { data: prof } = await sb
+        .from("profiles")
+        .select("banned")
+        .eq("id", data.user.id)
+        .single();
+      if (prof?.banned) {
+        await sb.auth.signOut();
+        return { error: "BANNED" };
+      }
     }
     return { error: null };
   };

@@ -33,6 +33,16 @@ const AdminDashboard = () => {
   const { user, profile, loading: authLoading } = useRequireAuth(true);
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("suppliers");
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (!authLoading && user && profile?.role === "admin") {
+      fetch("/api/marketplace?status=pending&noFallback=true")
+        .then((r) => r.json())
+        .then((d) => setPendingCount(Array.isArray(d) ? d.length : 0))
+        .catch(() => {});
+    }
+  }, [authLoading, user, profile]);
 
   const adminTabs = [
     { id: "suppliers",  label: t.admin.tabSuppliers,  icon: Store },
@@ -44,6 +54,7 @@ const AdminDashboard = () => {
     { id: "categories", label: t.admin.tabCategories, icon: Tag },
     { id: "about",      label: t.admin.tabAbout,     icon: FileText },
     { id: "terms",      label: t.admin.tabTerms,      icon: Shield },
+    { id: "privacy",    label: t.admin.tabPrivacy,    icon: Shield },
     { id: "qr",         label: t.admin.tabQR,         icon: Link2 },
     { id: "reports",    label: t.admin.tabReports,    icon: AlertTriangle },
     { id: "analytics",  label: t.admin.tabAnalytics,  icon: BarChart3 },
@@ -78,6 +89,11 @@ const AdminDashboard = () => {
                   }`}
                 >
                   <tab.icon className="h-4 w-4" /> {tab.label}
+                  {tab.id === "approvals" && pendingCount > 0 && (
+                    <span className="ml-auto min-w-[1.25rem] h-5 px-1 flex items-center justify-center text-[10px] font-bold bg-destructive text-destructive-foreground rounded-full">
+                      {pendingCount}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -94,19 +110,25 @@ const AdminDashboard = () => {
                   }`}
                 >
                   <tab.icon className="h-3.5 w-3.5" /> {tab.label}
+                  {tab.id === "approvals" && pendingCount > 0 && (
+                    <span className="min-w-[1.125rem] h-[1.125rem] px-0.5 flex items-center justify-center text-[9px] font-bold bg-destructive text-destructive-foreground rounded-full">
+                      {pendingCount}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
 
             {activeTab === "suppliers" && <SupplierManager />}
             {activeTab === "users" && <UsersManager />}
-            {activeTab === "approvals" && <ApprovalQueue />}
+            {activeTab === "approvals" && <ApprovalQueue onCountChange={setPendingCount} />}
             {activeTab === "marketplace" && <MarketplaceManager />}
             {activeTab === "news" && <NewsManager />}
             {activeTab === "links" && <LinksManager />}
             {activeTab === "categories" && <CategoryManager />}
             {activeTab === "about" && <AboutSiteManager />}
             {activeTab === "terms" && <TermsManager />}
+            {activeTab === "privacy" && <PrivacyManager />}
             {activeTab === "qr" && <QRManager />}
             {activeTab === "reports" && <ReportManager />}
             {activeTab === "analytics" && <AnalyticsPanel />}
@@ -120,8 +142,8 @@ const AdminDashboard = () => {
 };
 
 const PLAN_BADGE: Record<string, string> = {
-  premium: "bg-primary/10 text-primary border border-primary/40",
-  standard: "bg-sky-100 text-sky-700 border border-sky-300",
+  premium: "bg-amber-100 text-amber-700 border border-amber-300",
+  standard: "bg-red-100 text-red-600 border border-red-300",
   basic: "bg-muted text-muted-foreground border border-border",
 };
 const PLAN_LABEL: Record<string, string> = { premium: "Premium", standard: "Standard", basic: "Basic" };
@@ -939,7 +961,7 @@ function ProductManager({ slug }: { slug: string }) {
   );
 }
 
-function ApprovalQueue() {
+function ApprovalQueue({ onCountChange }: { onCountChange?: (n: number) => void }) {
   const [items, setItems] = useState<any[]>([]);
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -950,7 +972,9 @@ function ApprovalQueue() {
   const fetchItems = async () => {
     const res = await fetch("/api/marketplace?status=pending&noFallback=true");
     const data = await res.json();
-    setItems(Array.isArray(data) ? data : []);
+    const list = Array.isArray(data) ? data : [];
+    setItems(list);
+    onCountChange?.(list.length);
   };
 
   const handleApprove = async (slug: string) => {
@@ -995,9 +1019,12 @@ function ApprovalQueue() {
                 </div>
               </div>
               {rejectId === item.id && (
-                <div className="mt-4 flex gap-2">
-                  <input value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder={t.admin.approvalRejectPlaceholder} className="flex-1 h-10 px-3 rounded-lg border bg-background text-sm" />
-                  <Button size="sm" className="rounded-xl" onClick={() => handleReject(item.slug)}>{t.admin.approvalSend}</Button>
+                <div className="mt-4 space-y-1.5">
+                  <p className="text-xs text-muted-foreground">{t.admin.approvalRejectLabel}</p>
+                  <div className="flex gap-2">
+                    <input value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder={t.admin.approvalRejectPlaceholder} className="flex-1 h-10 px-3 rounded-lg border bg-background text-sm" />
+                    <Button size="sm" className="rounded-xl" onClick={() => handleReject(item.slug)}>{t.admin.approvalSend}</Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1571,6 +1598,22 @@ export type AboutSiteContent = {
   feature_image_2?: string;
   feature_image_3?: string;
   feature_image_4?: string;
+  feature1_title_en?: string;
+  feature1_title_ja?: string;
+  feature1_desc_en?: string;
+  feature1_desc_ja?: string;
+  feature2_title_en?: string;
+  feature2_title_ja?: string;
+  feature2_desc_en?: string;
+  feature2_desc_ja?: string;
+  feature3_title_en?: string;
+  feature3_title_ja?: string;
+  feature3_desc_en?: string;
+  feature3_desc_ja?: string;
+  feature4_title_en?: string;
+  feature4_title_ja?: string;
+  feature4_desc_en?: string;
+  feature4_desc_ja?: string;
 };
 
 const DEFAULT_ABOUT: AboutSiteContent = {};
@@ -1677,6 +1720,38 @@ function AboutSiteManager() {
             ))}
           </div>
         </div>
+
+        {/* Feature section text (01–04) */}
+        <div>
+          <label className="text-sm font-medium block mb-3">
+            {lang === "ja" ? "特集テキスト（01〜04）— 空白でデフォルト表示" : "Feature text (01–04) — leave blank to use default"}
+          </label>
+          <div className="space-y-6">
+            {([1, 2, 3, 4] as const).map((i) => (
+              <div key={i} className="border rounded-lg p-4 space-y-3">
+                <p className="text-sm font-semibold text-muted-foreground">0{i}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium block mb-1">Title (EN)</label>
+                    <input value={(form as any)[`feature${i}_title_en`] ?? ""} onChange={(e) => setForm((p) => ({ ...p, [`feature${i}_title_en`]: e.target.value }))} className="w-full h-9 px-3 rounded-lg border bg-background text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium block mb-1">Title (JA)</label>
+                    <input value={(form as any)[`feature${i}_title_ja`] ?? ""} onChange={(e) => setForm((p) => ({ ...p, [`feature${i}_title_ja`]: e.target.value }))} className="w-full h-9 px-3 rounded-lg border bg-background text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium block mb-1">Description (EN)</label>
+                    <textarea value={(form as any)[`feature${i}_desc_en`] ?? ""} onChange={(e) => setForm((p) => ({ ...p, [`feature${i}_desc_en`]: e.target.value }))} rows={2} className="w-full p-2 rounded-lg border bg-background text-sm resize-none" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium block mb-1">Description (JA)</label>
+                    <textarea value={(form as any)[`feature${i}_desc_ja`] ?? ""} onChange={(e) => setForm((p) => ({ ...p, [`feature${i}_desc_ja`]: e.target.value }))} rows={2} className="w-full p-2 rounded-lg border bg-background text-sm resize-none" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="flex items-center gap-3">
           <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}>
             <Save className="h-4 w-4" /> {saving ? t.common.saving : t.common.save}
@@ -1723,6 +1798,47 @@ function TermsManager() {
             <Save className="h-4 w-4" /> {saving ? t.common.saving : t.admin.termsSave}
           </Button>
           {saved && <span className="text-sm text-emerald-600 font-medium">{t.admin.termsSaved}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PrivacyManager() {
+  const [privacyText, setPrivacyText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    fetch("/api/settings?key=privacy_policy").then((r) => r.json()).then((d) => setPrivacyText(d?.value || ""));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "privacy_policy", value: privacyText }) });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold mb-6">{t.admin.tabPrivacy}</h2>
+      <div className="bg-card border p-6 max-w-2xl">
+        <label className="text-sm font-medium block mb-1.5">{t.admin.privacyLabel}</label>
+        <textarea
+          value={privacyText}
+          onChange={(e) => setPrivacyText(e.target.value)}
+          rows={16}
+          className="w-full p-3 rounded-lg border bg-background text-sm resize-y font-mono mb-4"
+          placeholder="Enter privacy policy content here..."
+        />
+        <div className="flex items-center gap-3">
+          <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}>
+            <Save className="h-4 w-4" /> {saving ? t.common.saving : t.admin.privacySave}
+          </Button>
+          {saved && <span className="text-sm text-emerald-600 font-medium">{t.admin.privacySaved}</span>}
         </div>
       </div>
     </div>

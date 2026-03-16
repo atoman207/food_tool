@@ -23,7 +23,7 @@ const Register = () => {
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { signUp } = useAuth();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
 
   useEffect(() => {
@@ -206,12 +206,14 @@ const Register = () => {
 
                 <div className={`space-y-1.5 ${stagger} animate-stagger-5`}>
                   <label className="text-sm font-medium text-foreground block break-words-safe">
-                    {t.register.name} <span className="text-destructive">*</span>
+                    {t.register.name}
+                    {lang === "ja" && <span className="text-xs font-normal text-muted-foreground ml-1">（英語のみ）</span>}
+                    <span className="text-destructive"> *</span>
                   </label>
                   <input
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setName(e.target.value.replace(/[^\x00-\x7F]/g, ""))}
                     placeholder={t.register.namePlaceholder}
                     className="w-full min-w-0 h-11 sm:h-12 px-4 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     required

@@ -62,10 +62,17 @@ const NewItem = () => {
 
   const handleChange = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
 
+  const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    const invalidFiles = files.filter((f) => !ACCEPTED_IMAGE_TYPES.includes(f.type));
+    if (invalidFiles.length > 0) {
+      alert(t.newItem.imageFormatError);
+    }
+    const validFiles = files.filter((f) => ACCEPTED_IMAGE_TYPES.includes(f.type));
     const remaining = 5 - imageFiles.length;
-    const newFiles = files.slice(0, remaining);
+    const newFiles = validFiles.slice(0, remaining);
     newFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (ev) => setImagePreviews((prev) => [...prev, ev.target?.result as string]);
@@ -261,7 +268,7 @@ const NewItem = () => {
                 {t.newItem.fieldImages} ({imageFiles.length}/5)
               </button>
             )}
-            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageSelect} />
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={handleImageSelect} />
           </div>
 
           {/* Terms of Service */}

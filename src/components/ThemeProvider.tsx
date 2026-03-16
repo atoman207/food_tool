@@ -146,9 +146,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
-      .then((rows: { key: string; value: string }[]) => {
-        const fontRow  = rows.find((r) => r.key === "site_font");
-        const colorRow = rows.find((r) => r.key === "site_color");
+      .then((rows: unknown) => {
+        const list = Array.isArray(rows) ? rows as { key?: string; value?: string }[] : [];
+        const fontRow  = list.find((r) => r?.key === "site_font");
+        const colorRow = list.find((r) => r?.key === "site_color");
         applyTheme(fontRow?.value ?? "inter", colorRow?.value ?? "red");
       })
       .catch(() => {});

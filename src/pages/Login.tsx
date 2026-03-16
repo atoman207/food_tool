@@ -18,7 +18,7 @@ const Login = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSent, setResendSent] = useState(false);
   const { signIn, resendConfirmationEmail } = useAuth();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,6 +32,13 @@ const Login = () => {
 
     if (err === "EMAIL_NOT_CONFIRMED") {
       setEmailNotConfirmed(true);
+      return;
+    }
+
+    if (err === "BANNED") {
+      setError(lang === "ja"
+        ? "このアカウントは停止されています。管理者にお問い合わせください。"
+        : "This account has been suspended. Please contact support.");
       return;
     }
 

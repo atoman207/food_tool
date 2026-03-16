@@ -29,9 +29,9 @@ export const metadata: Metadata = {
     "F&B portal",
   ],
   icons: {
-    icon: "/pabicon.png",
+    icon: "/icon.png",
     apple: [
-      { url: "/pabicon.png", sizes: "180x180" },
+      { url: "/icon.png", sizes: "180x180" },
     ],
   },
   robots: { index: true, follow: true },

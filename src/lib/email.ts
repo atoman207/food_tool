@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-const CONTACT_TO = process.env.CONTACT_EMAIL_TO || "japan.dev07@gmail.com";
+const CONTACT_TO = process.env.CONTACT_EMAIL_TO || "tkcsg2026@gmail.com";
 /** Contact form emails are always sent to CONTACT_TO and also forwarded here. */
 const CONTACT_FORWARD_TO = "tkcsg2026@gmail.com";
 const ADMIN_NOTIFY_FROM = process.env.ADMIN_NOTIFY_FROM || "tkcsg2026@gmail.com";
@@ -89,6 +89,85 @@ export async function sendAdminActionEmail(data: {
     subject: subjects[action],
     html: `<p>${bodies[action]}</p>`,
     text: bodies[action].replace(/<[^>]+>/g, ""),
+  });
+
+  return true;
+}
+
+export async function sendNewListingNotification(data: {
+  title: string;
+  sellerName: string;
+  price: number;
+}): Promise<boolean> {
+  const transporter = getTransporter();
+  if (!transporter) return false;
+
+  const { title, sellerName, price } = data;
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: CONTACT_FORWARD_TO,
+    subject: `[商品承認待ち] ${title}`,
+    html: [
+      `<p>新しい売り&amp;買い出品が承認待ちです。</p>`,
+      `<p><strong>商品名:</strong> ${escapeHtml(title)}</p>`,
+      `<p><strong>出品者:</strong> ${escapeHtml(sellerName)}</p>`,
+      `<p><strong>価格:</strong> S$${price}</p>`,
+      `<p><a href="https://thekitchenconnection.net/admin">管理ダッシュボードで確認する →</a></p>`,
+    ].join("\n"),
+    text: `新しい売り&買い出品が承認待ちです。\n商品名: ${title}\n出品者: ${sellerName}\n価格: S$${price}\n管理ダッシュボード: https://thekitchenconnection.net/admin`,
+  });
+
+  return true;
+}
+
+export async function sendMarketplaceRejectionEmail(data: {
+  userEmail: string;
+  userName: string;
+  itemTitle: string;
+  rejectReason: string;
+}): Promise<boolean> {
+  const transporter = getTransporter();
+  if (!transporter) return false;
+
+  const { userEmail, userName, itemTitle, rejectReason } = data;
+
+  await transporter.sendMail({
+    from: ADMIN_NOTIFY_FROM,
+    to: userEmail,
+    subject: `Your listing "${itemTitle}" has been rejected`,
+    html: [
+      `<p>Dear ${escapeHtml(userName)},</p>`,
+      `<p>Your listing <strong>${escapeHtml(itemTitle)}</strong> on The Kitchen Connection has been <strong>rejected</strong>.</p>`,
+      rejectReason ? `<p><strong>Reason:</strong> ${escapeHtml(rejectReason)}</p>` : "",
+      `<p>If you have any questions, please contact us.</p>`,
+    ].join("\n"),
+    text: `Dear ${userName},\n\nYour listing "${itemTitle}" has been rejected.\n${rejectReason ? `Reason: ${rejectReason}\n` : ""}\nIf you have any questions, please contact us.`,
+  });
+
+  return true;
+}
+
+export async function sendReportNotification(data: {
+  itemId: string;
+  reason: string;
+}): Promise<boolean> {
+  const transporter = getTransporter();
+  if (!transporter) return false;
+
+  const { itemId, reason } = data;
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: CONTACT_FORWARD_TO,
+    subject: `[商品報告] 商品ID: ${itemId}`,
+    html: [
+      `<p>商品に対する報告が届きました。</p>`,
+      `<p><strong>商品ID:</strong> ${escapeHtml(itemId)}</p>`,
+      `<p><strong>報告理由:</strong> ${escapeHtml(reason)}</p>`,
+      `<p><a href="https://thekitchenconnection.net/admin">管理ダッシュボードで確認する →</a></p>`,
+    ].join("\n"),
+    text: `商品報告\n商品ID: ${itemId}\n報告理由: ${reason}\n管理ダッシュボード: https://thekitchenconnection.net/admin`,
   });
 
   return true;

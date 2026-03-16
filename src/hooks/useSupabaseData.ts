@@ -14,8 +14,8 @@ export function useFetch<T>(url: string, deps: unknown[] = []) {
       if (!res.ok) throw new Error("Failed to fetch");
       const json = await res.json();
       setData(json);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to fetch");
     } finally {
       setLoading(false);
     }

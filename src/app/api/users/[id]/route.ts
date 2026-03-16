@@ -66,12 +66,17 @@ export async function PUT(
   if (payload.banned === false) action = "unban_user";
 
   const changedFields = Object.keys(payload).join(", ");
+  const nameEmail = (data as any).name
+    ? `${(data as any).name}${(data as any).email ? ` (${(data as any).email})` : ""}`
+    : id;
   await logAuditAction({
     adminId: auth.adminId,
     action,
     targetType: "user",
     targetId: id,
-    detail: `${(data as any).name || id} — fields: ${changedFields}`,
+    detail: action === "ban_user" || action === "unban_user"
+      ? nameEmail
+      : `${nameEmail} — fields: ${changedFields}`,
   });
 
   if ((action === "ban_user" || action === "unban_user") && (data as any).email) {
