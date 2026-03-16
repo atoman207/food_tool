@@ -6,12 +6,33 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
 import { useTranslation } from "@/contexts/LanguageContext";
-import { Mail, KeyRound, CheckCircle2, ArrowLeft, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import {
+  Mail, KeyRound, CheckCircle2, ArrowLeft, AlertTriangle,
+  Eye, EyeOff, Send, Lock, ShieldCheck,
+} from "lucide-react";
 
 type Mode = "request" | "verifying" | "update" | "done" | "invalid";
 
+/* Derive a simple 0-4 strength score for a password */
+function passwordStrength(pw: string): 0 | 1 | 2 | 3 | 4 {
+  if (!pw) return 0;
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return Math.min(score, 4) as 0 | 1 | 2 | 3 | 4;
+}
+
+const STRENGTH_LABEL_EN = ["", "Weak", "Fair", "Good", "Strong"];
+const STRENGTH_LABEL_JA = ["", "弱い", "まあまあ", "良い", "強い"];
+const STRENGTH_COLOR  = [
+  "", "bg-red-500", "bg-orange-400", "bg-yellow-400", "bg-green-500",
+];
+
 const ResetPassword = () => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("request");
   const [email, setEmail] = useState("");
@@ -22,54 +43,51 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
+  const strength = passwordStrength(password);
+  const strengthLabel = lang === "ja" ? STRENGTH_LABEL_JA[strength] : STRENGTH_LABEL_EN[strength];
+  const passwordsMatch = confirm.length > 0 && password === confirm;
+  const passwordsMismatch = confirm.length > 0 && password !== confirm;
+
+  /* Cooldown timer after rate-limit */
+  useEffect(() => {
+    if (cooldownSeconds <= 0) return;
+    const id = setInterval(() => setCooldownSeconds((s) => (s <= 1 ? 0 : s - 1)), 1000);
+    return () => clearInterval(id);
+  }, [cooldownSeconds]);
+
+  /* Detect password-recovery session from Supabase redirect */
   useEffect(() => {
     const sb = getSupabase();
     if (!sb) return;
 
-    // Subscribe to PASSWORD_RECOVERY event — fires when Supabase auto-exchanges
-    // the PKCE code or processes the implicit flow token.
-    const {
-      data: { subscription },
-    } = sb.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setMode("update");
-      }
+    const { data: { subscription } } = sb.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setMode("update");
     });
 
-    // ── Implicit flow: token is in the URL hash ──────────────────────────────
+    // Implicit flow: token in URL hash
     const hash = typeof window !== "undefined" ? window.location.hash : "";
     if (hash.includes("type=recovery") || hash.includes("access_token")) {
       setMode("update");
       return () => subscription.unsubscribe();
     }
 
-    // ── PKCE flow: ?code= is in the URL query string ─────────────────────────
-    const params =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search)
-        : null;
+    // PKCE flow: ?code= in query string
+    const params = typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search) : null;
     const code = params?.get("code");
 
     if (code) {
       setMode("verifying");
-      sb.auth
-        .exchangeCodeForSession(code)
+      sb.auth.exchangeCodeForSession(code)
         .then(({ data, error: err }) => {
-          // Clean up the one-time code from the address bar
           if (typeof window !== "undefined") {
             window.history.replaceState({}, "", window.location.pathname);
           }
-
           if (err) {
-            // The code may have already been exchanged by the AuthProvider's
-            // getSession() call — check whether a live session already exists.
             sb.auth.getSession().then(({ data: { session } }) => {
-              if (session) {
-                setMode("update");
-              } else {
-                setMode("invalid");
-              }
+              setMode(session ? "update" : "invalid");
             });
           } else if (data.session) {
             setMode("update");
@@ -78,14 +96,13 @@ const ResetPassword = () => {
           }
         })
         .catch(() => setMode("invalid"));
-
       return () => subscription.unsubscribe();
     }
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── Send password-reset email ────────────────────────────────────────────
+  /* ── Step 1: send reset email ─────────────────────────────────────────── */
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -97,24 +114,32 @@ const ResetPassword = () => {
       return;
     }
 
-    // Always use the configured production URL so the reset link in the email
-    // points to the live site, not localhost.
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      (typeof window !== "undefined" ? window.location.origin : "https://fbportal.sg");
+    // Always use the domain the user is currently on so the link in the
+    // email goes to the live site, not localhost.
+    const origin = typeof window !== "undefined"
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_SITE_URL || "https://fbportal.sg");
 
     const { error: err } = await sb.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/reset-password`,
     });
     setLoading(false);
     if (err) {
-      setError(err.message);
+      const isRateLimit =
+        err.message?.toLowerCase().includes("rate limit") ||
+        err.message?.toLowerCase().includes("rate_limit");
+      if (isRateLimit) {
+        setError(t.reset.rateLimitExceeded);
+        setCooldownSeconds(60);
+      } else {
+        setError(err.message);
+      }
       return;
     }
     setSent(true);
   };
 
-  // ── Set the new password ─────────────────────────────────────────────────
+  /* ── Step 3: set new password ─────────────────────────────────────────── */
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -141,77 +166,107 @@ const ResetPassword = () => {
       return;
     }
 
-    // Sign out so the user re-authenticates with their new password
     await sb.auth.signOut();
     setLoading(false);
     setMode("done");
+  };
+
+  /* ── Step indicator (shown when not verifying / done / invalid) ─────── */
+  const StepBar = () => {
+    const step = mode === "update" ? 2 : 0;
+    const steps = lang === "ja"
+      ? ["メール入力", "パスワード設定", "完了"]
+      : ["Enter Email", "Set Password", "Done"];
+    return (
+      <div className="flex items-center justify-center gap-1 mb-8">
+        {steps.map((label, i) => (
+          <div key={i} className="flex items-center gap-1">
+            <div className={`flex flex-col items-center gap-0.5`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors
+                ${i <= step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                {i < step ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+              </div>
+              <span className={`text-[10px] hidden sm:block ${i <= step ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                {label}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div className={`w-8 h-0.5 mb-3 rounded-full ${i < step ? "bg-primary" : "bg-muted"}`} />
+            )}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
     <Layout>
       <div className="container max-w-md py-8 sm:py-16">
         <div className="bg-card border p-6 sm:p-8 rounded-2xl shadow-sm">
-          {/* ── Header ──────────────────────────────────────────────────── */}
-          <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
-              <KeyRound className="h-6 w-6 text-primary-foreground" />
+
+          {/* ── Header ───────────────────────────────────────────────────── */}
+          <div className="text-center mb-6">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4
+              ${mode === "done" ? "bg-green-500" : mode === "invalid" ? "bg-destructive" : "bg-primary"}`}>
+              {mode === "done"
+                ? <CheckCircle2 className="h-6 w-6 text-white" />
+                : mode === "invalid"
+                  ? <AlertTriangle className="h-6 w-6 text-white" />
+                  : mode === "update"
+                    ? <Lock className="h-6 w-6 text-primary-foreground" />
+                    : <KeyRound className="h-6 w-6 text-primary-foreground" />
+              }
             </div>
             <h1 className="text-2xl font-bold">
-              {mode === "update" ? t.reset.newPasswordTitle : t.reset.title}
+              {mode === "update" ? t.reset.newPasswordTitle
+                : mode === "done" ? t.reset.doneTitle
+                : mode === "invalid" ? t.reset.invalidTitle
+                : t.reset.title}
             </h1>
-            {mode !== "invalid" && mode !== "verifying" && (
+            {mode !== "invalid" && mode !== "verifying" && mode !== "done" && (
               <p className="text-sm text-muted-foreground mt-2">
-                {mode === "update"
-                  ? t.reset.newPasswordSubtitle
-                  : t.reset.subtitle}
+                {mode === "update" ? t.reset.newPasswordSubtitle : t.reset.subtitle}
               </p>
             )}
           </div>
 
-          {/* ── Error banner ────────────────────────────────────────────── */}
+          {/* ── Step bar ─────────────────────────────────────────────────── */}
+          {(mode === "request" || mode === "update") && <StepBar />}
+
+          {/* ── Error banner ─────────────────────────────────────────────── */}
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
-              {error}
+            <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* ── Verifying link ──────────────────────────────────────────── */}
+          {/* ── Verifying ────────────────────────────────────────────────── */}
           {mode === "verifying" && (
-            <div className="text-center py-6 text-muted-foreground text-sm animate-pulse">
-              {t.reset.verifying}
+            <div className="text-center py-8 text-muted-foreground text-sm space-y-2">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+              <p>{t.reset.verifying}</p>
             </div>
           )}
 
-          {/* ── Invalid / expired link ──────────────────────────────────── */}
+          {/* ── Invalid / expired link ───────────────────────────────────── */}
           {mode === "invalid" && (
             <div className="text-center space-y-4">
-              <div className="flex items-center justify-center gap-2 text-destructive">
-                <AlertTriangle className="h-5 w-5" />
-                <p className="font-semibold">{t.reset.invalidTitle}</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {t.reset.invalidBody}
-              </p>
+              <p className="text-sm text-muted-foreground">{t.reset.invalidBody}</p>
               <Button
                 className="w-full h-11 rounded-xl font-bold"
-                onClick={() => {
-                  setError("");
-                  setSent(false);
-                  setMode("request");
-                }}
+                onClick={() => { setError(""); setSent(false); setMode("request"); }}
               >
                 {t.reset.requestNewLink}
               </Button>
             </div>
           )}
 
-          {/* ── Request mode: enter email ────────────────────────────────── */}
+          {/* ── Step 1: enter email ──────────────────────────────────────── */}
           {mode === "request" && !sent && (
             <form onSubmit={handleRequest} className="space-y-4">
               <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {t.login.email}
-                </label>
+                <label className="text-sm font-medium block mb-1.5">{t.login.email}</label>
                 <input
                   type="email"
                   value={email}
@@ -219,46 +274,68 @@ const ResetPassword = () => {
                   placeholder="email@example.com"
                   className="w-full h-11 px-4 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                   required
+                  autoComplete="email"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full h-11 rounded-xl font-bold"
-                disabled={loading}
+                className="w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2"
+                disabled={loading || cooldownSeconds > 0}
               >
-                {loading ? t.reset.sending : t.reset.sendButton}
+                {loading
+                  ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{t.reset.sending}</>
+                  : cooldownSeconds > 0
+                    ? t.reset.tryAgainIn.replace("{seconds}", String(cooldownSeconds))
+                    : <><Send className="h-4 w-4" />{t.reset.sendButton}</>}
               </Button>
             </form>
           )}
 
-          {/* ── Sent confirmation ────────────────────────────────────────── */}
+          {/* ── Step 2: email sent ───────────────────────────────────────── */}
           {mode === "request" && sent && (
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center gap-2 text-primary">
-                <Mail className="h-5 w-5" />
-                <p className="font-semibold">{t.reset.sentTitle}</p>
+            <div className="space-y-4">
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center space-y-2">
+                <div className="flex items-center justify-center gap-2 text-primary font-semibold">
+                  <Mail className="h-5 w-5" />
+                  <span>{t.reset.sentTitle}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t.reset.sentBody.replace("{email}", email)}
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {t.reset.sentBody.replace("{email}", email)}
-              </p>
+              <div className="bg-muted/50 rounded-xl p-4 space-y-1.5 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground text-sm">
+                  {lang === "ja" ? "メールが届かない場合" : "Didn't receive the email?"}
+                </p>
+                <p>• {lang === "ja" ? "迷惑メールフォルダをご確認ください" : "Check your spam / junk folder"}</p>
+                <p>• {lang === "ja" ? "数分かかる場合があります" : "It may take a few minutes to arrive"}</p>
+                <p>• {lang === "ja" ? "登録済みのメールアドレスか確認してください" : "Make sure you used your registered email address"}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setSent(false); setEmail(""); setError(""); }}
+                className="w-full text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+              >
+                {lang === "ja" ? "別のメールアドレスで再試行" : "Try a different email address"}
+              </button>
             </div>
           )}
 
-          {/* ── Update mode: enter new password ─────────────────────────── */}
+          {/* ── Step 3: set new password ─────────────────────────────────── */}
           {mode === "update" && (
             <form onSubmit={handleUpdate} className="space-y-4">
+              {/* New password */}
               <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {t.reset.newPassword}
-                </label>
+                <label className="text-sm font-medium block mb-1.5">{t.reset.newPassword}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="8 characters or more"
+                    placeholder={lang === "ja" ? "8文字以上" : "8 characters or more"}
                     className="w-full h-11 px-4 pr-11 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -266,26 +343,45 @@ const ResetPassword = () => {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     tabIndex={-1}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {/* Strength bar */}
+                {password.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className={`h-1 flex-1 rounded-full transition-colors
+                          ${strength >= i ? STRENGTH_COLOR[strength] : "bg-muted"}`} />
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {lang === "ja" ? "強度: " : "Strength: "}
+                      <span className={`font-medium ${
+                        strength <= 1 ? "text-red-500" :
+                        strength === 2 ? "text-orange-400" :
+                        strength === 3 ? "text-yellow-500" : "text-green-500"
+                      }`}>{strengthLabel}</span>
+                    </p>
+                  </div>
+                )}
               </div>
+
+              {/* Confirm password */}
               <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {t.reset.confirmPassword}
-                </label>
+                <label className="text-sm font-medium block mb-1.5">{t.reset.confirmPassword}</label>
                 <div className="relative">
                   <input
                     type={showConfirm ? "text" : "password"}
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-11 px-4 pr-11 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className={`w-full h-11 px-4 pr-11 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 transition-colors
+                      ${passwordsMatch ? "border-green-400 focus:ring-green-400/50"
+                        : passwordsMismatch ? "border-red-400 focus:ring-red-400/50"
+                        : "focus:ring-primary/50"}`}
                     required
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -293,32 +389,44 @@ const ResetPassword = () => {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     tabIndex={-1}
                   >
-                    {showConfirm ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {passwordsMatch && (
+                  <p className="mt-1 text-xs text-green-500 flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    {lang === "ja" ? "パスワードが一致しています" : "Passwords match"}
+                  </p>
+                )}
+                {passwordsMismatch && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {lang === "ja" ? "パスワードが一致していません" : "Passwords do not match"}
+                  </p>
+                )}
               </div>
+
               <Button
                 type="submit"
-                className="w-full h-11 rounded-xl font-bold"
-                disabled={loading}
+                className="w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2"
+                disabled={loading || !password || !confirm || passwordsMismatch}
               >
-                {loading ? t.reset.updating : t.reset.updateButton}
+                {loading
+                  ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{t.reset.updating}</>
+                  : <><ShieldCheck className="h-4 w-4" />{t.reset.updateButton}</>}
               </Button>
             </form>
           )}
 
-          {/* ── Done ────────────────────────────────────────────────────── */}
+          {/* ── Done ─────────────────────────────────────────────────────── */}
           {mode === "done" && (
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center gap-2 text-primary">
-                <CheckCircle2 className="h-6 w-6" />
-                <p className="font-semibold text-lg">{t.reset.doneTitle}</p>
+            <div className="text-center space-y-5">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-5 space-y-2">
+                <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <p className="font-semibold">{t.reset.doneTitle}</p>
+                </div>
+                <p className="text-sm text-muted-foreground">{t.reset.doneBody}</p>
               </div>
-              <p className="text-sm text-muted-foreground">{t.reset.doneBody}</p>
               <Button
                 className="w-full h-11 rounded-xl font-bold"
                 onClick={() => router.push("/login")}
@@ -328,7 +436,7 @@ const ResetPassword = () => {
             </div>
           )}
 
-          {/* ── Back to login link (request mode only) ──────────────────── */}
+          {/* ── Back to login ─────────────────────────────────────────────── */}
           {(mode === "request" || mode === "invalid") && (
             <div className="mt-6 text-center">
               <Link
