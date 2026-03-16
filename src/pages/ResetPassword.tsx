@@ -97,8 +97,14 @@ const ResetPassword = () => {
       return;
     }
 
+    // Always use the configured production URL so the reset link in the email
+    // points to the live site, not localhost.
+    const origin =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (typeof window !== "undefined" ? window.location.origin : "https://fbportal.sg");
+
     const { error: err } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/reset-password`,
+      redirectTo: `${origin}/reset-password`,
     });
     setLoading(false);
     if (err) {
