@@ -289,6 +289,7 @@ const ja: Translations = {
     verifying: "リセットリンクを確認中…",
     invalidTitle: "無効または期限切れのリンク",
     invalidBody: "パスワードリセットリンクの期限が切れているか、無効です。新しいリンクをリクエストしてください。",
+    sessionMissing: "リセットリンクの有効期限が切れているか、別のタブで使用されています。最初のステップから新しいリンクをリクエストしてください。",
     requestNewLink: "新しいリセットリンクをリクエスト",
     rateLimitExceeded: "リセットメールの送信回数が上限に達しました。数分待ってから再度お試しください。",
     tryAgainIn: "あと {seconds} 秒で再試行できます",

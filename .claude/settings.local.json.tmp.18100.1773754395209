@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"e:/My project/singapore/singapore_food_site-master/\"*.ps1)"
+    ]
+  }
+}

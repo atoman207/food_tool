@@ -288,6 +288,7 @@ const en = {
     verifying: "Verifying reset link…",
     invalidTitle: "Invalid or Expired Link",
     invalidBody: "The password reset link has expired or is invalid. Please request a new one.",
+    sessionMissing: "Your reset link has expired or was used in another tab. Please request a new link from the first step.",
     requestNewLink: "Request New Reset Link",
     rateLimitExceeded: "Too many reset emails sent. Please wait a few minutes before requesting another.",
     tryAgainIn: "Try again in {seconds}s",
