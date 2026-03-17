@@ -62,40 +62,69 @@ const ResetPassword = () => {
     const sb = getSupabase();
     if (!sb) return;
 
+    const hash   = typeof window !== "undefined" ? window.location.hash : "";
+    const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const code   = params?.get("code");
+
+    const clearUrl = () => {
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    };
+
+    // ── Subscribe FIRST so we never miss events ──────────────────────────
     const { data: { subscription } } = sb.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setMode("update");
+      if (event === "PASSWORD_RECOVERY") {
+        clearUrl();
+        setMode("update");
+      }
     });
 
-    // Implicit flow: token in URL hash
-    const hash = typeof window !== "undefined" ? window.location.hash : "";
+    // ── Implicit flow: token in URL hash ─────────────────────────────────
     if (hash.includes("type=recovery") || hash.includes("access_token")) {
+      clearUrl();
       setMode("update");
       return () => subscription.unsubscribe();
     }
 
-    // PKCE flow: ?code= in query string
-    const params = typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search) : null;
-    const code = params?.get("code");
-
+    // ── PKCE flow: ?code= in query string ────────────────────────────────
     if (code) {
       setMode("verifying");
-      sb.auth.exchangeCodeForSession(code)
-        .then(({ data, error: err }) => {
-          if (typeof window !== "undefined") {
-            window.history.replaceState({}, "", window.location.pathname);
-          }
-          if (err) {
+
+      // Supabase may have auto-exchanged the code already during client init.
+      // Check for an existing session first to avoid a "code already used" error.
+      sb.auth.getSession().then(({ data: { session: existingSession } }) => {
+        if (existingSession) {
+          // Auto-exchange succeeded — session is already established.
+          clearUrl();
+          setMode("update");
+          return;
+        }
+
+        // No session yet — exchange the code manually.
+        sb.auth.exchangeCodeForSession(code)
+          .then(({ data, error: err }) => {
+            clearUrl();
+            if (data.session) {
+              setMode("update");
+            } else if (err) {
+              // Exchange failed — check one more time (race with auth listener)
+              sb.auth.getSession().then(({ data: { session } }) => {
+                setMode(session ? "update" : "invalid");
+              });
+            } else {
+              setMode("invalid");
+            }
+          })
+          .catch(() => {
+            clearUrl();
+            // Last resort: maybe the listener already set up the session
             sb.auth.getSession().then(({ data: { session } }) => {
               setMode(session ? "update" : "invalid");
             });
-          } else if (data.session) {
-            setMode("update");
-          } else {
-            setMode("invalid");
-          }
-        })
-        .catch(() => setMode("invalid"));
+          });
+      });
+
       return () => subscription.unsubscribe();
     }
 
@@ -114,11 +143,11 @@ const ResetPassword = () => {
       return;
     }
 
-    // Prioritise the configured production URL so the link in the email
-    // always points to the live site, never localhost.
+    // Always use the configured production URL so the reset link in the
+    // email points to the live site, never localhost.
     const origin =
       process.env.NEXT_PUBLIC_SITE_URL ||
-      (typeof window !== "undefined" ? window.location.origin : "https://fbportal.sg");
+      (typeof window !== "undefined" ? window.location.origin : "https://thekitchenconnection.net");
 
     const { error: err } = await sb.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/reset-password`,
@@ -166,7 +195,7 @@ const ResetPassword = () => {
       return;
     }
 
-    await sb.auth.signOut();
+    // Password updated — session stays active, redirect straight to dashboard.
     setLoading(false);
     setMode("done");
   };
@@ -430,9 +459,9 @@ const ResetPassword = () => {
               </div>
               <Button
                 className="w-full h-11 rounded-xl font-bold"
-                onClick={() => router.push("/login")}
+                onClick={() => router.push("/dashboard")}
               >
-                {t.reset.goToLogin}
+                {t.reset.goToDashboard}
               </Button>
             </div>
           )}
