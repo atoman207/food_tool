@@ -21,7 +21,7 @@ const Suppliers = () => {
   const [tagFilters, setTagFilters] = useState({ smallLot: false, japanese: false, halal: false });
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   useEffect(() => {
     const plan = searchParams?.get("plan") || "";
@@ -98,7 +98,7 @@ const Suppliers = () => {
           {(categories || []).map((cat) => (
             <label key={cat.value} className="flex items-center gap-2.5 text-sm cursor-pointer hover:text-foreground transition-colors">
               <input type="checkbox" checked={selectedCategories.includes(cat.value)} onChange={() => toggleCategory(cat.value)} className="rounded border-border accent-primary" />
-              {(t.suppliers as { categories?: Record<string, string> }).categories?.[cat.value] ?? cat.label}
+              {lang === "ja" ? (cat.label_ja || cat.label) : cat.label}
             </label>
           ))}
         </div>
@@ -191,16 +191,58 @@ const Suppliers = () => {
                 </button>
               </div>
             </div>
-            <div className={`min-w-0 ${viewMode === "list" ? "space-y-3" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"}`}>
-              {filtered.map((s, i) => (
-                <SupplierCard
-                  key={s.id}
-                  supplier={s}
-                  variant={viewMode}
-                  rank={selectedCategories.length === 1 ? i + 1 : undefined}
-                />
-              ))}
-            </div>
+            {(() => {
+              // When a specific plan is selected, show flat list without group headers
+              if (selectedPlan) {
+                return (
+                  <div className={`min-w-0 ${viewMode === "list" ? "space-y-3" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"}`}>
+                    {filtered.map((s, i) => (
+                      <SupplierCard key={s.id} supplier={s} variant={viewMode} rank={selectedCategories.length === 1 ? i + 1 : undefined} />
+                    ))}
+                  </div>
+                );
+              }
+              // Group by plan with section headers
+              const planOrder: Array<"premium" | "standard" | "basic"> = ["premium", "standard", "basic"];
+              const planLabel: Record<string, string> = {
+                premium: lang === "ja" ? "プレミアム" : "Premium",
+                standard: lang === "ja" ? "スタンダード" : "Standard",
+                basic: lang === "ja" ? "ベーシック" : "Basic",
+              };
+              const planBorder: Record<string, string> = {
+                premium: "border-amber-400",
+                standard: "border-red-400",
+                basic: "border-border",
+              };
+              const planText: Record<string, string> = {
+                premium: "text-amber-600",
+                standard: "text-red-500",
+                basic: "text-muted-foreground",
+              };
+              return (
+                <div className="space-y-10 min-w-0">
+                  {planOrder.map((plan) => {
+                    const group = filtered.filter((s) => (s.plan || "basic") === plan);
+                    if (group.length === 0) return null;
+                    return (
+                      <div key={plan}>
+                        <div className={`flex items-center gap-3 mb-4 pb-2 border-b-2 ${planBorder[plan]}`}>
+                          <span className={`text-sm font-bold uppercase tracking-wider ${planText[plan]}`}>
+                            {planLabel[plan]}
+                          </span>
+                          <span className="text-xs text-muted-foreground">({group.length})</span>
+                        </div>
+                        <div className={`min-w-0 ${viewMode === "list" ? "space-y-3" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"}`}>
+                          {group.map((s, i) => (
+                            <SupplierCard key={s.id} supplier={s} variant={viewMode} rank={selectedCategories.length === 1 ? i + 1 : undefined} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
             {filtered.length === 0 && (
               <div className="text-center py-20 text-muted-foreground">
                 <p className="text-lg font-medium">{t.suppliers.noResults}</p>

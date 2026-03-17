@@ -102,6 +102,11 @@ export interface SupplierProductRow {
   quantity?: string;
   storage_condition?: string;
   temperature?: string;
+  /** Dimensions: width, depth, height */
+  size_w?: string;
+  size_d?: string;
+  size_h?: string;
+  size_unit?: string;
   /** Direct MP4/WebM URL or YouTube/Vimeo embed URL */
   video_url?: string;
 }
@@ -154,6 +159,7 @@ export interface CategoryRow {
   type: "supplier" | "marketplace" | "news";
   value: string;
   label: string;
+  label_ja?: string | null;
   sort_order: number;
 }
 

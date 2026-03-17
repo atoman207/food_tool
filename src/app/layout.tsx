@@ -28,12 +28,8 @@ export const metadata: Metadata = {
     "halal supplier Singapore",
     "F&B portal",
   ],
-  icons: {
-    icon: "/icon.png",
-    apple: [
-      { url: "/icon.png", sizes: "180x180" },
-    ],
-  },
+  // Icons served from app/favicon.ico, app/icon.png, app/apple-icon.png (file-based metadata)
+  // so Next.js serves them with hashed URLs and only the current favicon is shown when deployed.
   robots: { index: true, follow: true },
   openGraph: {
     title: "Singapore F&B Portal | The Kitchen Connection",

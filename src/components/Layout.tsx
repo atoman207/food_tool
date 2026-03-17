@@ -353,7 +353,7 @@ export function Footer() {
           <div className="min-w-0">
             <h4 className="font-semibold mb-4 text-sm text-foreground uppercase tracking-wider">{t.footer.info}</h4>
             <ul className="space-y-1 text-sm text-muted-foreground">
-              <li><a href="#" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.terms}</a></li>
+              <li><Link href="/terms" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.terms}</Link></li>
               <li><Link href="/privacy" className="block py-2 -my-1 hover:text-primary transition-colors duration-200">{t.footer.privacy}</Link></li>
             </ul>
           </div>

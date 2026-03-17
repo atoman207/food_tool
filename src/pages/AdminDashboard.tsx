@@ -732,6 +732,7 @@ function ProductManager({ slug }: { slug: string }) {
   const [form, setForm] = useState({
     name: "", name_en: "", image: "", moq: "",
     country_of_origin: "", weight: "", quantity: "",
+    size_w: "", size_d: "", size_h: "", size_unit: "cm",
     storage_condition: "", temperature: "", video_url: "",
   });
 
@@ -748,7 +749,7 @@ function ProductManager({ slug }: { slug: string }) {
   };
 
   const clearForm = () => {
-    setForm({ name: "", name_en: "", image: "", moq: "", country_of_origin: "", weight: "", quantity: "", storage_condition: "", temperature: "", video_url: "" });
+    setForm({ name: "", name_en: "", image: "", moq: "", country_of_origin: "", weight: "", quantity: "", size_w: "", size_d: "", size_h: "", size_unit: "cm", storage_condition: "", temperature: "", video_url: "" });
     setEditingId(null);
   };
 
@@ -761,6 +762,10 @@ function ProductManager({ slug }: { slug: string }) {
       country_of_origin: p.country_of_origin ?? "",
       weight: p.weight ?? "",
       quantity: p.quantity ?? "",
+      size_w: p.size_w ?? "",
+      size_d: p.size_d ?? "",
+      size_h: p.size_h ?? "",
+      size_unit: p.size_unit ?? "cm",
       storage_condition: p.storage_condition ?? "",
       temperature: p.temperature ?? "",
       video_url: p.video_url ?? "",
@@ -888,6 +893,36 @@ function ProductManager({ slug }: { slug: string }) {
         <InputField label={lang === "ja" ? "MOQ" : "MOQ"} value={form.moq} onChange={(v) => setForm((p) => ({ ...p, moq: v }))} placeholder={lang === "ja" ? "例: 1kg〜" : "e.g. 1kg"} />
       </div>
 
+      {/* Row 3b: Dimensions W × D × H */}
+      <div>
+        <label className="text-sm font-medium block mb-1.5">{t.admin.productDimensions}</label>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{t.admin.productDimensionsW}</span>
+            <input type="text" value={form.size_w} onChange={(e) => setForm((p) => ({ ...p, size_w: e.target.value }))} placeholder="—" className="w-20 h-10 px-2 rounded-lg border bg-background text-sm text-center" />
+          </div>
+          <span className="text-muted-foreground font-bold">×</span>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{t.admin.productDimensionsD}</span>
+            <input type="text" value={form.size_d} onChange={(e) => setForm((p) => ({ ...p, size_d: e.target.value }))} placeholder="—" className="w-20 h-10 px-2 rounded-lg border bg-background text-sm text-center" />
+          </div>
+          <span className="text-muted-foreground font-bold">×</span>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{t.admin.productDimensionsH}</span>
+            <input type="text" value={form.size_h} onChange={(e) => setForm((p) => ({ ...p, size_h: e.target.value }))} placeholder="—" className="w-20 h-10 px-2 rounded-lg border bg-background text-sm text-center" />
+          </div>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{t.admin.productDimensionsUnit}</span>
+            <select value={form.size_unit} onChange={(e) => setForm((p) => ({ ...p, size_unit: e.target.value }))} className="h-10 px-2 rounded-lg border bg-background text-sm">
+              <option value="cm">cm</option>
+              <option value="mm">mm</option>
+              <option value="m">m</option>
+              <option value="inch">inch</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       {/* Row 4: Storage + Temperature */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <InputField label={t.admin.productStorageCondition} value={form.storage_condition} onChange={(v) => setForm((p) => ({ ...p, storage_condition: v }))} />
@@ -942,6 +977,11 @@ function ProductManager({ slug }: { slug: string }) {
                   {p.country_of_origin && <span className="text-xs text-muted-foreground">{p.country_of_origin}</span>}
                   {p.weight && <span className="text-xs text-muted-foreground">{p.weight}</span>}
                   {p.quantity && <span className="text-xs text-muted-foreground">{p.quantity}</span>}
+                  {(p.size_w || p.size_d || p.size_h) && (
+                    <span className="text-xs text-muted-foreground">
+                      {[p.size_w, p.size_d, p.size_h].filter(Boolean).join(" × ")}{p.size_unit ? ` ${p.size_unit}` : ""}
+                    </span>
+                  )}
                   {p.storage_condition && <span className="text-xs text-muted-foreground">{p.storage_condition}</span>}
                 </div>
               </div>

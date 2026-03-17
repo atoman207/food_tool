@@ -927,4 +927,9 @@ SELECT table_name, rows FROM (
   SELECT 'site_settings',                   COUNT(*)         FROM public.site_settings      UNION ALL
   SELECT 'reports',                         COUNT(*)         FROM public.reports
 ) t ORDER BY table_name;
-ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS video_url text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS video_url  text DEFAULT '';
+-- Product dimensions (W × D × H) — for refrigerators, POS terminals, equipment etc.
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS size_w    text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS size_d    text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS size_h    text DEFAULT '';
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS size_unit text DEFAULT 'cm';
