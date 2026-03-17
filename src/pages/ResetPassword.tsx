@@ -80,6 +80,13 @@ const ResetPassword = () => {
       }
     });
 
+    // ── Supabase error in hash (e.g. otp_expired) ────────────────────────
+    if (hash.includes("error=")) {
+      clearUrl();
+      setMode("invalid");
+      return () => subscription.unsubscribe();
+    }
+
     // ── Implicit flow: token in URL hash ─────────────────────────────────
     if (hash.includes("type=recovery") || hash.includes("access_token")) {
       clearUrl();
