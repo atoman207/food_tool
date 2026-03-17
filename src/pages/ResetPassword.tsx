@@ -57,6 +57,20 @@ const ResetPassword = () => {
     return () => clearInterval(id);
   }, [cooldownSeconds]);
 
+  /* When showing "Set Password", re-verify session after a delay (handles
+     browser back / manual refresh — but must not race with PASSWORD_RECOVERY). */
+  useEffect(() => {
+    if (mode !== "update") return;
+    const sb = getSupabase();
+    if (!sb) return;
+    const id = setTimeout(() => {
+      sb.auth.getSession().then(({ data: { session } }) => {
+        if (!session) setMode("invalid");
+      });
+    }, 3000);
+    return () => clearTimeout(id);
+  }, [mode]);
+
   /* Detect password-recovery session from Supabase redirect */
   useEffect(() => {
     const sb = getSupabase();
@@ -88,10 +102,22 @@ const ResetPassword = () => {
     }
 
     // ── Implicit flow: token in URL hash ─────────────────────────────────
+    // Do NOT clear URL or set "update" here. Wait for PASSWORD_RECOVERY so session is established.
     if (hash.includes("type=recovery") || hash.includes("access_token")) {
-      clearUrl();
-      setMode("update");
-      return () => subscription.unsubscribe();
+      setMode("verifying");
+      // Fallback: if listener already fired before we subscribed, check session after a short delay.
+      const fallback = setTimeout(() => {
+        sb.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            clearUrl();
+            setMode("update");
+          }
+        });
+      }, 1500);
+      return () => {
+        clearTimeout(fallback);
+        subscription.unsubscribe();
+      };
     }
 
     // ── PKCE flow: ?code= in query string ────────────────────────────────
@@ -108,18 +134,20 @@ const ResetPassword = () => {
           return;
         }
 
-        // No session yet — exchange the code manually.
+        // No session yet — exchange the code manually. Clear URL only after session is confirmed.
         sb.auth.exchangeCodeForSession(code)
           .then(({ data, error: err }) => {
-            clearUrl();
             if (data.session) {
+              clearUrl();
               setMode("update");
             } else if (err) {
+              clearUrl();
               // Exchange failed — check one more time (race with auth listener)
               sb.auth.getSession().then(({ data: { session } }) => {
                 setMode(session ? "update" : "invalid");
               });
             } else {
+              clearUrl();
               setMode("invalid");
             }
           })

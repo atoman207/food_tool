@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { Search, ArrowRight, ShoppingBag, TrendingUp, Sparkles, Newspaper, Globe, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { SupplierCard } from "@/components/SupplierCard";
@@ -40,10 +39,10 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const { t, lang } = useTranslation();
-  const router = useRouter();
-
   // Supabase auth redirects land on the home page when /reset-password is not
-  // in the allowed Redirect URLs list. Detect the hash and forward correctly.
+  // in the allowed Redirect URLs list. Use a full-page redirect so Supabase
+  // can process the token fresh on /reset-password (avoids session loss with
+  // client-side navigation).
   useEffect(() => {
     if (typeof window === "undefined") return;
     const hash = window.location.hash;
@@ -53,9 +52,9 @@ const Index = () => {
         hash.includes("access_token") ||
         hash.includes("error="))
     ) {
-      router.replace("/reset-password" + hash);
+      window.location.replace("/reset-password" + hash);
     }
-  }, [router]);
+  }, []);
 
   const { data: suppliers, loading: suppliersLoading } = useFetch<SupplierRow[]>("/api/suppliers");
   const { data: marketplaceItems } = useFetch<MarketplaceItemRow[]>("/api/marketplace");
