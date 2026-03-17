@@ -166,41 +166,29 @@ const ResetPassword = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  /* ── Step 1: send reset email ─────────────────────────────────────────── */
+  /* ── Step 1: send reset email via custom SMTP (bypasses Supabase rate limits) */
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const sb = getSupabase();
-    if (!sb) {
-      setError("Supabase is not configured.");
+
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
       setLoading(false);
-      return;
-    }
-
-    // Always use the configured production URL so the reset link in the
-    // email points to the live site, never localhost.
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      (typeof window !== "undefined" ? window.location.origin : "https://thekitchenconnection.net");
-
-    const { error: err } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/reset-password`,
-    });
-    setLoading(false);
-    if (err) {
-      const isRateLimit =
-        err.message?.toLowerCase().includes("rate limit") ||
-        err.message?.toLowerCase().includes("rate_limit");
-      if (isRateLimit) {
-        setError(t.reset.rateLimitExceeded);
-        setCooldownSeconds(60);
-      } else {
-        setError(err.message);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body?.error || "Failed to send email. Please try again.");
+        return;
       }
-      return;
+      setSent(true);
+    } catch {
+      setLoading(false);
+      setError("Network error. Please check your connection and try again.");
     }
-    setSent(true);
   };
 
   /* ── Step 3: set new password ─────────────────────────────────────────── */

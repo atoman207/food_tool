@@ -173,6 +173,32 @@ export async function sendReportNotification(data: {
   return true;
 }
 
+export async function sendPasswordResetEmail(data: {
+  userEmail: string;
+  resetLink: string;
+}): Promise<boolean> {
+  const transporter = getTransporter();
+  if (!transporter) return false;
+
+  const { userEmail, resetLink } = data;
+
+  await transporter.sendMail({
+    from: `"The Kitchen Connection" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    to: userEmail,
+    subject: "Reset your password",
+    html: [
+      `<p>Hello,</p>`,
+      `<p>Click the link below to reset your password. This link expires in 1 hour.</p>`,
+      `<p><a href="${resetLink}" style="display:inline-block;padding:12px 24px;background:#e11d48;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;">Reset Password</a></p>`,
+      `<p>If you did not request a password reset, you can safely ignore this email.</p>`,
+      `<p style="color:#999;font-size:12px;">The Kitchen Connection</p>`,
+    ].join("\n"),
+    text: `Reset your password\n\nClick the link below to reset your password:\n${resetLink}\n\nThis link expires in 1 hour. If you did not request this, ignore this email.`,
+  });
+
+  return true;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
