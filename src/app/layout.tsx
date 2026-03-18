@@ -62,6 +62,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Explicit tag so Google Search Console always finds it in initial HTML (metadata API alone can miss on some hosts). */}
+        <meta
+          name="google-site-verification"
+          content="pyXz7PfKOWBSFJnAXy2Wr0HwUpMHuWN6XpRGLUewd48"
+        />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>
