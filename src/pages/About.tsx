@@ -126,8 +126,10 @@ const About = () => {
     <Layout>
       {/* Hero section */}
       <section className="relative min-h-[400px] flex items-center overflow-hidden w-full">
-        <div className="absolute inset-0">
-          <img src={heroImage} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gray-900">
+          {contentLoaded && (
+            <img src={heroImage} alt="" className="w-full h-full object-cover animate-fade-in" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
         </div>
         <div className="container py-16 md:py-20 relative z-10 min-w-0 w-full">
@@ -236,11 +238,15 @@ const About = () => {
                   </div>
                   {/* Image side */}
                   <div className={`rounded-2xl overflow-hidden shadow-lg ${feature.color}`}>
-                    <img
-                      src={featureImages[idx]}
-                      alt={featureTitle}
-                      className="w-full h-64 md:h-80 object-cover"
-                    />
+                    {contentLoaded ? (
+                      <img
+                        src={featureImages[idx]}
+                        alt={featureTitle}
+                        className="w-full h-64 md:h-80 object-cover animate-fade-in"
+                      />
+                    ) : (
+                      <div className="w-full h-64 md:h-80 bg-muted animate-pulse" />
+                    )}
                   </div>
                 </div>
               );

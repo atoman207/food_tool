@@ -78,8 +78,8 @@ const SupplierDetail = () => {
     ? `${displayName}について問い合わせです。`
     : `I'd like to inquire about ${displayName}.`;
   const labels = lang === "ja"
-    ? { origin: "原産国", weight: "重量", quantity: "入数", storage: "保存方法", temp: "温度帯" }
-    : { origin: "Country of Origin", weight: "Weight", quantity: "Quantity", storage: "Storage Condition", temp: "Temperature" };
+    ? { origin: "原産国", weight: "重量", quantity: "入数", storage: "保存方法", temp: "温度帯", size: "サイズ（W×D×H）" }
+    : { origin: "Country of Origin", weight: "Weight", quantity: "Quantity", storage: "Storage Condition", temp: "Temperature", size: "Size (W×D×H)" };
 
   if (loading) {
     return <Layout><div className="container py-16 text-center text-muted-foreground">{t.common.loading}</div></Layout>;
@@ -244,6 +244,11 @@ const SupplierDetail = () => {
                       {p.country_of_origin && <div className="text-xs text-muted-foreground">{labels.origin}: {p.country_of_origin}</div>}
                       {p.weight && <div className="text-xs text-muted-foreground">{labels.weight}: {p.weight}</div>}
                       {p.quantity && <div className="text-xs text-muted-foreground">{labels.quantity}: {p.quantity}</div>}
+                      {(p.size_w || p.size_d || p.size_h) && (
+                        <div className="text-xs text-muted-foreground">
+                          {labels.size}: {[p.size_w, p.size_d, p.size_h].filter(Boolean).join(" × ")}{p.size_unit ? ` ${p.size_unit}` : ""}
+                        </div>
+                      )}
                       {p.storage_condition && <div className="text-xs text-muted-foreground">{labels.storage}: {p.storage_condition}</div>}
                     </div>
                   </div>
@@ -306,6 +311,14 @@ const SupplierDetail = () => {
                     <div><dt className="text-xs text-muted-foreground">{labels.quantity}</dt><dd className="text-sm font-medium">{product.quantity || "—"}</dd></div>
                     <div><dt className="text-xs text-muted-foreground">{labels.storage}</dt><dd className="text-sm font-medium">{product.storage_condition || "—"}</dd></div>
                     <div><dt className="text-xs text-muted-foreground">{labels.temp}</dt><dd className="text-sm font-medium">{product.temperature || "—"}</dd></div>
+                    {(product.size_w || product.size_d || product.size_h) && (
+                      <div className="col-span-2">
+                        <dt className="text-xs text-muted-foreground">{labels.size}</dt>
+                        <dd className="text-sm font-medium">
+                          {[product.size_w, product.size_d, product.size_h].filter(Boolean).join(" × ")}{product.size_unit ? ` ${product.size_unit}` : ""}
+                        </dd>
+                      </div>
+                    )}
                   </dl>
                 </div>
                 <div className="mt-4">

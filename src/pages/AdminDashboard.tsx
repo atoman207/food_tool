@@ -1543,6 +1543,9 @@ function CategoryManager() {
   const { t, lang } = useTranslation();
   const [categories, setCategories] = useState<any[]>([]);
   const [newCat, setNewCat] = useState({ type: "supplier", value: "", label: "", label_ja: "", sort_order: 0 });
+  const [addError, setAddError] = useState<string | null>(null);
+  const [editingCat, setEditingCat] = useState<{ id: string; label: string; label_ja: string } | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
 
   useEffect(() => { fetchCategories(); }, []);
 
@@ -1554,15 +1557,25 @@ function CategoryManager() {
   const handleAdd = async () => {
     const valueTrimmed = (newCat.value || "").trim();
     const labelTrimmed = (newCat.label || "").trim();
+    setAddError(null);
     if (!valueTrimmed) {
-      alert(lang === "ja" ? "値は必須です。" : "Value is required.");
+      setAddError(lang === "ja" ? "値（ENキー）は必須です。" : "Value (EN key) is required.");
       return;
     }
     if (!labelTrimmed) {
-      alert(lang === "ja" ? "ラベルは必須です。" : "Label is required.");
+      setAddError(lang === "ja" ? "ラベル（EN）は必須です。" : "Label (EN) is required.");
       return;
     }
-    await fetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...newCat, value: valueTrimmed, label: labelTrimmed }) });
+    const res = await fetch("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...newCat, value: valueTrimmed, label: labelTrimmed }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      setAddError(err?.error ?? (lang === "ja" ? "追加に失敗しました。データベース設定をご確認ください。" : "Failed to add category. Please check your database configuration."));
+      return;
+    }
     setNewCat({ type: "supplier", value: "", label: "", label_ja: "", sort_order: 0 });
     fetchCategories();
   };
@@ -1570,6 +1583,24 @@ function CategoryManager() {
   const handleDelete = async (id: string) => {
     if (!confirm(t.admin.deleteConfirm)) return;
     await fetch(`/api/categories?id=${id}`, { method: "DELETE" });
+    fetchCategories();
+  };
+
+  const handleEditSave = async () => {
+    if (!editingCat) return;
+    setEditSaving(true);
+    const res = await fetch(`/api/categories?id=${editingCat.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ label: editingCat.label, label_ja: editingCat.label_ja }),
+    });
+    setEditSaving(false);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(err?.error ?? (lang === "ja" ? "更新に失敗しました。" : "Update failed."));
+      return;
+    }
+    setEditingCat(null);
     fetchCategories();
   };
 
@@ -1583,40 +1614,96 @@ function CategoryManager() {
   return (
     <div>
       <h2 className="text-xl font-bold mb-6">{t.admin.categoryManagement}</h2>
-      <div className="bg-card border p-5 mb-6 flex flex-wrap gap-3 items-end">
-        <div>
-          <label className="text-xs font-medium block mb-1">{t.admin.typeLabel}</label>
-          <select value={newCat.type} onChange={(e) => setNewCat((p) => ({ ...p, type: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm">
-            <option value="supplier">{t.admin.typeSupplier}</option>
-            <option value="marketplace">{t.admin.typeMarketplace}</option>
-            <option value="news">{t.admin.typeNews}</option>
-            <option value="tag">{lang === "ja" ? "タグ" : "Tag"}</option>
-          </select>
+
+      {/* Add new category form */}
+      <div className="bg-card border p-5 mb-6">
+        <h3 className="text-sm font-bold mb-3">{lang === "ja" ? "新規カテゴリー追加" : "Add New Category"}</h3>
+        <div className="flex flex-wrap gap-3 items-end">
+          <div>
+            <label className="text-xs font-medium block mb-1">{t.admin.typeLabel}</label>
+            <select value={newCat.type} onChange={(e) => setNewCat((p) => ({ ...p, type: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm">
+              <option value="supplier">{t.admin.typeSupplier}</option>
+              <option value="marketplace">{t.admin.typeMarketplace}</option>
+              <option value="news">{t.admin.typeNews}</option>
+              <option value="tag">{lang === "ja" ? "タグ" : "Tag"}</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1">{t.admin.valueLabel} (EN key) <span className="text-destructive">*</span></label>
+            <input value={newCat.value} onChange={(e) => setNewCat((p) => ({ ...p, value: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" placeholder={lang === "ja" ? "例: pos_system" : "e.g. pos_system"} />
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1">{t.admin.labelLabel} (EN) <span className="text-destructive">*</span></label>
+            <input value={newCat.label} onChange={(e) => setNewCat((p) => ({ ...p, label: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-36" placeholder={lang === "ja" ? "例: POS System" : "e.g. POS System"} />
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1">{lang === "ja" ? "ラベル（日本語）" : "Label (JA)"}</label>
+            <input value={newCat.label_ja} onChange={(e) => setNewCat((p) => ({ ...p, label_ja: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-36" placeholder="例: POSシステム" />
+          </div>
+          <Button onClick={handleAdd} size="sm" className="rounded-xl"><Plus className="h-4 w-4" /></Button>
         </div>
-        <div>
-          <label className="text-xs font-medium block mb-1">{t.admin.valueLabel} (EN key) <span className="text-destructive">*</span></label>
-          <input value={newCat.value} onChange={(e) => setNewCat((p) => ({ ...p, value: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-32" placeholder={lang === "ja" ? "必須 (例: halal)" : "Required (e.g. halal)"} />
-        </div>
-        <div>
-          <label className="text-xs font-medium block mb-1">{t.admin.labelLabel} (EN) <span className="text-destructive">*</span></label>
-          <input value={newCat.label} onChange={(e) => setNewCat((p) => ({ ...p, label: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-36" placeholder={lang === "ja" ? "必須 (例: Halal)" : "Required (e.g. Halal)"} />
-        </div>
-        <div>
-          <label className="text-xs font-medium block mb-1">{lang === "ja" ? "ラベル（日本語）" : "Label (JA)"}</label>
-          <input value={newCat.label_ja} onChange={(e) => setNewCat((p) => ({ ...p, label_ja: e.target.value }))} className="h-10 px-3 rounded-lg border bg-background text-sm w-36" placeholder="日本語ラベル" />
-        </div>
-        <Button onClick={handleAdd} size="sm" className="rounded-xl"><Plus className="h-4 w-4" /></Button>
+        {addError && <p className="text-sm text-destructive mt-2">{addError}</p>}
+        <p className="text-xs text-muted-foreground mt-2">
+          {lang === "ja"
+            ? "※ ラベル（JA）を入力することで、日本語表示時にカテゴリー名が切り替わります。"
+            : "※ Fill in Label (JA) so the category name switches when viewing in Japanese."}
+        </p>
       </div>
+
+      {/* Edit label modal */}
+      {editingCat && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-foreground/40" onClick={() => setEditingCat(null)} />
+          <div className="relative bg-background rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+            <h3 className="font-bold text-base">{lang === "ja" ? "カテゴリーラベルを編集" : "Edit Category Labels"}</h3>
+            <div>
+              <label className="text-xs font-medium block mb-1">Label (EN) <span className="text-destructive">*</span></label>
+              <input
+                value={editingCat.label}
+                onChange={(e) => setEditingCat((p) => p ? { ...p, label: e.target.value } : p)}
+                className="w-full h-10 px-3 rounded-lg border bg-background text-sm"
+                placeholder="e.g. POS System"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">Label (JA) — {lang === "ja" ? "日本語ラベル" : "Japanese label"}</label>
+              <input
+                value={editingCat.label_ja}
+                onChange={(e) => setEditingCat((p) => p ? { ...p, label_ja: e.target.value } : p)}
+                className="w-full h-10 px-3 rounded-lg border bg-background text-sm"
+                placeholder="例: POSシステム"
+              />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button onClick={handleEditSave} disabled={editSaving} className="rounded-xl flex-1">
+                <Save className="h-4 w-4 mr-1.5" />{editSaving ? t.common.saving : (lang === "ja" ? "保存" : "Save")}
+              </Button>
+              <Button variant="outline" onClick={() => setEditingCat(null)} className="rounded-xl">{lang === "ja" ? "キャンセル" : "Cancel"}</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {["supplier", "tag", "marketplace", "news"].map((type) => (
         <div key={type} className="mb-6">
           <h3 className="font-bold text-sm mb-3">{typeLabels[type] ?? type}</h3>
           <div className="flex flex-wrap gap-2">
             {categories.filter((c: any) => c.type === type).map((c: any) => (
-              <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm">
+              <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm border border-border/50">
                 <span className="font-medium">{c.label} <span className="text-[10px] font-normal text-muted-foreground">EN</span></span>
-                {c.label_ja && <span className="text-muted-foreground text-xs">/ {c.label_ja} <span className="text-[10px]">JA</span></span>}
+                {c.label_ja
+                  ? <span className="text-muted-foreground text-xs">/ {c.label_ja} <span className="text-[10px]">JA</span></span>
+                  : <span className="text-[10px] text-amber-500 font-medium">JA未設定</span>
+                }
                 <span className="text-xs text-muted-foreground">({c.value})</span>
-                <button onClick={() => handleDelete(c.id)} className="text-muted-foreground hover:text-destructive ml-1"><Trash2 className="h-3 w-3" /></button>
+                <button
+                  onClick={() => setEditingCat({ id: c.id, label: c.label, label_ja: c.label_ja || "" })}
+                  className="text-muted-foreground hover:text-primary ml-0.5"
+                  title={lang === "ja" ? "編集" : "Edit"}
+                >
+                  <Edit2 className="h-3 w-3" />
+                </button>
+                <button onClick={() => handleDelete(c.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3 w-3" /></button>
               </div>
             ))}
           </div>
@@ -1807,18 +1894,37 @@ function TermsManager() {
   const [termsText, setTermsText] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const { t } = useTranslation();
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const { t, lang } = useTranslation();
 
   useEffect(() => {
-    fetch("/api/settings?key=terms_of_service").then((r) => r.json()).then((d) => setTermsText(d?.value || ""));
+    fetch("/api/settings?key=terms_of_service")
+      .then((r) => r.json())
+      .then((d) => setTermsText(d?.value ?? ""))
+      .catch(() => {});
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
-    await fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "terms_of_service", value: termsText }) });
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaveError(null);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "terms_of_service", value: termsText }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setSaveError(err?.error ?? (lang === "ja" ? "保存に失敗しました。" : "Save failed. Please check your database configuration."));
+      } else {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch {
+      setSaveError(lang === "ja" ? "ネットワークエラーが発生しました。" : "Network error. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -1833,12 +1939,23 @@ function TermsManager() {
           className="w-full p-3 rounded-lg border bg-background text-sm resize-y font-mono mb-4"
           placeholder="Enter terms of service content here..."
         />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button onClick={handleSave} className="rounded-xl gap-2" disabled={saving}>
             <Save className="h-4 w-4" /> {saving ? t.common.saving : t.admin.termsSave}
           </Button>
           {saved && <span className="text-sm text-emerald-600 font-medium">{t.admin.termsSaved}</span>}
+          {saveError && <span className="text-sm text-destructive font-medium">{saveError}</span>}
         </div>
+        {termsText && (
+          <div className="mt-6 pt-4 border-t">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">{lang === "ja" ? "プレビュー" : "Preview"}</p>
+            <div className="prose prose-sm max-w-none text-foreground max-h-48 overflow-y-auto bg-muted/30 rounded-lg p-3">
+              {termsText.split("\n").map((line, i) =>
+                line.trim() === "" ? <br key={i} /> : <p key={i} className="mb-2 text-xs leading-relaxed text-muted-foreground">{line}</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

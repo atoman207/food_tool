@@ -49,6 +49,22 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(data);
 }
 
+export async function PATCH(req: NextRequest) {
+  const supabase = createAdminSupabaseClient();
+  if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  const body = await req.json();
+  const updates: Record<string, string> = {};
+  if (typeof body.label === "string") updates.label = body.label.trim();
+  if (typeof body.label_ja === "string") updates.label_ja = body.label_ja.trim();
+  if (Object.keys(updates).length === 0) return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  const { data, error } = await supabase.from("categories").update(updates).eq("id", id).select().single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
+}
+
 export async function DELETE(req: NextRequest) {
   const supabase = createAdminSupabaseClient();
   if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 });
