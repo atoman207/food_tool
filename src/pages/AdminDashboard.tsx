@@ -148,9 +148,18 @@ const PLAN_BADGE: Record<string, string> = {
 };
 const PLAN_LABEL: Record<string, string> = { premium: "Premium", standard: "Standard", basic: "Basic" };
 
+const AREA_OPTIONS: { value: string; label: string; label_ja: string }[] = [
+  { value: "central", label: "Central", label_ja: "中央エリア" },
+  { value: "east", label: "East", label_ja: "東部エリア" },
+  { value: "west", label: "West", label_ja: "西部エリア" },
+  { value: "north", label: "North", label_ja: "北部エリア" },
+  { value: "south", label: "South", label_ja: "南部エリア" },
+];
+
 function SupplierManager() {
   const { t, lang } = useTranslation();
   const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [supplierSearch, setSupplierSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
   const [productSlug, setProductSlug] = useState<string | null>(null);
@@ -185,10 +194,16 @@ function SupplierManager() {
     setForm((p) => ({ ...p, [enKey]: value, [jaKey]: cat?.label_ja || p[jaKey as keyof typeof p] }));
   };
 
-  /** Toggle a tag checkbox */
-  const toggleTag = (tagValue: string) => {
+  /** Select area and auto-fill area_ja */
+  const handleAreaSelect = (value: string) => {
+    const opt = AREA_OPTIONS.find((a) => a.value === value);
+    setForm((p) => ({ ...p, area: value, area_ja: opt?.label_ja ?? p.area_ja }));
+  };
+
+  /** Toggle a tag — store label_ja so frontend tagMap displays correctly in both languages */
+  const toggleTag = (tagLabelJa: string) => {
     const current = new Set(form.tags.split(",").map((s) => s.trim()).filter(Boolean));
-    if (current.has(tagValue)) current.delete(tagValue); else current.add(tagValue);
+    if (current.has(tagLabelJa)) current.delete(tagLabelJa); else current.add(tagLabelJa);
     setForm((p) => ({ ...p, tags: Array.from(current).join(", ") }));
   };
 
@@ -204,10 +219,15 @@ function SupplierManager() {
   };
 
   const handleEdit = (s: any) => {
+    // Map stored tags to label_ja so form state matches; support legacy value/label
+    const tagStrs = (s.tags || []).map((t: string) => {
+      const tag = availableTags.find((at: any) => at.label_ja === t || at.label === t || at.value === t);
+      return tag ? (tag.label_ja || tag.label) : t;
+    });
     setForm({
       name: s.name || "", name_ja: s.name_ja || "", slug: s.slug, category: s.category || "", category_ja: s.category_ja || "",
       category_2: s.category_2 || "", category_2_ja: s.category_2_ja || "", category_3: s.category_3 || "", category_3_ja: s.category_3_ja || "",
-      area: s.area || "", area_ja: s.area_ja || "", tags: (s.tags || []).join(", "),
+      area: s.area || "central", area_ja: s.area_ja || (AREA_OPTIONS.find((a) => a.value === (s.area || "central"))?.label_ja ?? ""), tags: tagStrs.join(", "),
       // Always fall back to "" so undefined values don't accidentally clear saved text on re-open
       description: s.description ?? "", description_ja: s.description_ja ?? "", whatsapp: s.whatsapp || "",
       whatsapp_contact_name: s.whatsapp_contact_name || "", logo: s.logo || "", catalog_url: s.catalog_url || "", image_2: s.image_2 || "", image_3: s.image_3 || "",
@@ -277,13 +297,37 @@ function SupplierManager() {
     fetchSuppliers();
   };
 
+  const filteredSuppliers = suppliers.filter((s: any) => {
+    if (!supplierSearch.trim()) return true;
+    const q = supplierSearch.toLowerCase().trim();
+    const name = (s.name || "").toLowerCase();
+    const nameJa = (s.name_ja || "").toLowerCase();
+    const slug = (s.slug || "").toLowerCase();
+    const cat = [s.category, s.category_2, s.category_3, s.category_ja, s.category_2_ja, s.category_3_ja].join(" ").toLowerCase();
+    const area = ((s.area || "") + (s.area_ja || "")).toLowerCase();
+    const tags = (s.tags || []).join(" ").toLowerCase();
+    return name.includes(q) || nameJa.includes(q) || slug.includes(q) || cat.includes(q) || area.includes(q) || tags.includes(q);
+  });
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h2 className="text-xl font-bold">{t.admin.supplierManagement}</h2>
-        <Button onClick={() => { resetForm(); setShowForm(!showForm); }} className="rounded-xl gap-2">
-          <Plus className="h-4 w-4" /> {showForm ? t.admin.close : t.admin.add}
-        </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={supplierSearch}
+              onChange={(e) => setSupplierSearch(e.target.value)}
+              placeholder={lang === "ja" ? "サプライヤーを検索（名前・カテゴリ・エリア等）" : "Search suppliers (name, category, area…)"}
+              className="h-10 pl-9 pr-3 rounded-lg border bg-background text-sm w-56 placeholder:text-muted-foreground"
+            />
+          </div>
+          <Button onClick={() => { resetForm(); setShowForm(!showForm); }} className="rounded-xl gap-2">
+            <Plus className="h-4 w-4" /> {showForm ? t.admin.close : t.admin.add}
+          </Button>
+        </div>
       </div>
 
       {showForm && (
@@ -294,6 +338,9 @@ function SupplierManager() {
           </div>
           <InputField label={t.admin.slug} value={form.slug} onChange={(v) => setForm((p) => ({ ...p, slug: v }))} required placeholder={t.admin.slugRequiredPlaceholder} />
           {/* Category 1 — select from CategoryManager */}
+          <p className="text-xs text-muted-foreground -mt-2">
+            {lang === "ja" ? "※ JA未設定 = カテゴリーに日本語ラベルが未登録です。カテゴリー管理タブで編集できます。" : "※ JA未設定 = Category has no Japanese label. Edit in Category Management tab."}
+          </p>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">{t.admin.category1}</label>
@@ -335,19 +382,25 @@ function SupplierManager() {
               <input value={form.category_3_ja} onChange={(e) => setForm((p) => ({ ...p, category_3_ja: e.target.value }))} placeholder={availableCategories.find((c: any) => c.value === form.category_3)?.label_ja ?? ""} className="h-11 px-4 rounded-lg border bg-background text-sm w-full" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <InputField label={t.admin.area} value={form.area} onChange={(v) => setForm((p) => ({ ...p, area: v }))} />
-            <InputField label={t.admin.areaJa} value={form.area_ja} onChange={(v) => setForm((p) => ({ ...p, area_ja: v }))} />
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{t.admin.area}</label>
+            <select value={form.area} onChange={(e) => handleAreaSelect(e.target.value)} className="h-11 px-4 rounded-lg border bg-background text-sm w-full">
+              {AREA_OPTIONS.map((a) => (
+                <option key={a.value} value={a.value}>{lang === "ja" ? a.label_ja : a.label}</option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">{form.area_ja}</p>
           </div>
-          {/* Tags — multi-select from category management (type=tag) */}
+          {/* Tags — multi-select from category management (type=tag). Stored as label_ja for correct JA/EN display on frontend. */}
           <div>
             <label className="text-sm font-medium block mb-1.5">{t.admin.tags}</label>
             {availableTags.length > 0 ? (
               <div className="flex flex-wrap gap-2 p-3 rounded-lg border bg-background">
                 {availableTags.map((tag: any) => {
-                  const selected = form.tags.split(",").map((s) => s.trim()).includes(tag.value);
+                  const tagKey = tag.label_ja || tag.label;
+                  const selected = form.tags.split(",").map((s) => s.trim()).some((t) => t === tag.label_ja || t === tag.label || t === tag.value);
                   return (
-                    <button key={tag.value} type="button" onClick={() => toggleTag(tag.value)}
+                    <button key={tag.value} type="button" onClick={() => toggleTag(tagKey)}
                       className={`px-3 py-1 rounded-full text-xs border transition-colors ${selected ? "bg-primary text-white border-primary" : "bg-muted border-border text-muted-foreground hover:border-primary hover:text-primary"}`}>
                       {lang === "ja" ? (tag.label_ja || tag.label) : tag.label}
                     </button>
@@ -357,7 +410,11 @@ function SupplierManager() {
             ) : (
               <InputField label="" value={form.tags} onChange={(v) => setForm((p) => ({ ...p, tags: v }))} />
             )}
-            {form.tags && <p className="text-xs text-muted-foreground mt-1">{form.tags}</p>}
+            <p className="text-xs text-muted-foreground mt-1">
+              {lang === "ja"
+                ? "※ 日本語ラベル（label_ja）で保存されます。サイト表示時に言語切り替えが正しく反映されます。"
+                : "※ Saved as Japanese label (label_ja) so site display switches correctly by language."}
+            </p>
           </div>
           <div>
             <label className="text-sm font-medium block mb-1.5">{lang === "ja" ? "説明（英語・カード用）" : "Description (EN, for cards)"}</label>
@@ -400,8 +457,11 @@ function SupplierManager() {
         </div>
       )}
 
+      <p className="text-sm text-muted-foreground mb-3">
+        {lang === "ja" ? `${filteredSuppliers.length}件 / ${suppliers.length}件中` : `${filteredSuppliers.length} of ${suppliers.length}`}
+      </p>
       <div className="space-y-3">
-        {suppliers.map((s: any) => (
+        {filteredSuppliers.map((s: any) => (
           <div key={s.id}>
             <div className="bg-card border p-4 space-y-3">
               {/* Row 1: image + text */}
